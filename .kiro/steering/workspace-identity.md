@@ -65,3 +65,4 @@ Place information here when it applies regardless of which project you're workin
 - Generic methodology (goes in the toolkit repo)
 - Personal notes unrelated to a project
 - Credentials or secrets
+| `ascm` | TBA | `projects/ascm/` | Active |
