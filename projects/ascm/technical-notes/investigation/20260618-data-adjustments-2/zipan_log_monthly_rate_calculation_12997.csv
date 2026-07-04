@@ -1,0 +1,3 @@
+id,target_ym,student_id,department_id,order_no,product_id,product_type,contract_type,charge_id,total,number_of_carried_over_lessons,pre_sales,number_of_lessons_taken,number_of_expired_lessons,number_of_remaining_lessons,paid_price,country_id,gross_amount,tax_free,created_at,updated_at
+1356,202604,4282,13036,10029118,16,1,1,12997,5,0,0,1,0,4,2750,86,0,false,"2026-6-18, 19:26","2026-6-18, 19:26"
+977,202605,4282,13036,10029118,16,1,1,12997,5,4,0,6,0,0,16500,86,0,false,"2026-6-18, 17:37","2026-6-18, 17:37"

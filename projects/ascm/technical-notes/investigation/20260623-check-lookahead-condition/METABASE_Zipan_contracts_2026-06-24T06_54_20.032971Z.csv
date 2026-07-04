@@ -1,0 +1,4 @@
+contract_type,contract_type_name,order_no_status,charge_count
+0,B2C (PayPal),NULL,768
+1,B2B,Has order_no,11484
+2,B2B2C,NULL,993
