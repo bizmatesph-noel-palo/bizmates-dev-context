@@ -8,3 +8,8 @@ Thumbs.db
 .idea/
 *.swp
 *.swo
+
+# Generated files — batch output CSVs (never commit raw data)
+projects/*/generated-files/
+projects/*/technical-notes/investigation/*/*.csv
+projects/*/technical-notes/investigation/*/generated-files/*.csv
