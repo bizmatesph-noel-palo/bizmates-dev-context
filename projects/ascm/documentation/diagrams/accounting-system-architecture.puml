@@ -1,0 +1,115 @@
+@startuml Accounting System - Target Architecture
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam packageStyle rectangle
+skinparam defaultFontSize 11
+skinparam arrowThickness 1.5
+skinparam packageBorderColor #333333
+
+title Accounting System — Target Architecture
+
+package "Artisan Commands" as commands #E8F5E9 {
+    [MonthlyRateCalculation] as CMD_M
+    [MonthlyRateCalculationPre] as CMD_MP
+    [DailyRateCalculationPre] as CMD_D
+    [SendJournals] as CMD_S
+    [DataCorrection] as CMD_DC
+    [ClearCalculationLogs] as CMD_CL
+}
+
+package "Shared Infrastructure" as shared #E3F2FD {
+    [BatchContext] as BC
+    [BatchLock\n(Mutex)] as BL
+    
+    package "Tenant Strategy" as tenants #BBDEFB {
+        interface "TenantConfig" as TC
+        [BizmatesTenantConfig] as BTC
+        [ZipanTenantConfig] as ZTC
+    }
+}
+
+package "Services" as services #FFF3E0 {
+    [Monthly Rate\nService] as MRS
+    [Daily Rate\nService] as DRS
+    [Journals\nService] as JS
+    [Refund\nService] as RS
+    [Cleanup\nService] as CLS
+    [Correction\nService] as CS
+}
+
+package "Report Generation" as reports #F3E5F5 {
+    [Monthly CSV] as MCSV
+    [Daily CSV] as DCSV
+    [Summary CSV] as SCSV
+    [Report Packager\n(ZIP + Email)] as RP
+}
+
+package "Data Layer" as data #ECEFF1 {
+    database "log_monthly_rate\n_calculation" as LMR
+    database "log_daily_rate\n_calculation" as LDR
+    database "log_sum\n_calculation" as LSC
+    database "trn_charge" as TC_DB
+}
+
+package "External" as external #FCE4EC {
+    [Freee Token\nService] as FT
+    [Freee Invoice\nService] as FI
+    [Freee Journal\nSync] as FJ
+}
+
+' Commands → Shared
+CMD_M --> BC
+CMD_MP --> BC
+CMD_D --> BC
+CMD_S --> BC
+CMD_M --> BL
+CMD_D --> BL
+CMD_S --> BL
+
+' Tenant implements
+BTC ..|> TC
+ZTC ..|> TC
+
+' Commands → Services
+CMD_M --> MRS
+CMD_MP --> MRS
+CMD_D --> DRS
+CMD_S --> JS
+CMD_DC --> CS
+CMD_CL --> CLS
+
+' Services use Shared
+MRS --> BC
+MRS --> TC
+DRS --> BC
+DRS --> TC
+JS --> BC
+JS --> TC
+
+' Services → Data
+MRS --> LMR : insert
+MRS --> RS
+RS --> TC_DB : query refunds
+DRS --> LDR : insert
+JS ..> MRS : composes
+JS ..> DRS : composes
+CLS --> LMR : delete
+CLS --> LDR : delete
+CLS --> LSC : delete
+
+' Services → Reports
+MRS --> MCSV
+DRS --> DCSV
+MCSV --> RP
+DCSV --> RP
+SCSV --> RP
+
+' External
+JS --> FT
+JS --> FI
+JS --> FJ
+CMD_D --> FT
+CMD_D --> FI
+
+@enduml

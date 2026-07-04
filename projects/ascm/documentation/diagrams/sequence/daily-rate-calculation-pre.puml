@@ -1,0 +1,111 @@
+@startuml seq_daily_rate_calculation_pre
+title Daily Rate Calculation (Pre) - Sequence Diagram \nDailyRateCalculationPreCommand
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #333333
+skinparam sequenceParticipantBackgroundColor #FAFAFA
+skinparam sequenceLifeLineBorderColor #999999
+skinparam noteBorderColor #F9A825
+skinparam noteBackgroundColor #FFFDE7
+
+actor       "Scheduler / Admin"             as admin
+participant "DailyRateCalculationPreCommand"    as cmd
+participant "DailyRateCalculationPreLogic"      as logic
+participant "CommonUtil"                    as util
+participant "ZipanUtil"                     as zipan_util
+database    "trn_charge"                    as charge
+database    "mst_product"                   as product
+database    "log_freee_invoices"            as freee_inv
+database    "log_daily_rate_calculation_pre"    as daily_pre
+database    "log_monthly_rate_calculation_pre"  as monthly_pre
+database    "log_sum_calculation_pre"           as sum_pre
+
+== Initialisation ==
+
+admin -> cmd   : php artisan command:DailyRateCalculationPreCommand {exeDate}
+cmd   -> logic : new DailyRateCalculationPreLogic(exeDate)\n→ CommonUtil::setSystemDate(exeDate)
+cmd   -> logic : execute()
+
+== Pre-run Cleanup ==
+
+logic -> logic : deleteTargetYMData(targetYm, targetStartDate)\nDeletes existing pre records for target month:\n- log_daily_rate_calculation_pre\n- log_sum_calculation_pre\n- log_balance_transition (if exists)\n[mysql + zipan]
+
+== Transaction Begin ==
+
+logic -> logic : DB::beginTransaction()\n[mysql + zipan]
+
+== Freee Invoice Fetch & Validation ==
+
+logic -> util       : getFreeeInvoice(startDate, endDate)
+util  -> freee_inv  : READ log_freee_invoices\n(by issue_date range)
+util --> logic      : [freeeInvoicesLists, cancelList]
+
+logic -> util       : checkFreeeAdminInfo(startDate, endDate, freeeInvoicesLists)
+util  -> charge     : READ trn_charge (B2B orders)\nREAD trn_other_sales_charge
+util --> logic      : errorList (invoice mismatches)
+
+== Step 1: Daily Rate Calculation (preFlg=true) ==
+
+note over logic, daily_pre
+  Non-monthly-plan products only
+  (BizmatesMonthlyPlanEnum excluded)
+  Pro-rates paid_price across contract months by days
+end note
+
+logic -> util    : createDailyRateCalculation(targetYm, startDate, endDate, preFlg=true)
+util  -> charge  : READ trn_charge\nWHERE status=1 AND paid=1\nAND start_date/end_date in range
+util  -> product : READ mst_product\n(get product_type map)
+
+loop For each non-monthly charge
+    util -> util      : getContractDateInfoList()\n→ pro-rate paid_price by days per month
+    util -> daily_pre : INSERT log_daily_rate_calculation_pre\n(one row per month slice)
+end
+
+== Step 2: Monthly Rate Calculation (preFlg=true) ==
+
+note over logic, monthly_pre
+  Monthly-plan products only
+  Lesson-based calculation via CTE query
+  (same logic as MonthlyRateCalculationPreLogic)
+end note
+
+logic -> monthly_pre : INSERT log_monthly_rate_calculation_pre\n(via MonthlyRateCalculationPreLogic CTE)
+
+== Step 3: Sum Calculation (preFlg=true) ==
+
+note over util, sum_pre
+  getPaidPriceSumList() does UNION ALL:
+    log_daily_rate_calculation_pre  (non-monthly)
+  + log_monthly_rate_calculation_pre (monthly)
+  Then aggregates by order_no + product_type + contract_type
+  No log_sum_calculation_history written for pre
+end note
+
+util -> daily_pre   : READ log_daily_rate_calculation_pre\n(UNION ALL source)
+util -> monthly_pre : READ log_monthly_rate_calculation_pre\n(UNION ALL source)
+util -> freee_inv   : READ log_freee_invoices\n(resolve partner_id by order_no)
+util -> sum_pre     : INSERT log_sum_calculation_pre\n(aggregated rows per order)
+
+== Step 3b: Zipan Daily + Sum (preFlg=true) ==
+
+logic -> zipan_util : ZipanUtil::createDailyRateCalculation\n(targetYm, startDate, endDate, preFlg=true)
+note over zipan_util
+  Same flow as Bizmates but uses:
+  - log_daily_rate_calculation_pre_zipan
+  - log_monthly_rate_calculation_pre_zipan
+  - log_sum_calculation_pre_zipan
+end note
+
+== Commit ==
+
+logic -> logic : DB::commit()\n[mysql + zipan]
+
+== CSV Generation & Email ==
+
+logic -> util : createTrnChargeFile()\ncreateTicketFile()\ncreateDailyRateCalculationFile(preFlg=true)\ncreateMonthlyRateCalculationFile()\ncreateDailyRateCalculationSumFile(preFlg=true)
+logic -> logic : Package CSVs into ZIP\nSend result email
+
+logic --> cmd  : return
+cmd   --> admin : exit
+
+@enduml

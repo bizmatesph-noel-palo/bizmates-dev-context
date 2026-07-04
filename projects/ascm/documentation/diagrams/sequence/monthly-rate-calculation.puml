@@ -1,0 +1,71 @@
+@startuml seq_monthly_rate_calculation
+title Monthly Rate Calculation - Sequence Diagram \nMonthlyRateCalculationCommand
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #333333
+skinparam sequenceParticipantBackgroundColor #FAFAFA
+skinparam sequenceLifeLineBorderColor #999999
+skinparam noteBorderColor #F9A825
+skinparam noteBackgroundColor #FFFDE7
+
+actor       "Scheduler / Admin"         as admin
+participant "MonthlyRateCalculationCommand"  as cmd
+participant "CommonUtil"                as util
+participant "MonthlyRateCalculationLogic"   as logic
+database    "trn_student_product"       as sp
+database    "trn_charge"                as charge
+database    "mst_product"               as product
+database    "trn_ticket"                as ticket
+database    "trn_evaluation"            as eval
+database    "trn_prorated_refund_charge" as refund
+database    "log_monthly_rate_calculation" as log_mrc
+
+== Initialisation ==
+
+admin  -> cmd   : php artisan command:MonthlyRateCalculationCommand {exeDate}
+cmd    -> util  : setSystemDate(exeDate)
+cmd    -> util  : getTargetFromTo()\n→ [startDate, endDate]\n  e.g. 2026-02-01 ~ 2026-02-28
+cmd    -> logic : execute(startDate, endDate)
+
+== Transaction Begin ==
+
+logic  -> logic : DB::beginTransaction()\n[mysql + zipan]
+
+== CTE Query Execution ==
+
+note over logic
+  Single large WITH RECURSIVE SQL query
+  covering all students in one pass
+end note
+
+logic  -> sp      : READ trn_student_product\nWHERE main_product=1 AND status=1\n(StudentProduct CTE)
+logic  -> product : READ mst_product\nWHERE lesson_type=2\n(ProductVolume CTE)
+logic  -> charge  : READ trn_charge\nWHERE status=1 AND paid=1\nLEFT JOIN trn_prorated_refund_charge\n(ChargeData CTE)
+logic  -> refund  : READ trn_prorated_refund_charge\n(LEFT JOIN in ChargeData CTE)
+logic  -> ticket  : READ trn_ticket\nWHERE ticket_type=3\nAND end_datetime >= startDate\nAND start_datetime <= endDate\n(TicketMonths CTE — recursive)
+logic  -> eval    : READ trn_evaluation\nWHERE ticket_type=3\nAND status IN(0,1)\nAND result IN(0,1,2,3,4)\n(EvaluationFilter CTE)
+
+note over logic
+  CTEs computed in-database:
+  MonthlyUsage → FilteredUsage →
+  OrderedMonths → Grouped →
+  GroupedWithOrderCheck → FinalResult
+  WHERE target_ym = YYYYMM
+end note
+
+logic  -> logic : Fetch bizRows (mysql)\nFetch zipanRows (zipan)
+
+== Result Handling ==
+
+alt No rows generated
+    logic -> logic : rollBack()\nLog warning: no_rows_generated
+else Rows exist
+    logic -> log_mrc : INSERT INTO log_monthly_rate_calculation\n(bizmates rows)
+    logic -> log_mrc : INSERT INTO log_monthly_rate_calculation\n(zipan rows)
+    logic -> logic   : DB::commit()\n[mysql + zipan]
+end
+
+logic --> cmd : return
+cmd   --> admin : Command::SUCCESS
+
+@enduml

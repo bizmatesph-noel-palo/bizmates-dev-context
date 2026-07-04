@@ -1,0 +1,203 @@
+@startuml seq_send_journals
+title Send Journals Data - Sequence Diagram \nSendJournalsDataCommand
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #333333
+skinparam sequenceParticipantBackgroundColor #FAFAFA
+skinparam sequenceLifeLineBorderColor #999999
+skinparam noteBorderColor #F9A825
+skinparam noteBackgroundColor #FFFDE7
+
+actor       "Scheduler / Admin"         as admin
+participant "SendJournalsDataCommand"   as cmd
+participant "SendJournalsDataLogic"     as logic
+participant "CommonUtil"                as util
+participant "ZipanUtil"                 as zipan_util
+participant "CommonApiUtil"             as api_util
+database    "trn_charge"                as charge
+database    "mst_product"               as product
+database    "log_freee_invoices"        as freee_inv
+database    "mst_rule_for_journals"     as rule
+database    "log_daily_rate_calculation"    as daily
+database    "log_monthly_rate_calculation"  as monthly
+database    "log_sum_calculation"           as sum_calc
+database    "log_sum_calculation_history"   as sum_hist
+database    "log_balance_transition"        as balance
+database    "log_balance_transition_with_order_number" as balance_order
+participant "Freee API"                 as freee_api
+
+== Initialisation ==
+
+admin -> cmd   : php artisan command:SendJournalsDataCommand\n{exeDate} {no_send_flag} {no_dailyratecalculation_flag}
+cmd   -> logic : new SendJournalsDataLogic(exeDate)\n→ CommonUtil::setSystemDate(exeDate)
+cmd   -> logic : execute(no_send_flag, no_dailyratecalculation_flag)
+
+== Access Token Refresh ==
+
+logic -> api_util  : CommonUtil::updateAccessToken()
+api_util -> freee_api : POST /public_api/token\n(refresh_token grant)
+freee_api --> api_util : access_token, refresh_token
+api_util -> api_util   : MstAdminSetting::updateApiInfo()
+
+== Transaction Begin (Batch 1) ==
+
+logic -> logic : DB::beginTransaction()\n[mysql + zipan]
+
+== Freee Invoice Fetch & Validation ==
+
+logic -> util      : getFreeeInvoice(startDate, endDate)
+util  -> freee_inv : READ log_freee_invoices\n(by issue_date range)
+util --> logic     : [freeeInvoicesLists, cancelList]
+
+logic -> util      : checkFreeeAdminInfo(startDate, endDate, freeeInvoicesLists)
+util  -> charge    : READ trn_charge (B2B orders)\nREAD trn_other_sales_charge
+util --> logic     : errorList
+
+== Step 1: Daily Rate Calculation (preFlg=false) ==
+
+alt no_dailyratecalculation_flag = false (default)
+
+    note over logic, daily
+      Non-monthly-plan products only
+      Pro-rates paid_price across contract months by days
+    end note
+
+    logic -> util    : createDailyRateCalculation(targetYm, startDate, endDate, preFlg=false)
+    util  -> charge  : READ trn_charge\nWHERE status=1 AND paid=1
+    util  -> product : READ mst_product (product_type map)
+
+    loop For each non-monthly charge
+        util -> util  : getContractDateInfoList()\n→ pro-rate paid_price by days
+        util -> daily : INSERT log_daily_rate_calculation\n(one row per month slice)
+    end
+
+    == Step 2: Monthly Rate Calculation (preFlg=false) ==
+
+    note over logic, monthly
+      Monthly-plan products only
+      Lesson-based via CTE query
+    end note
+
+    logic -> monthly : INSERT log_monthly_rate_calculation\n(via MonthlyRateCalculationLogic CTE)
+
+    == Step 3: Sum Calculation (preFlg=false) ==
+
+    note over util, sum_calc
+      getPaidPriceSumList() UNION ALL:
+        log_daily_rate_calculation  (non-monthly)
+      + log_monthly_rate_calculation (monthly)
+      Aggregated by order_no + product_type + contract_type
+    end note
+
+    util -> daily    : READ log_daily_rate_calculation\n(UNION ALL source)
+    util -> monthly  : READ log_monthly_rate_calculation\n(UNION ALL source)
+    util -> freee_inv : READ log_freee_invoices\n(resolve partner_id by order_no)
+    util -> sum_calc : INSERT log_sum_calculation\n(aggregated rows)
+
+    loop For each sum row
+        util -> daily   : getSumDataList()\n→ daily_id + monthly_id
+        util -> sum_hist : INSERT log_sum_calculation_history\n(daily_id, monthly_id, sum_id)
+    end
+
+    == Step 3b: Zipan Daily + Sum ==
+
+    logic -> zipan_util : ZipanUtil::createDailyRateCalculation\n(preFlg=false)
+    note over zipan_util
+      Uses Zipan-specific tables:
+      - log_daily_rate_calculation_zipan
+      - log_monthly_rate_calculation_zipan
+      - log_sum_calculation_zipan
+      - log_sum_calculation_history_zipan
+    end note
+
+else no_dailyratecalculation_flag = true
+    logic -> logic : Skip daily/monthly/sum creation
+end
+
+== Commit Batch 1 ==
+
+logic -> logic : DB::commit() [mysql + zipan]
+
+== Transaction Begin (Batch 2) ==
+
+logic -> logic : DB::beginTransaction()\n[mysql + zipan]
+
+== Step 4: Send Journals to Freee ==
+
+alt no_send_flag = false (default)
+
+    logic -> logic     : sendFreeeJournals2(targetYm, startDate, endDate)
+    logic -> sum_calc  : READ log_sum_calculation\n(all rows for targetYm)
+    logic -> rule      : READ mst_rule_for_journals\n(by product_type + contract_type\n→ account codes, segment IDs)
+
+    note over logic, freee_api
+      T1: Sales journal (売上)
+      For each sum row → build debit/credit entries
+      B2C/B2B2C → 前受金 / 売上高
+      B2B/Partner → 売掛金 / 売上高
+    end note
+
+    logic -> freee_api : POST /api/1/manual_journals\n(T1 Sales entries)
+
+    note over logic, freee_api
+      T2: Deferred revenue (前受金)
+      For invoices where billing > cumulative sales
+      → register 前受金 entry
+    end note
+
+    logic -> freee_inv : READ log_freee_invoices\n(invoices due this month)
+    logic -> sum_calc  : getCumulativeMonthlyAmount(order_no, targetYm)
+    logic -> balance   : getMaeukeKin()\n(get prior 前受金 balance)
+    logic -> freee_api : POST /api/1/manual_journals\n(T2 Deferred revenue entries)
+
+    note over logic, freee_api
+      T3: Reversal journal (洗替)
+      T3-1: When T2 fires → reverse prior 前受金
+      T3-2: When T1 fires + prior 前受金 exists → partial reversal
+    end note
+
+    logic -> freee_api : POST /api/1/manual_journals\n(T3 Reversal entries)
+
+    note over zipan_util
+      ZipanUtil::createZipanJournals()
+      Same T1/T2/T3 logic for Zipan data
+    end note
+
+    logic -> zipan_util : createZipanJournals()
+    zipan_util -> freee_api : POST /api/1/manual_journals\n(Zipan journals)
+
+else no_send_flag = true
+    logic -> logic : Skip Freee API calls
+end
+
+== Commit Batch 2 ==
+
+logic -> logic : DB::commit() [mysql + zipan]
+
+== Transaction Begin (Batch 3) ==
+
+logic -> logic : DB::beginTransaction()\n[mysql + zipan]
+
+== Step 5: Balance Transition ==
+
+logic -> logic   : createBalanceTransition(targetYm, startDate, endDate)
+logic -> sum_calc : READ log_sum_calculation\n(by partner_id + targetYm)
+logic -> balance  : INSERT log_balance_transition\n(opening/closing balance per partner)
+
+logic -> logic        : createBalanceTransitionWithOrderNumber(targetYm, startDate, endDate)
+logic -> sum_calc     : READ log_sum_calculation\n(by order_no + targetYm)
+logic -> balance_order : INSERT log_balance_transition_with_order_number\n(balance per order_no)
+
+== Commit Batch 3 ==
+
+logic -> logic : DB::commit() [mysql + zipan]
+
+== CSV Generation & Email ==
+
+logic -> util : createTrnChargeFile()\ncreateTicketFile()\ncreateDailyRateCalculationFile()\ncreateMonthlyRateCalculationFile()\ncreateDailyRateCalculationSumFile()\ncreateBalanceTransitionFile()
+logic -> logic : Package CSVs into ZIP\nSend result email
+
+logic --> cmd  : return
+cmd   --> admin : exit
+
+@enduml
