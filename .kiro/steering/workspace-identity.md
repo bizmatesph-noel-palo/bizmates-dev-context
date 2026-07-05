@@ -59,6 +59,10 @@ Place information here when it applies regardless of which project you're workin
 - Exceptions: `README.md`
 - Numbered prefixes: `NN-` for ordered sequences (e.g., `01-system-overview.md`)
 
+## Dependencies
+
+Full methodology rules (knowledge resolution, git safety, report standards, documentation standards) auto-load from `agentic-toolkit/.kiro/steering/` when the toolkit repo is included in the workspace. If the toolkit is not present, this workspace is still functional but behavioral enforcement is reduced — only the conventions documented inline (READMEs, project-context files) apply.
+
 ## What Does NOT Go Here
 
 - Source code (goes in project repos)
