@@ -18,7 +18,9 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 
 ## Routing Rules
 
-When producing artifacts (reports, test cases, tickets, KB articles), place them in the correct project directory based on which project is being worked on.
+When producing artifacts (reports, test cases, tickets, KB articles, guides, documentation), place them in the correct project subdirectory based on the File Placement table below.
+
+**CRITICAL: Never place files directly in the project root (`projects/{name}/`).** Every artifact has a designated subdirectory. Before creating any file, match its content type to the File Placement table and use that path. If the content type doesn't clearly match any row, default to `documentation/`.
 
 **How to determine the active project:**
 1. Check which project context was loaded at session start
