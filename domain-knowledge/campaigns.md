@@ -372,7 +372,9 @@ How ASCH will identify Honki Set members per batch run is an open dependency (Op
 
 ### Creation
 
-Campaign configuration managed via admin/backend. Eligibility checked dynamically by `HonkiSetService`.
+Campaign is configured as a record in `mst_first_month_enrollment_discount_schedule` (ID referenced by `config('utm_sources.honki_set_campaign_id')` = 324 in MBTI_backend). Campaign period checking uses `CoachingPage::isHonkiSetCampaignPeriod()` and `AuthService::addHonkiSetCampaignIfActive()`.
+
+Banner assets managed via `mst_student_banner` (seeder: `InsertBannerForHonkiCPSeeder` in ls-database-migrations).
 
 ### Accounting Impact (ASCH Project)
 
@@ -399,9 +401,14 @@ Where N = what the existing ASC system already booked for that charge.
 ### Related Files
 
 **MBTI_backend:**
-- `src/app/Services/Student/Campaign/HonkiSetService.php` — eligibility waterfall
-- `src/app/Models/MstHonkiSet.php` — enrollment data model
+- `src/app/GraphQL/Queries/Pages/Student/CoachingPage.php` — `isHonkiSetCampaignPeriod()` method
+- `src/app/Services/Student/AuthService.php` — `addHonkiSetCampaignIfActive()`
+- `src/app/Services/CoachingSoloPlanBannerEligibilityService.php` — honki set period check
+- `src/config/utm_sources.php` — `honki_set_campaign_id = 324`
 - `src/config/bizmatescoaching.php` — coaching plan config (plan_id, prices)
+
+**ls-database-migrations:**
+- `database/seeders/Bizmates/InsertBannerForHonkiCPSeeder.php` — banner seeder for campaign
 
 **accounting_related_system_for_freee:**
 - ASCH subsystem (in design phase — not yet implemented)
