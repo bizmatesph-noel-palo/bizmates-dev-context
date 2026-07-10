@@ -1,7 +1,6 @@
 # Account Types (Contract Types)
 
-**Source:** `[MBTI] app/Models/TrnStudent.php` + `[Migrations] database/seeders/MstPartnerDepartmentTableSeeder.php`
-**Verified:** 2026-07-03 (code confirmed)
+**Last updated:** 2026-07-10
 
 ---
 

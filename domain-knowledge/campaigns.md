@@ -1,8 +1,6 @@
 # Campaigns Overview
 
-**Author:** Rashid Shamloo
-**Source:** Confluence
-**Verified:** 2026-07-03
+**Last updated:** 2026-07-10
 
 ---
 
@@ -301,6 +299,120 @@ Lesson tickets can be bought at a discounted price up to a certain limit (e.g., 
 
 ---
 
+## Honki Set (本気セット)
+
+**Status:** Campaign active since Jan 2026 (implemented by HCR project in MBTI_backend). Revenue proration (ASCH) in design phase within accounting system.
+
+### What It Is
+
+A **marketing bundle campaign** (not a product or plan) where students purchase a discounted combination of:
+- Online Lessons (Daily 1, Daily 2, or Monthly 15)
+- Bizmates Coaching (30-minute plan only)
+- Bizmates App (free companion — ¥0 to student)
+
+The campaign is **not a separate product** in the system. Students subscribe to each product individually; the campaign grants discounts and links them as a bundle for accounting purposes.
+
+### Target: Contract Type
+
+- B2C (`contract_type = 0`)
+- B2E (`contract_type = 2`)
+- B2E Partner (`contract_type = 2` with `department_id` in `mst_partner_department`)
+
+**Excluded:**
+- B2B (`contract_type = 1`)
+- Non-Japan (`country_id ≠ 86`)
+
+### Condition (Eligibility)
+
+- Student has **never taken Coaching 30-min** in the past and is not taking it now (a student who cancelled becomes eligible again).
+- During the campaign application period, the student must:
+  - (a) Sign up for Coaching 30-min plan, AND
+  - (b) Have or newly sign up for one of: Daily 1 / Daily 2 / Monthly 15
+- Returning students (REST): Lesson and Coaching must be applied for at the same time.
+
+**Eligible segments:**
+- New customers
+- Existing Lesson students who have not taken Coaching
+- Existing Coaching 15-min students (upgrading to 30-min)
+- Returning students (休会)
+
+**Important:** Coaching 15-min is NOT part of the bundle. Only Coaching 30-min qualifies.
+
+### Application Period
+
+The campaign runs quarterly. Known periods:
+- Jan 2026 (first round — no proration was applied)
+- Apr 2026 (second round — no proration was applied)
+- 2026/7/1 – 2026/7/26 (current round — proration system being built)
+
+### Benefit Period
+
+6 months from application date (5 renewals after the first month).
+
+### Benefits
+
+| # | Benefit | Condition | Lost if... |
+|---|---------|-----------|-----------|
+| 1 | Month 1: Coaching 50% off | Automatic for all Honki Set members | N/A |
+| 1b | Month 1: Lesson 50% off | Only for NEW Lesson contracts (existing Lesson students get Coaching discount only) | N/A |
+| 2 | App free for 6 months | List price ¥3,600/month allocated for accounting | Student cancels Coaching → App lost from following month |
+| 3 | Month 6: 50% off | Applies to plan active at month-6 payment date | Student cancels mid-way → permanently lost |
+
+### Discount Interaction Rules
+
+- **Loyal discount (5%/10%)** applies every month EXCEPT months 1 and 6, where only the 50% Honki discount applies (not stacked).
+- **First Month Campaign** discount (standalone): If a new student has both First Month Campaign AND Honki Month-1, only the 50% applies (not stacked). For accounting proration, the First Month discount is treated as a "non-Honki discount" (uses M as basis, not L).
+- **B2E discount**: Treated as "non-Honki discount" for proration basis.
+
+### Check: How to Verify
+
+Currently, Honki Set eligibility is determined at runtime through service logic in MBTI_backend (e.g., checking `MstFirstMonthEnrollmentDiscountSchedule` with a campaign ID config). There is no confirmed persisted eligibility table in production.
+
+How ASCH will identify Honki Set members per batch run is an open dependency (Open Item #11).
+
+### Creation
+
+Campaign configuration managed via admin/backend. Eligibility checked dynamically by `HonkiSetService`.
+
+### Accounting Impact (ASCH Project)
+
+The total amount paid by the student must be split (prorated) across all 3 products based on list prices for JSOC-compliant revenue recognition:
+
+```
+O(product) = ΣM × (basis(product) / Σbasis(all products))
+P(monthly) = O × (days_in_month / contract_days)
+Adjustment = P − N (sent to Freee as correction journal)
+```
+
+Where N = what the existing ASC system already booked for that charge.
+
+**The App carries ¥0 in `trn_charge` (student pays nothing) but must receive allocated revenue via proration.** This is the primary reason ASCH exists.
+
+### Database Tables
+
+| Table | Purpose | Status |
+|---|---|---|
+| `log_first_month_enrollment_discount_apply` | Detects First Month discount (affects proration basis) | Exists |
+| `log_loyal_benefits_charge` | Detects Loyal discount (affects proration basis) | Exists |
+| `trn_student_rest_history` | REST detection (Pattern 5) | Exists |
+
+### Related Files
+
+**MBTI_backend:**
+- `src/app/Services/Student/Campaign/HonkiSetService.php` — eligibility waterfall
+- `src/app/Models/MstHonkiSet.php` — enrollment data model
+- `src/config/bizmatescoaching.php` — coaching plan config (plan_id, prices)
+
+**accounting_related_system_for_freee:**
+- ASCH subsystem (in design phase — not yet implemented)
+
+### Related Projects
+
+- **HCR (Honki Customer Retention)** — the MBTI_backend feature that implements the campaign eligibility and frontend flow
+- **ASCH (ASC Honki Set)** — the accounting system extension for revenue proration (design phase)
+
+---
+
 ## Quick Reference: Campaign Database Tables
 
 | Campaign | Master Table | Transaction/Log Table |
@@ -312,4 +424,4 @@ Lesson tickets can be bought at a discounted price up to a certain limit (e.g., 
 | B2B2C | `mst_campaign` | N/A |
 | Focus Course | `mst_focus_course_campaign` | `trn_student_free_product_credits` |
 | Lesson Ticket | `mst_lesson_ticket_campaign` | N/A |
-| Honki Set | `mst_honki_set` | N/A (eligibility checked at runtime) |
+| Honki Set | TBD | TBD |
