@@ -335,6 +335,31 @@ class AschSumCalculationCollector
 }
 ```
 
+### 2.9 CSV/Zip/Email Integration — Zipan Precedent Pattern
+
+ASCH CSVs are included in the **same zip file and email** as existing ASC reports. The integration follows the proven Zipan pattern (already in production):
+
+**How it works:**
+1. ASCH provides a static `AschCsvUtil::addAschData(&$fileNameList)` method
+2. This is called in `SendJournalsDataLogic::createSendMailAttacheFile()` after the Zipan call
+3. A guard (`hasAschDataForMonth()`) returns early for months without Honki Set data — zero impact
+4. ASCH creates its own separate CSV files (does NOT append to existing CSVs like Zipan does)
+
+```php
+// SendJournalsDataLogic::createSendMailAttacheFile() — 1 line added
+ZipanUtil::addZipanData($targetYm, $targetStartDate, $targetEndDate, $fileNameList);
+AschCsvUtil::addAschData($targetYm, $fileNameList);  // ← ASCH hook (same pattern as Zipan)
+```
+
+**Why NOT a facade/builder refactor:**
+- The Zipan precedent is proven in production and requires only 1 line per pipeline
+- A builder refactor is optional cleanup (Phase 2, later) — not a prerequisite for ASCH
+- `$fileNameList` is a simple array with no hidden behavior; no abstraction needed yet
+
+**Safety:** Months without Honki Set campaigns produce byte-for-byte identical output to pre-ASCH behavior. See `RESEARCH-04-CSV-Zip-Email-Integration.md` for full safety analysis.
+
+**Files touched:** 2 existing files (1 line each) + new `AschCsvUtil.php` + config additions.
+
 ---
 
 ## 3. Patterns NOT Used (and Why)
