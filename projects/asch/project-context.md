@@ -151,7 +151,7 @@ Step 3 — Prorate:
 | 1 | Run management model — `run_id` vs `_pre`/final two-table | Dev |
 | 2 | App list price — ¥3,600 (requirement) vs ¥2,500 (`mst_product_price`) | Accounting |
 | 3 | Freee mapping for App — `product_type=100` not in `config/code.php` | Accounting |
-| 4 | Honki Set member identification — can we build on `mst_honki_set` + `HonkiSetService` waterfall? | Dev |
+| 4 | Honki Set member identification — how to reliably identify members per batch run? (Currently uses `mst_first_month_enrollment_discount_schedule` config ID, no dedicated table exists) | Dev |
 | 5 | Confirm Honki Set charges flow through existing ASC pipelines (precondition for adjustment approach) | Dev |
 | 6 | Retroactive correction for Jan/Apr 2026 — in scope? | Accounting |
 
