@@ -164,6 +164,8 @@ All pre-design research is in `technical-notes/research/ASCH/`. Key files:
 | File | What it is |
 |------|-----------|
 | `RESEARCH-02-specification-analysis.md` | **Start here.** Full spec analysis — most current synthesis |
+| `RESEARCH-03-Integration-Points-Analysis.md` | Code-level integration points, Pre/Final analysis, ASCM improvements |
+| `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV/zip/email pipeline research — validated integration approach |
 | `REF-ASCH-00-PRJ-Specification.md` | Kuroda-san's full specification |
 | `REF-ASCH-00-PRJ-Brief-Kuroda.md` | Kuroda-san's project brief |
 | `REF-ASCH-00-PATTERNS-Case1-Data.md` | Pattern 1 formula with Excel derivation |
