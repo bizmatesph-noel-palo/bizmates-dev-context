@@ -1,8 +1,12 @@
-# ASCH Pattern 8 — Case Data (from Kuroda-san's Excel)
+# ASCH Pattern 8-1 — Case Data (from Kuroda-san's Excel)
 
-**Source:** Kuroda-san's specification Excel v3
-**Pattern:** 8 — Cooling-off refund within 8 days
-**Scenario:** B2C new student, Lesson started before campaign, Coaching starts during campaign, cooling-off exercised within 8 days
+**Source:** Kuroda-san's specification Excel — updated 2026-07-15 (split into 8-1 and 8-2)
+**Pattern:** 8-1 — Cooling-off within the same month as payment
+**Scenario:** B2C new student, Lesson started before campaign, Coaching starts during campaign, cooling-off exercised within 8 days — ALL within the same accounting month
+
+## Update Log
+
+- **2026-07-15:** Kuroda-san split Pattern 8 into 8-1 and 8-2. Key rule: "If the payment and the cooling-off are completed in the same month, since the payment isn't prorated, the refund isn't also prorated."
 
 ## Key Characteristics
 
@@ -14,6 +18,16 @@
 - **Prorated refund for Lesson** (negative paid_price = -¥12,150 for 10/1 – 10/5 period)
 - App: ¥0 — no refund needed (was free)
 - Bundle effectively terminated on day 3
+
+## Refund Proration Rule (Clarified by Kuroda-san 2026-07-15)
+
+> "If the payment and the cooling-off are completed in the same month, since the payment isn't prorated, the refund isn't also prorated."
+
+This means:
+- The Coaching charge (10/3) and cooling-off (10/5) are in the **same month** (October)
+- The payment hasn't been prorated yet (proration happens at batch run, which is after the cancellation)
+- Therefore the refund is NOT prorated — it's recognized at face value
+- **This is the simpler case.** Pattern 8-2 handles cross-month cooling-off where proration IS applied.
 
 ## Business Rules (Cooling-Off)
 

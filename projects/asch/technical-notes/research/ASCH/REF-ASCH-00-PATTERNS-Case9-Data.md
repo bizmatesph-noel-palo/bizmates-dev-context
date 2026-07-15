@@ -1,8 +1,12 @@
 # ASCH Pattern 9 — Case Data (from Kuroda-san's Excel)
 
-**Source:** Kuroda-san's specification Excel v3
+**Source:** Kuroda-san's specification Excel — verified 2026-07-15 (no changes from previous version)
 **Pattern:** 9 — B2E with Loyal discount overlap
 **Scenario:** B2E new student, Lesson starts month-start, Coaching starts mid-month, B2E discount + Loyal discount interaction
+
+## Update Log
+
+- **2026-07-15:** Re-verified against Kuroda-san's updated spreadsheet. All values match — no changes needed.
 
 ## Key Characteristics
 

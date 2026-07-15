@@ -1,8 +1,12 @@
 # ASCH Pattern 7 — Case Data (from Kuroda-san's Excel)
 
-**Source:** Kuroda-san's specification Excel v3
+**Source:** Kuroda-san's specification Excel — updated 2026-07-15
 **Pattern:** 7 — B2E → B2B switch with refund mid-campaign
 **Scenario:** B2E student, Lesson started before campaign, contract type changes to B2B mid-campaign with prorated refund
+
+## Update Log
+
+- **2026-07-15:** Updated by Kuroda-san. Key clarification: "On the 6th month, the refund amount for changing contracts should be prorated since the based payment (= Daily 1 B2E lesson b/w 2/28~3/27) was already prorated." This confirms the refund proration rule applies here because the original payment was already prorated in a prior month.
 
 ## Key Characteristics
 
@@ -12,9 +16,18 @@
 - App starts with Coaching on 10/3
 - **B2E discount (5%)** applies throughout (non-Honki discount → basis = M)
 - **B2E → B2B switch on 3/20** — student moves to corporate-sponsored contract
-- **Prorated refund** issued for the remaining days of the B2E charge (3/20 – 3/27 = -¥3,664)
+- **Prorated refund IS prorated** because the original payment (2/28–3/27) was already prorated in a prior month
 - New B2B charge starts 3/20 at full price (no B2E discount)
-- **⚠️ #REF! errors in Excel** — some month-7 values broken in source spreadsheet
+- **⚠️ #REF! errors in Excel** for Coaching/App month-7 adjustment — needs clarification
+
+## Refund Proration Rule (Clarified by Kuroda-san 2026-07-15)
+
+> "The refund amount for changing contracts should be prorated since the based payment (= Daily 1 B2E lesson b/w 2/28~3/27) was already prorated."
+
+This means:
+- The Lesson charge for 2/28–3/27 was paid in a prior month and already allocated via proration
+- When the B2E→B2B switch happens on 3/20, the refund for the remaining days (3/20–3/27) must use the **same proration ratio** as the original payment
+- The Coaching and App refund rows follow the same principle
 
 ## Critical Business Rules
 
@@ -96,64 +109,64 @@
 
 ## Month 6 (2027/3) — B2E → B2B Switch on 3/20
 
-**Critical month:** Contract type changes mid-month. B2E Lesson charge is refunded for remaining days. New B2B charge starts.
+**Critical month:** Contract type changes mid-month. B2E Lesson charge is refunded for remaining days. New B2B charge starts. **Refund IS prorated** because the original payment was already prorated.
 
 | Product | Contract | Period in Month | Days | Discount | Paid Price | O | P | Notes |
 |---|---|---|---|---|---|---|---|---|
-| Lesson - Daily 1 B2E | 2/28 – 3/19 | 3/1 – 3/19 | 19/20(?) | 5% | 0(?) | 11,944 | 11,518 | B2E charge truncated at switch date |
-| **Lesson - Daily 1 B2B** | 3/20 – 4/19 | 3/20 – 3/31 | 12/31 | | 13,500 | 8,008 | 3,100 | New B2B charge — **B2B excluded from Honki Set** |
-| **Lesson - Daily 1 B2E REFUND** | 3/20 – 3/27 | 3/20 – 3/27 | 8/8 | | **-3,664** | -3,664 | -3,664 | Prorated refund for unused B2E days |
-| Coaching - 30 Min | 2/3 – 3/2 | 3/1 – 3/2 | 2/28 | | | 33,528 | 2,395 | |
-| Coaching - 30 Min | 3/3 – 4/2 | 3/3 – 3/31 | 29/31 | 50% | 18,000 | 21,356 | 19,978 | |
-| | | | | | | | **22,373** | 5,534 |
+| Lesson - Daily 1 B2E | 2/28 – 3/19 | 3/1 – 3/19 | 19/20 | 5% | 0 | 11,944 | 11,518 | B2E charge truncated at switch date |
+| Lesson - Daily 1 B2B | 3/20 – 4/19 | 3/20 – 3/31 | 12/31 | | 13,500 | 5,226 | 2,023 | New B2B charge |
+| Lesson - Daily 1 B2E REFUND | 3/20 – 3/27 | 3/20 – 3/27 | 8/8 | | -3,664 | -932 | -932 | **Prorated refund** — same ratio as original |
+| Coaching - 30 Min REFUND | 3/20 – 3/27 | 3/20 – 3/27 | | | | -2,484 | -2,484 | Prorated refund |
+| App REFUND | 3/20 – 3/27 | 3/20 – 3/27 | | | | -248 | -248 | Prorated refund |
+| Coaching - 30 Min | 2/3 – 3/2 | 3/1 – 3/2 | 2/28 | | 0 | 33,528 | 2,395 | Carry-over from prior charge |
+| Coaching - 30 Min | 3/3 – 4/2 | 3/3 – 3/31 | 29/31 | 50% | 18,000 | 16,364 | 15,308 | Month-6 discount |
 | App | 2/3 – 3/2 | 3/1 – 3/2 | 2/28 | | 0 | 3,353 | 239 | |
-| App | 3/3 – 4/2 | 3/3 – 3/31 | 29/31 | | 0 | 2,136 | 1,998 | |
-| | | | | | | | **2,237** | 2,237 |
-| **Totals** | | | | | 27,836 | | 35,564 | |
+| App | 3/3 – 4/2 | 3/3 – 3/31 | 29/31 | | 0 | 1,636 | 1,531 | |
+| **Totals** | | | | | 27,836 | | 29,349 | |
 
-**⚠️ Notes on Month 6:**
-- B2E Lesson charge is truncated when B2B starts (contract shortened to end on 3/19)
-- Prorated refund = negative M (¥-3,664) for the 8 days remaining on the old B2E contract
-- New B2B Lesson charge starts 3/20 — but B2B is excluded from Honki Set proration
-- Coaching still gets month-6 50% discount (Coaching isn't affected by Lesson's contract type change)
-- **#REF! errors in original Excel** for some adjustment calculations — data may need verification
+**Key observations:**
+- Lesson B2E REFUND -¥3,664 → O = -¥932 (prorated using same ratio as original allocation)
+- Coaching REFUND → -¥2,484 (prorated)
+- App REFUND → -¥248 (prorated)
+- The refund amounts are prorated because the **original payment (2/28–3/27) was already prorated in month 5**
 
 ## Month 7 (2027/4) — Post-Switch
 
 | Product | Contract | Period in Month | Days | Discount | Paid Price | O | P | Adj |
 |---|---|---|---|---|---|---|---|---|
-| Lesson - Daily 1 B2B | 3/20 – 4/19 | 4/1 – 4/19 | 19/31 | | | 8,008 | 4,908 | -3,366 |
-| Coaching - 30 Min | 3/3 – 4/2 | 4/1 – 4/2 | 2/31 | 50% | | 21,356 | 1,378 | #REF! |
-| App | 3/3 – 4/2 | 4/1 – 4/2 | 2/31 | | 0 | 2,136 | 138 | #REF! |
-| **Totals** | | | | | 8,274 | | 6,424 | |
+| Lesson - Daily 1 B2B | 3/20 – 4/19 | 4/1 – 4/19 | 19/31 | | 0 | 5,226 | 3,203 | -5,071 |
+| Coaching - 30 Min | 3/3 – 4/2 | 4/1 – 4/2 | 2/31 | 50% | 0 | 16,364 | 1,056 | #REF! |
+| App | 3/3 – 4/2 | 4/1 – 4/2 | 2/31 | | 0 | 1,636 | 106 | #REF! |
+| **Totals** | | | | | 0 | | 4,364 | |
 
 **⚠️ #REF! errors:** The Excel has broken references for Coaching and App adjustments in month 7. These need verification with Kuroda-san.
 
 ## Validation
 
-- Grand total Paid Price: ¥266,786 (Note: differs from Patterns 2-6 due to B2E pricing + refund)
-- Grand total P: ¥266,786 (reported as matching, but #REF! errors suggest verification needed)
-- Source shows: 266,786 | 250,686 | 537,236 | 266,786 — the 250,686 column may be gross_amount
+- Grand total Paid Price: ¥266,786
+- Grand total P: reported as ¥258,512 (due to #REF! errors, not fully verified)
+- Source shows: 266,786 | 250,686 | 520,687 | 258,512
+- **Note:** #REF! errors in month 7 prevent full validation
 
 ## Implications for Design (Pattern 7 specific)
 
-1. **Contract type change mid-enrollment** — `asch_enrollment_contract_periods` must record: B2E from start, B2B from 3/20. The period boundary affects which products remain in the bundle.
+1. **Contract type change mid-enrollment** — `asch_enrollment_contract_periods` must record: B2E from start, B2B from 3/20.
 
-2. **B2B exclusion is per-product** — when Lesson switches to B2B, only Lesson exits the bundle. Coaching and App may continue (they're still paid individually). But this needs confirmation — the data shows Coaching continuing with 50% month-6 discount even after Lesson switches to B2B.
+2. **Refund proration rule (confirmed 2026-07-15):** The B2E refund IS prorated because the original payment was already prorated in a prior month. The refund uses the same ratio as the original allocation.
 
-3. **Prorated refund = negative M** — the refund charge creates a negative M_Value row. This is similar to Pattern 8 (cooling-off) but triggered by contract type change.
+3. **Prorated refund = negative M with allocated O** — the refund charge creates a negative O value using the same ratio as the original payment's allocation. This differs from Case 8-1 where refund is NOT prorated.
 
-4. **Basis for refund row** — the refund uses M as basis (since B2E discount is non-Honki). O for the refund = the refund amount directly (negative).
+4. **B2B charge after switch** — B2B Lesson charge starts 3/20. Its O value (5,226) suggests it still participates in allocation but the post-switch handling needs confirmation re: Honki Set eligibility.
 
-5. **New B2B charge gets its own O** — the B2B Lesson charge (¥13,500, no discount) starts a new allocation. But since B2B is excluded from Honki Set, this O = N = paid_price (no adjustment needed? Or does the B2B charge still participate in the bundle allocation?). **Needs clarification.**
+5. **Coaching continues after Lesson switches** — Coaching still gets month-6 50% discount. The B2E→B2B switch only affects Lesson's contract type.
 
-6. **Month-6 timing** — Coaching still gets month-6 discount (3/3 – 4/2 charge). The B2E→B2B switch doesn't affect Coaching's month-6 eligibility. Only Lesson is affected by the contract type change.
+6. **Month-6 Coaching O value changes** — Notice O = 16,364 (not 21,356 from earlier months) because month-6 uses the 50% discount list price for the Honki Set discount.
 
-7. **#REF! errors need resolution** — Month 7 adjustments for Coaching and App are broken in the Excel. This is an Open Item for Kuroda-san.
+7. **#REF! errors still need resolution** — Month 7 adjustments for Coaching and App are broken.
 
 ## Open Questions for Kuroda-san
 
-1. After B2E→B2B switch, does the B2B Lesson charge still participate in the bundle allocation? Or does it exit completely (P = N, adjustment = 0)?
-2. Does App continue after the switch? (Project-context says "App possibly excluded after switch")
+1. ~~After B2E→B2B switch, does the B2B Lesson charge still participate in the bundle allocation?~~ Partially answered: the data shows O = 5,226 for B2B Lesson, suggesting it does participate. But the P value (-5,071 adjustment) needs clarification.
+2. Does App continue after the switch? The data shows App has O values after the switch (1,636), suggesting yes.
 3. The #REF! errors in month 7 — what should the correct adjustment values be?
-4. Is the B2E refund (¥-3,664) included in ΣM for the proration group that month? Or handled separately?
+4. ~~Is the B2E refund prorated?~~ **ANSWERED (2026-07-15): YES** — because the original payment was already prorated.
