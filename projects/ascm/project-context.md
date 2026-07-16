@@ -14,8 +14,7 @@
 | `bizmates.jp` | **Admin Portal (Legacy).** FuelPHP monolith — handles student enrollment, B2B/B2E changes, refund processing, and the charge batch. |
 | `MBTI_backend` | **Student Portal Backend.** Laravel + GraphQL API serving MyBizmates (Bizmates and Zipan). Students buy plans, book lessons, request refunds. |
 | `ls-database-migrations` | **Database Migrations (standalone).** Source of truth for all table structures. |
-| `bizmates-dev-context/projects/ascm` | **Dev context.** Test cases, reports, documentation. |
-| `agentic-notes/projects/ascm` | **Working directory.** Test cases, reports, documentation. |
+| `bizmates-dev-context/projects/ascm` | **Dev workspace.** Test cases, reports, documentation. |
 
 ---
 
