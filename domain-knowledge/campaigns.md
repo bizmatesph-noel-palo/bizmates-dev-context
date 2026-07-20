@@ -1,6 +1,6 @@
 # Campaigns Overview
 
-**Last updated:** 2026-07-10
+**Last updated:** 2026-07-16
 
 ---
 
@@ -324,17 +324,28 @@ The campaign is **not a separate product** in the system. Students subscribe to 
 
 ### Condition (Eligibility)
 
-- Student has **never taken Coaching 30-min** in the past and is not taking it now (a student who cancelled becomes eligible again).
+- Student has **never taken Coaching 30-min** in the past (any past Coaching experience = NOT eligible; cancellation does NOT reset eligibility).
 - During the campaign application period, the student must:
   - (a) Sign up for Coaching 30-min plan, AND
-  - (b) Have or newly sign up for one of: Daily 1 / Daily 2 / Monthly 15
-- Returning students (REST): Lesson and Coaching must be applied for at the same time.
+  - (b) Have or newly sign up for one of the eligible Lesson plans
+- Trial and REST students: eligible ONLY through "Bizmates & BCO Enroll/ReEnroll" simultaneous application (Lesson + Coaching at same time). Lesson-only or Coaching-only never qualifies.
+
+**Eligible Lesson plans:**
+- Daily 1 / Daily 2 / Daily 3 / Daily 4 / Monthly 15
+- Legacy daily plans: Daily 25 / 50 / 75 / 100 minutes
 
 **Eligible segments:**
-- New customers
-- Existing Lesson students who have not taken Coaching
+- New customers (B2C)
+- Existing Lesson students who have never taken Coaching
 - Existing Coaching 15-min students (upgrading to 30-min)
-- Returning students (休会)
+- Returning students (REST — simultaneous application only)
+- B2E students
+
+**Excluded:**
+- B2B (contract_type = 1)
+- Overseas (country_id ≠ 86)
+- Partner-company students (contract_type = 2 with department_id in {21, 22, 23})
+- Students with ANY past Coaching 30-min history
 
 **Important:** Coaching 15-min is NOT part of the bundle. Only Coaching 30-min qualifies.
 
@@ -355,20 +366,26 @@ The campaign runs quarterly. Known periods:
 |---|---------|-----------|-----------|
 | 1 | Month 1: Coaching 50% off | Automatic for all Honki Set members | N/A |
 | 1b | Month 1: Lesson 50% off | Only for NEW Lesson contracts (existing Lesson students get Coaching discount only) | N/A |
-| 2 | App free for 6 months | List price ¥3,600/month allocated for accounting | Student cancels Coaching → App lost from following month |
+| 2 | App free for 6 months | List price ¥3,980/month allocated for accounting | Student cancels Coaching → App lost from following month |
 | 3 | Month 6: 50% off | Applies to plan active at month-6 payment date | Student cancels mid-way → permanently lost |
 
 ### Discount Interaction Rules
 
-- **Loyal discount (5%/10%)** applies every month EXCEPT months 1 and 6, where only the 50% Honki discount applies (not stacked).
-- **First Month Campaign** discount (standalone): If a new student has both First Month Campaign AND Honki Month-1, only the 50% applies (not stacked). For accounting proration, the First Month discount is treated as a "non-Honki discount" (uses M as basis, not L).
-- **B2E discount**: Treated as "non-Honki discount" for proration basis.
+- **Honki Set discounts** (Coaching month-1 50%, month-6 50% for Lesson/Coaching): do NOT affect the proration basis → use List Price (L). The discount is reflected in ΣM being distributed, not in the ratio.
+- **All other discounts** (First Month B2C/B2E, Okaeri/REST campaign, Loyal benefits, B2E campaign): the product's paid amount already includes the discount → use Paid Amount (M).
+- **Month-1 overlap**: Both Lesson and Coaching appear 50% off, but only the Coaching discount is Honki Set. The Lesson month-1 discount is the standalone First Month campaign (non-Honki → uses M).
+- **Month-6 trigger**: Coaching reaching its own month 6 (C6). Once C6 fulfilled, 50% applies to the first Lesson payment arriving after that point.
+- **Priority**: Month-1/6 Honki Set 50% overrides B2E 5% and Loyal 5%/10% when they overlap (higher discount wins).
 
 ### Check: How to Verify
 
-Currently, Honki Set eligibility is determined at runtime through service logic in MBTI_backend (e.g., checking `MstFirstMonthEnrollmentDiscountSchedule` with a campaign ID config). There is no confirmed persisted eligibility table in production.
+**Primary source (planned):** CDB project's `trn_campaign_discount_eligibility` table — one row per student × campaign × product, carrying `initial_charge_id`, `discount_flag`, `discount_eligibility_date`. ASCH snapshots these at batch run start.
 
-How ASCH will identify Honki Set members per batch run is an open dependency (Open Item #11).
+**Current state (runtime):** Honki Set campaign period is identified by config ID (`utm_sources.honki_set_campaign_id` = 324) pointing to `mst_first_month_enrollment_discount_schedule`. No dedicated persisted eligibility table exists yet.
+
+**Fallback:** If CDB not ready by 2026/10/1, ASCH falls back to self-contained cohort detection using charge/product data directly.
+
+How ASCH will identify Honki Set members per batch run depends on CDB readiness (Open Item #7).
 
 ### Creation
 
@@ -386,9 +403,12 @@ P(monthly) = O × (days_in_month / contract_days)
 Adjustment = P − N (sent to Freee as correction journal)
 ```
 
-Where N = what the existing ASC system already booked for that charge.
+Where:
+- N = what the existing ASC system already booked for that charge
+- basis = L (List Price) for products with Honki Set discounts
+- basis = M (Paid Amount) for products with non-Honki discounts
 
-**The App carries ¥0 in `trn_charge` (student pays nothing) but must receive allocated revenue via proration.** This is the primary reason ASCH exists.
+**App list price:** ¥3,980 tax-included (from `mst_new_price_listing`). The App carries ¥0 in `trn_charge` (student pays nothing) but must receive allocated revenue via proration. 0-yen App charges exist in the system.
 
 ### Database Tables
 
@@ -417,6 +437,8 @@ Where N = what the existing ASC system already booked for that charge.
 
 - **HCR (Honki Customer Retention)** — the MBTI_backend feature that implements the campaign eligibility and frontend flow
 - **ASCH (ASC Honki Set)** — the accounting system extension for revenue proration (design phase)
+- **CDB (Campaign Discount Batch)** — daily batch that persists eligibility to `trn_campaign_discount_eligibility`
+- **CAP (Coaching App Plan)** — bundles App with Coaching plans permanently (low overlap with ASCH)
 
 ---
 
@@ -431,4 +453,4 @@ Where N = what the existing ASC system already booked for that charge.
 | B2B2C | `mst_campaign` | N/A |
 | Focus Course | `mst_focus_course_campaign` | `trn_student_free_product_credits` |
 | Lesson Ticket | `mst_lesson_ticket_campaign` | N/A |
-| Honki Set | TBD | TBD |
+| Honki Set | TBD | `trn_campaign_discount_eligibility` (CDB — planned) |
