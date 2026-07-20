@@ -113,22 +113,23 @@ Step 3 — Prorate:
 
 ---
 
-## New Database Tables (10)
+## New Database Tables (9)
 
 | # | Table | Role |
 |---|-------|------|
 | 1 | `asch_calculation_runs` | Run management (preview/final/revision) |
-| 2 | `asch_app_price_master` | App list price (⚠️ ¥3,600 vs ¥2,500 discrepancy — unresolved) |
-| 3 | `asch_source_documents` | Input data snapshot for audit (JSON, deduped by hash) |
-| 4 | `asch_bundle_enrollments` | Honki Set member registry |
-| 5 | `asch_enrollment_contract_periods` | Contract type history per enrollment |
-| 6 | `asch_bundle_components` | Products per enrollment (revisions for plan changes) |
-| 7 | `asch_proration_groups` | Grouping unit for ΣO = ΣM validation |
-| 8 | `asch_monthly_prorations` | **Core result table** (one row = one Excel sheet row) |
-| 9 | `asch_sum_calculation` | Freee aggregation (adjustment amounts) |
-| 10 | `asch_sum_calculation_history` | Trace: proration → summary linkage |
+| 2 | `asch_source_documents` | Input data snapshot for audit (JSON, deduped by hash) |
+| 3 | `asch_bundle_enrollments` | Honki Set member registry |
+| 4 | `asch_enrollment_contract_periods` | Contract type history per enrollment |
+| 5 | `asch_bundle_components` | Products per enrollment (revisions for plan changes) |
+| 6 | `asch_proration_groups` | Grouping unit for ΣO = ΣM validation |
+| 7 | `asch_monthly_prorations` | **Core result table** (one row = one Excel sheet row) |
+| 8 | `asch_sum_calculation` | Freee aggregation (adjustment amounts) |
+| 9 | `asch_sum_calculation_history` | Trace: proration → summary linkage |
 
-**App product:** `mst_product` `product_id = 10012`, `product_type = 100`. Does NOT appear in `trn_charge` (student pays ¥0). ASCH synthesizes App rows with N=0.
+**Removed:** `asch_app_price_master` — App list price ¥3,980 (tax-incl) now read from `mst_new_price_listing`.
+
+**App product:** `mst_product` `product_id = 10012`, `product_type = 100`. 0-yen App charges exist in `trn_charge`.
 
 ---
 
@@ -149,11 +150,12 @@ Step 3 — Prorate:
 | # | Item | Owner |
 |---|------|-------|
 | 1 | Run management model — `run_id` vs `_pre`/final two-table | Dev |
-| 2 | App list price — ¥3,600 (requirement) vs ¥2,500 (`mst_product_price`) | Accounting |
-| 3 | Freee mapping for App — `product_type=100` not in `config/code.php` | Accounting |
-| 4 | Honki Set member identification — how to reliably identify members per batch run? (Currently uses `mst_first_month_enrollment_discount_schedule` config ID, no dedicated table exists) | Dev |
-| 5 | Confirm Honki Set charges flow through existing ASC pipelines (precondition for adjustment approach) | Dev |
-| 6 | Retroactive correction for Jan/Apr 2026 — in scope? | Accounting |
+| 2 | N source for preview runs (log_*_pre vs confirmed; default: preview→_pre, final→confirmed) | Dev |
+| 3 | Verify 0-yen App charges in existing ASC output (N=0 rows for product_id=10012; Freee behavior for 0-yen journals) | Dev |
+| 4 | MySQL version of target DB (json type / utf8mb4 assumptions) | Dev |
+| 5 | Tax handling of App list price (¥3,980 tax-incl → ¥3,618.18 tax-excl; rounding must match existing ASC) | Dev / Accounting |
+| 6 | Retroactive correction for Jan/Apr 2026 — in scope? (default: out of scope) | Accounting |
+| 7 | CDB prerequisites: production rollout + July backfill before 10/1; change-log guarantees; App-row flag; month-6 trigger date alignment | CDB team (Wu-san) |
 
 ---
 
@@ -163,10 +165,13 @@ All pre-design research is in `technical-notes/research/ASCH/`. Key files:
 
 | File | What it is |
 |------|-----------|
-| `RESEARCH-02-specification-analysis.md` | **Start here.** Full spec analysis — most current synthesis |
+| `RESEARCH-02-specification-analysis.md` | Full spec analysis — most current synthesis |
 | `RESEARCH-03-Integration-Points-Analysis.md` | Code-level integration points, Pre/Final analysis, ASCM improvements |
 | `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV/zip/email pipeline research — validated integration approach |
-| `REF-ASCH-00-PRJ-Specification.md` | Kuroda-san's full specification |
+| `REF-ASCH-00-PRJ-Specification.md` | Kuroda-san's full specification (original) |
+| `REF-ASCH-02-Requirements-Update-20260716.md` | **Requirements update — supersedes parts of original spec** |
+| `REF-ASCH-03-DB-Table-Design-Draft.md` | **DB design dual-option (run_id vs _pre/final) for estimation** |
+| `REF-CAP-00-Coaching-App-Plan-Overview.md` | CAP project reference — parallel project impact assessment |
 | `REF-ASCH-00-PRJ-Brief-Kuroda.md` | Kuroda-san's project brief |
 | `REF-ASCH-00-PATTERNS-Case1-Data.md` | Pattern 1 formula with Excel derivation |
 | `RESEARCH-01-Initial-Research-Analysis.md` | Initial research (pre-spec) |
@@ -192,11 +197,20 @@ All pre-design research is in `technical-notes/research/ASCH/`. Key files:
 
 ---
 
+## Schedule
+
+**First production run: 2026/10/1** (hard deadline — quarterly closing for Jul–Sep fiscal quarter).  
+Regular cadence: preview on 1st, final + Freee on 3rd (same as ASC).  
+Parallel projects: CAP and CDB running concurrently — need status sync.
+
+---
+
 ## Status
 
 | Item | Status |
 |------|--------|
-| Research | ✅ Complete — full spec received from Kuroda-san |
-| Design | 🔲 Not started — pending open items resolution |
+| Research | ✅ Complete |
+| Requirements update (Kuroda-san 2026-07-16) | ✅ Received — major decisions made |
+| Design | 🔲 Not started — pending remaining open items |
 | Implementation | 🔲 Not started |
 | JIRA project | 🔲 TBA — project code ASCH not yet created |
