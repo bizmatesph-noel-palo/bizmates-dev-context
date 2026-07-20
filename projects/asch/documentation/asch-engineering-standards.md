@@ -480,10 +480,12 @@ ASCH is a **new subsystem** that:
 - Reads from existing ASC output tables (read-only)
 - Has its own `asch_*` tables, services, and commands
 - Shares config infrastructure (`config/code.php`, `mst_rule_for_journals`, `mst_code_change`)
-- Reuses the Freee API client pattern (but NOT the `SendJournalsDataLogic` class directly)
+- Sends **T1 revenue journals only** (no T2 advance payment, no T3 wash) — simpler than `SendJournalsDataLogic`
+- Uses `decimal(14,4)` for O values, `decimal(12,2)` for N/P/adjustment, `int` for M/L
 
 ASCH does NOT:
 - Modify existing ASC commands or logic
 - Write to existing `log_*` tables
 - Inherit from existing Logic classes
 - Share transaction boundaries with existing commands
+- Send T2 or T3 journals (adjustment-only approach eliminates the need)
