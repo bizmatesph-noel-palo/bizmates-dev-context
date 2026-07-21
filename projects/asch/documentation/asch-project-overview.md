@@ -23,8 +23,8 @@
 | Repository | Purpose | Branch Strategy |
 |------------|---------|-----------------|
 | `accounting_related_system_for_freee` | Laravel batch system — ASCH commands, logic, models, CSV generation | Feature branches → `feature/ASCH/ASCH-master` → main |
-| `ls-database-migrations` | Schema source of truth — all 10 ASCH table migrations | Feature branches → `feature/ASCH/ASCH-master` → main |
-| `MBTI_backend` | Source of Honki Set data (read-only reference) — `mst_honki_set`, eligibility logic | N/A (read-only reference) |
+| `ls-database-migrations` | Schema source of truth — ASCH table migrations (9 tables, Option A) or (12–13 tables, Option B) | Feature branches → `feature/ASCH/ASCH-master` → main |
+| `MBTI_backend` | Source of Honki Set data (read-only reference) — CDB eligibility table, campaign config | N/A (read-only reference) |
 | `bizmates.jp` | Admin portal — upstream charge writer (read-only reference) | N/A (read-only reference) |
 
 ## Technical Architecture
@@ -68,12 +68,12 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 | Component | Description |
 |-----------|-------------|
-| Schema (10 tables) | `asch_*` tables for run management, enrollments, components, prorations, summaries |
-| Honki Set Eligibility | Service to identify eligible Honki Set members from `mst_honki_set` + student data |
+| Schema (9 tables) | `asch_*` tables for run management, enrollments, components, prorations, summaries. App price from `mst_new_price_listing` (no dedicated master table). |
+| Honki Set Eligibility | Service to identify eligible members from CDB table (`trn_campaign_discount_eligibility`) with fallback to self-detection |
 | Proration Calculation (Pattern 1) | O allocation + P proration for simultaneous start at month-start |
 | N-Value Reading & Adjustment | Read existing daily/monthly rate output, calculate P − N |
-| Freee Journal Submission | Submit aggregated adjustment journals to Freee API via existing patterns |
-| CSV Report Generation | `AschComponentDetail` (detail) + `AschCalculationSummary` (Freee-level) |
+| Freee Journal Submission | T1 revenue journals only (no T2/T3). Aggregated adjustment journals to Freee API. |
+| CSV Report Generation | `AschComponentDetail` (detail) + `AschCalculationSummary` (Freee-level). Integrated into existing zip/email pipeline via Zipan-precedent pattern. |
 
 #### Phase 2 — Pattern Extensions
 
@@ -98,24 +98,25 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 | Component | Status | Notes |
 |-----------|--------|-------|
-| Research & Specification | 🔄 In Progress | Full spec received from Kuroda-san |
-| Project Scaffolding | 🔄 In Progress | Steering files, spec folders, branch created |
+| Research & Specification | ✅ Complete | Full spec + requirements update (2026-07-16) received |
+| Project Scaffolding | ✅ Complete | Steering files, spec folders, engineering standards, research docs |
+| Development Timeline Estimate | ✅ Complete | 9.5 weeks (either option). See `asch-development-timeline-estimate.md` |
 | **Phase 1 — Core Engine** | | |
-| Spec 01: Foundation (schema, commands, models) | 🔲 Not Started | Requirements defined |
-| Spec 02: Honki Set Eligibility (member identification) | 🔲 Not Started | Requirements defined |
-| Spec 03: Pattern 1 Calculation (core O/P engine) | 🔲 Not Started | Requirements defined |
-| Spec 04: Freee Journal Adjustment (N-value reading, P−N, Freee submission) | 🔲 Not Started | Requirements defined |
-| Spec 05: CSV Report Generation (detail + summary reports) | 🔲 Not Started | Requirements defined |
+| Spec 01: Foundation (schema, commands, models) | 🔲 Blocked on H-9 | Requirements defined. Waiting for run model decision. |
+| Spec 02: Honki Set Eligibility (member identification) | 🔲 Not Started | Requirements defined. CDB integration confirmed. |
+| Spec 03: Pattern 1 Calculation (core O/P engine) | 🔲 Not Started | Requirements defined. All business rules decided. |
+| Spec 04: Freee Journal Adjustment (N-value reading, P−N, T1 journals) | 🔲 Not Started | Requirements defined. T1-only confirmed. |
+| Spec 05: CSV Report Generation (detail + summary, zip/email integration) | 🔲 Not Started | Requirements defined. Integration validated (RESEARCH-04). |
 | **Phase 2 — Pattern Extensions** | | |
-| Spec 06: Patterns 2+3+9 (cross-month splitting, discount priority) | 🔲 Not Started | Requirements not yet detailed |
-| Spec 07: Patterns 4+6 (plan changes, I/J switching) | 🔲 Not Started | Requirements not yet detailed |
-| Spec 08: Patterns 5+7 (enrollment termination, negative M) | 🔲 Not Started | Requirements not yet detailed |
-| Spec 09: Pattern 8 (cooling-off) | 🔲 Not Started | Requirements not yet detailed |
+| Spec 06: Patterns 2+3+9 (cross-month splitting, discount priority) | 🔲 Not Started | Pattern data updated (2026-07-15) |
+| Spec 07: Patterns 4+6 (plan changes, I/J switching) | 🔲 Not Started | Pattern data updated |
+| Spec 08: Patterns 5+7 (enrollment termination, negative M) | 🔲 Not Started | Refund proration rule confirmed |
+| Spec 09: Pattern 8 (cooling-off — split into 8-1 and 8-2) | 🔲 Not Started | Cross-month rule confirmed (2026-07-15) |
 | **Deployment** | | |
-| Add ASCH commands to `pre.sh` / `send.sh` cron scripts | 🔲 Not Started | After existing monthly rate command |
+| Add ASCH commands to batch schedule (after existing ASC) | 🔲 Not Started | |
 | QA Testing | 🔲 Not Started | |
 | DEV04 Deployment | 🔲 Not Started | |
-| Production Release | 🔲 Not Started | |
+| Production Release | 🔲 Not Started | Target: 2026/10/1 |
 
 ## Key Business Rules
 
@@ -124,12 +125,16 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 | **Honki Set definition** | Online Lesson + Bizmates Coaching 30分 + Bizmates App purchased during a campaign period |
 | **Campaign period (current)** | 2026/7/1 – 2026/7/26 (application window). Repeats quarterly. |
 | **Benefit period** | 6 months from application date |
-| **Products in bundle** | Lesson (Daily 1, Daily 2, or Monthly 15) + Coaching (30-min only) + App (free companion) |
-| **App treatment** | ¥0 to student, but carries allocated revenue via proration. Does not appear in `trn_charge`. |
-| **Exclusions** | B2B students (contract_type=1), non-Japan students (country_id≠86) |
+| **Products in bundle** | Lesson (Daily 1–4, Monthly 15, legacy plans) + Coaching (30-min only) + App (free companion) |
+| **App treatment** | ¥0 to student, but carries allocated revenue (¥3,980 tax-incl list price from `mst_new_price_listing`). 0-yen App charges exist in `trn_charge`. |
+| **Exclusions** | B2B (contract_type=1), non-Japan (country_id≠86), partner-company (dept_id in {21,22,23}), any past Coaching 30-min history |
+| **Proration basis rule** | Honki Set discounts → use L (list price). All other discounts → use M (paid amount). |
+| **Month-6 trigger** | Coaching reaching its own month 6 (C6). Lesson discount fires on first payment after C6. |
+| **Freee journals** | T1 only (revenue recognition). No T2 (advance payment) or T3 (wash). |
 | **O carry-over** | Once calculated, O is not recalculated in subsequent months |
 | **Validation invariant** | ΣO = ΣM must always hold within a proration group |
 | **Lifetime invariant** | ΣP = O over the full charge lifetime per product |
+| **Refund rule** | If original payment was prorated → refund is prorated (same ratio). If not → refund booked directly. |
 
 ## 9 Calculation Patterns
 
@@ -149,13 +154,15 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 | # | Item | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | Run management model — `run_id` vs `_pre`/final two-table pattern | Dev | 🔲 Unresolved | Awaiting dev team opinion |
-| 2 | App list price — ¥3,600 (requirement) vs ¥2,500 (`mst_product_price`) | Accounting | 🔄 Decided, awaiting confirmation | Use ¥3,600 via `asch_app_price_master` until final confirmation |
-| 3 | Freee mapping for App — `product_type=100` not in `config/code.php` | Accounting | 🔲 Unresolved | Accounting needs to decide the Freee item/account mapping |
-| 4 | Honki Set member identification — build on `mst_honki_set` + `HonkiSetService` waterfall? | Dev | 🔲 Unresolved | Highest-priority dev investigation |
-| 5 | Confirm Honki Set charges flow through existing pipelines (precondition for adjustment approach) | Dev | 🔲 Unresolved | Must verify before implementation begins |
-| 6 | Retroactive correction for Jan/Apr 2026 | Accounting | ✅ Decided | Forward-looking by default. Revision run can handle later if needed. |
-| 7 | DDL location — `document/sql` vs `ls-database-migrations` | Dev | ✅ Resolved | Migrations go to `ls-database-migrations` |
+| 1 | Run management model — `run_id` (Option A, 9 tables) vs `_pre`/final (Option B, 12–13 tables) | Dev | 🔲 Pending estimate | Dev team estimating both; decision depends on this + H-19 |
+| 2 | N source for preview runs (_pre vs confirmed tables) | Dev | � Open | Default: preview→_pre, final→confirmed. Auto-resolved in Option B. |
+| 3 | Verify 0-yen App charges in existing ASC output | Dev | ✅ Confirmed | product_type=100, N=0 rows exist on dev04 |
+| 4 | Freee mapping for App — `product_type=100` | Dev / Accounting | � Partially resolved | mst_rule_for_journals has per-contract-type rows on dev04 |
+| 5 | Tax handling of App list price (¥3,980 tax-incl → tax-excl) | Dev / Accounting | 🔲 Open | Rounding must match existing ASC |
+| 6 | Retroactive correction for Jan/Apr 2026 | Accounting | ✅ Decided | Jan: out of scope. Apr: separate decision (H-19) |
+| 7 | CDB prerequisites (production rollout + July backfill before 10/1) | CDB team (Wu-san) | 🔲 Open | Fallback: self-detection via 3 cohort routes |
+| 8 | MySQL version (json/utf8mb4 support) | Dev | 🔲 Open (minor) | |
+| 9 | April 2026 cohort handling (H-19) | Accounting | 🔲 Open | Background: April proration reverted, Freee manually adjusted |
 
 ## Documentation
 
@@ -173,17 +180,21 @@ All spec files are maintained in the `accounting_related_system_for_freee` repos
 
 | Milestone | Target | Status |
 |-----------|--------|--------|
-| Research & Specification | June 2026 | 🔄 In Progress |
-| Open Items Resolution | July 2026 | 🔄 In Progress |
-| **Phase 1 — Core Engine** | | |
-| Spec 01: Foundation | TBD | 🔲 Pending |
-| Spec 02: Honki Set Eligibility | TBD | 🔲 Pending |
-| Spec 03: Pattern 1 Calculation | TBD | 🔲 Pending |
-| Spec 04: Freee Journal Adjustment | TBD | 🔲 Pending |
-| Spec 05: CSV Report Generation | TBD | 🔲 Pending |
-| **Phase 2 — Pattern Extensions** | | |
-| Specs 06-09: Patterns 2-9 (4 grouped specs) | TBD | 🔲 Pending |
-| **Deployment** | | |
-| QA Testing | TBD | 🔲 Pending |
-| DEV04 Deployment | TBD | 🔲 Pending |
-| Production Release | TBD | 🔲 Pending |
+| Research & Specification | July 2026 | ✅ Complete |
+| Requirements Update (Kuroda-san) | 2026-07-16 | ✅ Received |
+| Development Timeline Estimate | 2026-07-20 | ✅ Complete |
+| H-9 Decision (run model) | ASAP (blocks Week 1) | 🔲 Pending |
+| **Phase 1 — Core Engine** | ~8.5 weeks from start | |
+| Spec 01: Foundation | Weeks 1–2 | 🔲 Pending H-9 |
+| Spec 02: Honki Set Eligibility | Week 3 | 🔲 Pending |
+| Spec 03: Pattern 1 Calculation | Weeks 3–4 | 🔲 Pending |
+| Spec 04: Freee Journal Adjustment | Weeks 7–8 | 🔲 Pending |
+| Spec 05: CSV Report Generation | Week 7 | 🔲 Pending |
+| **Phase 2 — Pattern Extensions** | Weeks 5–6 | |
+| Specs 06-09: Patterns 2-9 | Weeks 5–6 | 🔲 Pending |
+| **Testing & Deployment** | Weeks 9–10 | |
+| Testing + Validation | Week 9 | 🔲 Pending |
+| Buffer | Week 10 | |
+| Production Release | 2026/10/1 | 🔲 Target |
+
+See `asch-development-timeline-estimate.md` for full breakdown and confidence analysis.
