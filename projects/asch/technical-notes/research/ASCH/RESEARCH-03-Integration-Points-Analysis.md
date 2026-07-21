@@ -3,6 +3,14 @@
 **Date:** 2026-07-10  
 **Purpose:** Map ASCH integration points against the existing ASCM codebase, compare DB designs, evaluate Pre/Final approaches, and identify design improvements.
 
+> **Note (2026-07-20):** This research was conducted against the original specification (10 tables). Since then:
+> - `asch_app_price_master` removed (App price from `mst_new_price_listing`)
+> - Table count: 9 (Option A) or 12–13 (Option B) — see `REF-ASCH-03-DB-Table-Design-Draft.md`
+> - Confirmed: ASCH sends T1 journals only (no T2/T3)
+> - Member identification: CDB table (not `mst_honki_set` which doesn't exist)
+> 
+> The code-level analysis of existing ASC remains valid. The ASCH-specific sections should be read in light of the updated requirements (`REF-ASCH-02-Requirements-Update-20260716.md`).
+
 ---
 
 ## 1. Existing ASCM Code Architecture (Summary)
