@@ -141,8 +141,10 @@ tail -30 storage/logs/laravel.log | grep -E "ERROR|FAILED|COMPLETED"
 | ASC-287 | 2-day lookahead double-attribution | ✅ Deployed |
 | ASC-296 | FLP expiry boundary fix | ✅ Deployed |
 | ASC-297 | Orphaned charge start-month visibility | ✅ Deployed |
-| ASC-301 | Premature expiry lookahead | ✅ QA Passed, awaiting decision |
-| ASC-304 | PaypalPaymentSum CSV missing monthly data | 🔧 In Progress |
+| ASC-301 | Premature expiry lookahead (CTE gate) | ❌ Replaced by ASC-311 |
+| ASC-304 | PaypalPaymentSum CSV missing monthly data | ✅ QA Passed, ready for prod |
+| ASC-307 | Pre command delete scoping (target_ym instead of created_at) | ✅ QA Passed, ready for prod |
+| ASC-311 | Post-processing correction for premature expiry | ✅ QA Passed, ready for prod |
 
 ---
 
