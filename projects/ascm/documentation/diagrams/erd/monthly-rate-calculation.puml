@@ -1,0 +1,199 @@
+@startuml erd_monthly_rate_calculation
+title Monthly Rate Calculation - Entity Relationship Diagram \nMonthlyRateCalculationCommand
+
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor #FAFAFA
+    BorderColor #333333
+    FontSize 12
+}
+skinparam arrow {
+    Color #555555
+}
+
+' ─────────────────────────────────────────
+' ENTITIES
+' ─────────────────────────────────────────
+
+entity "trn_student" as student {
+    * student_id : bigint <<PK>>
+    --
+    nickname : varchar
+    email : varchar
+    status : int  [0=invalid / 1=valid / 2=test]
+    contract_type : int  [0=B2C / 1=B2B / 2=B2B2C]
+    company_id : bigint
+    department_id : bigint
+    employee_code : varchar
+    rank_id : bigint
+    level_id : bigint
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "mst_product" as product {
+    * product_id : bigint <<PK>>
+    --
+    name : varchar
+    name_en : varchar
+    product_type : int  [1=Skype / 2=Video]
+    lesson_type : int  [0=one-time / 1=daily / 2=monthly]
+    lesson_volume : int
+    available_limit : int
+    department_id : bigint
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "trn_charge" as charge {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * product_id : bigint <<FK>>
+    department_id : bigint
+    order_no : bigint
+    charge_type : int  [1=bank / 2=PaypalOld / 3=PaypalRT]
+    paid : boolean
+    paid_at : datetime
+    start_date : date
+    end_date : date  [also = ticket expiry]
+    tax_free : boolean
+    paid_price : int
+    sales_price : int
+    contract_type : int
+    status : int  [0=invalid / 1=valid]
+    transaction_id : varchar
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "trn_student_product" as sp {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * product_id : bigint <<FK>>
+    * charge_id : bigint <<FK>>
+    order_no : bigint
+    contract_type : int
+    start_date : date
+    end_date : date  [expire_date + 1 month]
+    expire_date : date  [actual contract end]
+    main_product : boolean
+    status : int  [0=inactive / 1=active / 2=provisional / 3=failed]
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "trn_ticket" as ticket {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    student_product_id : bigint <<FK, nullable>>
+    ticket_type : int  [0=trial / 3=monthly / 10=makeup]
+    start_datetime : datetime
+    end_datetime : datetime  [60-day validity]
+    create_month : int  [YYYYMM]
+    reason : int  [0=auto / 1=manual ...]
+    from_account_id : bigint
+    status : int  [0=invalid / 1=available / 2=in-use]
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "trn_student_book" as booking {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * ticket_id : bigint <<FK>>
+    teacher_time_table_id : bigint
+    booking_datetime : datetime
+    booking_end_datetime : datetime
+    contract_type : int
+    visible : boolean
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "trn_evaluation" as evaluation {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * student_book_id : bigint <<FK>>
+    * ticket_id : bigint <<FK>>
+    teacher_id : bigint
+    ticket_type : int
+    result : int  [0=draft / 1=taught / 2=no-show / 3=absent ...]
+    status : boolean  [0=invalid / 1=valid]
+    lesson_date : date
+    lesson_datetime : datetime
+    contract_type : int
+    order_no : bigint
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "trn_prorated_refund_charge" as refund {
+    * id : bigint <<PK>>
+    --
+    * refund_charge_id : bigint <<FK>>
+    prev_end_date : date
+    b2b_charge_id : bigint
+    refund_unit_price : int
+    refund_price : int
+    result : tinyint  [0=pending / 1=completed]
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "log_monthly_rate_calculation" as log_mrc {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)  [YYYYMM]
+    * student_id : bigint <<FK>>
+    * charge_id : bigint <<FK>>
+    * product_id : bigint <<FK>>
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    total : int  [lesson_volume]
+    number_of_carried_over_lessons : int
+    number_of_lessons_taken : int
+    number_of_expired_lessons : int
+    number_of_remaining_lessons : int
+    pre_sales : int
+    paid_price : int
+    gross_amount : decimal
+    tax_free : boolean
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' trn_student is the root — connects to 5 tables
+student         ||--o{ charge      : "student_id"
+student         ||--o{ sp          : "student_id"
+student         ||--o{ ticket      : "student_id"
+student         ||--o{ booking     : "student_id"
+student         ||--o{ evaluation  : "student_id"
+
+' mst_product connects to charge and student_product
+product         ||--o{ charge      : "product_id"
+product         ||--o{ sp          : "product_id"
+
+' charge chains
+charge          ||--o{ sp          : "charge_id"
+charge          ||--o| refund      : "refund_charge_id"
+charge          ||--o{ log_mrc     : "charge_id"
+
+' student_product issues tickets
+sp              ||--o{ ticket      : "student_product_id"
+
+' ticket drives booking and evaluation
+ticket          ||--o| booking     : "ticket_id"
+booking         ||--o| evaluation  : "student_book_id"
+
+@enduml

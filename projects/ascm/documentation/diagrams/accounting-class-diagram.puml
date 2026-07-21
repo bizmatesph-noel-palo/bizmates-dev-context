@@ -1,0 +1,95 @@
+@startuml Accounting System - Class Diagram
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam classBorderColor #333333
+skinparam defaultFontSize 11
+skinparam classAttributeIconSize 0
+
+title Tenant Strategy + Context — Class Diagram
+
+package "app/Contracts" {
+    interface TenantConfig {
+        + connection(): string
+        + serviceName(): string
+        + monthlyPlanIds(): array
+        + tableName(base: string, isPre: bool): string
+        + cleanupTables(): array
+    }
+}
+
+package "app/Services/Batch" {
+    class BatchContext <<value object>> {
+        + <<readonly>> targetYm: string
+        + <<readonly>> startDate: string
+        + <<readonly>> endDate: string
+        + <<readonly>> isPre: bool
+        + <<readonly>> executionDate: string
+        --
+        + __construct(exeDate?: string, isPre: bool)
+    }
+}
+
+package "app/Services/Tenant" {
+    class BizmatesTenantConfig {
+        + connection(): "mysql"
+        + serviceName(): "Bizmates"
+        + monthlyPlanIds(): [16,17,18,19,20,21,22,23,27,28,29]
+        + tableName(base, isPre): string
+        + cleanupTables(): array
+    }
+    
+    class ZipanTenantConfig {
+        + connection(): "zipan"
+        + serviceName(): "Zipan"
+        + monthlyPlanIds(): [16,17,18]
+        + tableName(base, isPre): string
+        + cleanupTables(): array
+    }
+}
+
+package "app/Libs" {
+    class MonthlyRateService <<service>> {
+        - tenants: TenantConfig[]
+        --
+        + execute(context: BatchContext): void
+        - buildCteQuery(context, tenant): string
+        - buildRefundQuery(context, tenant): string
+    }
+}
+
+package "app/Enums" {
+    enum BizmatesMonthlyPlanEnum {
+        MONTHLY_PLAN_PRODUCT_8LPM_1LPD = 16
+        MONTHLY_PLAN_PRODUCT_12LPM_1LPD = 17
+        ...
+        MONTHLY_PLAN_PRODUCT_15LPM_1LPD = 29
+    }
+    
+    enum ZipanMonthlyPlanEnum {
+        MONTHLY_PLAN_PRODUCT_5LPM_1LPD = 16
+        MONTHLY_PLAN_PRODUCT_10LPM_1LPD = 17
+        MONTHLY_PLAN_PRODUCT_15LPM_1LPD = 18
+    }
+}
+
+package "app/Console/Commands" {
+    class MonthlyRateCalculationCommand {
+        + handle(service: MonthlyRateService): int
+    }
+}
+
+' Relationships
+BizmatesTenantConfig ..|> TenantConfig
+ZipanTenantConfig ..|> TenantConfig
+
+MonthlyRateService --> TenantConfig : iterates
+MonthlyRateService --> BatchContext : receives
+
+BizmatesTenantConfig --> BizmatesMonthlyPlanEnum : references
+ZipanTenantConfig --> ZipanMonthlyPlanEnum : references
+
+MonthlyRateCalculationCommand --> MonthlyRateService : injects
+MonthlyRateCalculationCommand --> BatchContext : creates
+
+@enduml

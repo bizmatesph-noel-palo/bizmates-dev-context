@@ -1,0 +1,5 @@
+charge_id,target_ym,total,number_of_carried_over_lessons,number_of_lessons_taken,number_of_expired_lessons,number_of_remaining_lessons,paid_price
+12480,202604,10,0,0,10,0,23100
+12480,202605,10,10,0,10,0,23100
+12501,202604,10,0,0,10,0,23100
+12501,202605,10,10,0,10,0,23100

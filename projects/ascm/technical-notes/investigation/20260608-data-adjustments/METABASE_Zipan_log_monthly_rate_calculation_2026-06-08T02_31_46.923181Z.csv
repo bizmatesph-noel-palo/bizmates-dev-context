@@ -1,0 +1,5 @@
+id,target_ym,student_id,department_id,order_no,product_id,product_type,contract_type,charge_id,total,number_of_carried_over_lessons,pre_sales,number_of_lessons_taken,number_of_expired_lessons,number_of_remaining_lessons,paid_price,country_id,gross_amount,tax_free,created_at,updated_at
+170,202605,3818,11273,10027590,17,1,1,11590,10,0,0,1,9,0,21945,86,0,false,"2026-6-3, 00:00","2026-6-3, 00:00"
+20,202605,1749,10429,10027623,16,1,1,11745,5,0,0,4,1,0,13062,86,0,false,"2026-6-3, 00:00","2026-6-3, 00:00"
+40,202605,2104,10362,10029216,17,1,1,12555,10,0,0,6,4,0,23100,86,0,false,"2026-6-3, 00:00","2026-6-3, 00:00"
+25,202605,1931,11973,10027990,17,1,1,12631,10,0,0,10,0,0,23100,86,0,false,"2026-6-3, 00:00","2026-6-3, 00:00"

@@ -71,3 +71,4 @@ Full methodology rules (knowledge resolution, git safety, report standards, docu
 - Generic methodology (goes in the toolkit repo)
 - Personal notes unrelated to a project
 - Credentials or secrets
+| `ascm` | TBA | `projects/ascm/` | Active |

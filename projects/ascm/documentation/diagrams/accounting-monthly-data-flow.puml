@@ -1,0 +1,61 @@
+@startuml Monthly Batch - Data Flow
+
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam activityBorderColor #333333
+skinparam activityBackgroundColor #E3F2FD
+skinparam defaultFontSize 11
+
+title Monthly Rate Calculation — Data Flow
+
+|Command|
+start
+:Receive exeDate argument;
+:Create **BatchContext**
+(targetYm, startDate, endDate, isPre);
+:Acquire **BatchLock**;
+
+|Service|
+:Load tenants
+[BizmatesTenantConfig, ZipanTenantConfig];
+
+repeat
+    :Select tenant;
+    
+    partition "Calculate" {
+        :Run **CTE Query**
+        (uses tenant.connection + context.dates)
+        → normal charge rows;
+        
+        :Run **Refund Query**
+        (trn_charge WHERE paid_price < 0
+        AND product_id IN tenant.monthlyPlanIds()
+        AND paid_at IN targetYm)
+        → refund rows;
+        
+        :Merge normal + refund rows;
+    }
+    
+    partition "Store" {
+        :INSERT into
+        **tenant.tableName(isPre)**
+        on tenant.connection();
+    }
+    
+repeat while (more tenants?) is (yes)
+
+|CSV Generation|
+:SELECT * FROM log table
+(no refund joins needed — 
+refunds already stored);
+:Generate MonthlyRateCalculation.csv;
+
+|Report|
+:Package into ZIP;
+:Send email;
+
+|Command|
+:Release **BatchLock**;
+stop
+
+@enduml

@@ -1,0 +1,215 @@
+@startuml erd_monthly_rate_calculation_pre
+title Monthly Rate Calculation (Pre) - Entity Relationship Diagram \nMonthlyRateCalculationPreCommand
+
+note as N1
+  Mirror of erd_monthly_rate_calculation.
+  Same source tables, same CTE logic.
+  Only difference: output goes to
+  log_monthly_rate_calculation_pre
+  instead of log_monthly_rate_calculation.
+  No log_sum_calculation_history written.
+end note
+
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor #FAFAFA
+    BorderColor #333333
+    FontSize 12
+}
+skinparam arrow {
+    Color #555555
+}
+
+' ─────────────────────────────────────────
+' ROOT
+' ─────────────────────────────────────────
+
+entity "trn_student" as student {
+    * student_id : bigint <<PK>>
+    --
+    nickname : varchar
+    email : varchar
+    status : int  [0=invalid / 1=valid / 2=test]
+    contract_type : int  [0=B2C / 1=B2B / 2=B2B2C]
+    company_id : bigint
+    department_id : bigint
+    rank_id : bigint
+    level_id : bigint
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' PRODUCT DIMENSION
+' ─────────────────────────────────────────
+
+entity "mst_product" as product {
+    * product_id : bigint <<PK>>
+    --
+    name : varchar
+    product_type : int  [1=Skype / 2=Video]
+    lesson_type : int   [2=monthly-volume → included]
+    lesson_volume : int [tickets per period]
+    department_id : bigint
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' CHARGE (billing record)
+' ─────────────────────────────────────────
+
+entity "trn_charge" as charge {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * product_id : bigint <<FK>>
+    department_id : bigint
+    order_no : bigint
+    charge_type : int
+    paid : boolean
+    paid_at : datetime
+    start_date : date
+    end_date : date  [also = ticket expiry]
+    tax_free : boolean
+    paid_price : int
+    sales_price : int
+    contract_type : int
+    status : int  [0=invalid / 1=valid]
+    transaction_id : varchar
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' SUBSCRIPTION (links student to charge)
+' ─────────────────────────────────────────
+
+entity "trn_student_product" as sp {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * product_id : bigint <<FK>>
+    * charge_id : bigint <<FK>>
+    order_no : bigint
+    contract_type : int
+    start_date : date
+    end_date : date  [expire_date + 1 month]
+    expire_date : date
+    main_product : boolean
+    status : int  [0=inactive / 1=active / 2=provisional / 3=failed]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' TICKET (issued per subscription)
+' ─────────────────────────────────────────
+
+entity "trn_ticket" as ticket {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    student_product_id : bigint <<FK, nullable>>
+    ticket_type : int  [3=monthly-plan → included]
+    start_datetime : datetime
+    end_datetime : datetime  [60-day validity]
+    create_month : int  [YYYYMM]
+    status : int  [0=invalid / 1=available / 2=in-use]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' EVALUATION (lesson result)
+' ─────────────────────────────────────────
+
+entity "trn_evaluation" as evaluation {
+    * id : bigint <<PK>>
+    --
+    * student_id : bigint <<FK>>
+    * ticket_id : bigint <<FK>>
+    teacher_id : bigint
+    ticket_type : int  [3=monthly-plan → included]
+    result : int  [0=draft/1=taught/2=no-show/3=absent...]
+    status : boolean  [0=invalid / 1=valid]
+    lesson_date : date
+    lesson_datetime : datetime
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' REFUND (cooling-off / prorated refund)
+' ─────────────────────────────────────────
+
+entity "trn_prorated_refund_charge" as refund {
+    * id : bigint <<PK>>
+    --
+    * refund_charge_id : bigint <<FK>>
+    prev_end_date : date
+    b2b_charge_id : bigint
+    refund_unit_price : int
+    refund_price : int
+    result : tinyint  [0=pending / 1=completed]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' OUTPUT TABLE (pre / 速報版)
+' ─────────────────────────────────────────
+
+entity "log_monthly_rate_calculation_pre" as log_mrc_pre {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)  [YYYYMM]
+    * student_id : bigint <<FK>>
+    * charge_id : bigint <<FK>>
+    * product_id : bigint <<FK>>
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    total : int                              [lesson_volume]
+    number_of_carried_over_lessons : int     [from prior month]
+    number_of_lessons_taken : int            [lessons taken this month]
+    number_of_expired_lessons : int          [tickets expired]
+    number_of_remaining_lessons : int        [tickets remaining]
+    pre_sales : int                          [lesson_volume if paid in period]
+    paid_price : int                         [revenue recognised]
+    gross_amount : decimal
+    tax_free : boolean
+    country_id : bigint
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' trn_student is the root — connects to 5 tables
+student         ||--o{ charge           : "student_id"
+student         ||--o{ sp               : "student_id"
+student         ||--o{ ticket           : "student_id"
+student         ||--o{ evaluation       : "student_id"
+student         ||--o{ log_mrc_pre      : "student_id"
+
+' mst_product connects to charge and student_product
+product         ||--o{ charge           : "product_id"
+product         ||--o{ sp               : "product_id"
+product         ||--o{ log_mrc_pre      : "product_id"
+
+' charge chains
+charge          ||--o{ sp               : "charge_id"
+charge          ||--o| refund           : "refund_charge_id"
+charge          ||--o{ log_mrc_pre      : "charge_id"
+
+' subscription issues tickets
+sp              ||--o{ ticket           : "student_product_id"
+
+' ticket drives evaluation
+ticket          ||--o| evaluation       : "ticket_id"
+
+@enduml

@@ -1,0 +1,13 @@
+{
+  "name": "Git Commit Guard",
+  "version": "1.0.0",
+  "description": "Prevents git commit, push, and merge operations without explicit user permission.",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["shell"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "CHECK: If this shell command contains 'git commit', 'git push', 'git merge', or 'git rebase', you MUST NOT proceed. Instead, stop and ask the user for explicit permission. Say: 'I need your approval before running this git command. Want me to proceed?' If the command is 'git checkout -b' or 'git branch', ask the user first: 'I'd like to create branch [name]. Should I go ahead?' Only 'git status', 'git log', 'git diff', 'git branch -a', and 'git stash' are allowed without asking."
+  }
+}

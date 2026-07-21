@@ -1,0 +1,171 @@
+@startuml erd_daily_rate_calculation
+title Daily Rate Calculation (Pre) - Entity Relationship Diagram \nDailyRateCalculationPreCommand → preFlg=true
+
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor #FAFAFA
+    BorderColor #333333
+    FontSize 12
+}
+skinparam arrow {
+    Color #555555
+}
+
+note as N1
+  **preFlg = true** throughout this flow.
+  All writes go to the _pre tables.
+  No Freee API calls are made.
+  Mirrors SendJournals flow exactly,
+  but uses a separate set of tables.
+end note
+
+' ─────────────────────────────────────────
+' SOURCE TABLES (shared with SendJournals)
+' ─────────────────────────────────────────
+
+entity "trn_charge" as charge {
+    * id : bigint <<PK>>
+    --
+    student_id : bigint
+    product_id : bigint
+    department_id : bigint
+    order_no : bigint
+    paid_price : int
+    paid_at : datetime
+    start_date : date
+    end_date : date
+    contract_type : int
+    status : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "mst_product" as product {
+    * product_id : bigint <<PK>>
+    --
+    product_type : int
+    lesson_type : int  [2=monthly → excluded from daily]
+    lesson_volume : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "log_freee_invoices" as freee_inv {
+    * id : bigint <<PK>>
+    --
+    issue_date : datetime
+    partner_id : int
+    partner_name : varchar
+    invoice_number : varchar  [= order_no]
+    due_date : datetime
+    total_amount : int
+    payment_date : char(10)
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 1 — DAILY RATE CALCULATION (PRE)
+' Non-monthly-plan products only
+' Pro-rates trn_charge.paid_price by days
+' ─────────────────────────────────────────
+
+entity "log_daily_rate_calculation_pre" as daily_pre {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)   [YYYYMM]
+    student_id : bigint   <<FK>>
+    charge_id : bigint    <<FK>>
+    product_id : bigint   <<FK>>
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    start_date : date
+    target_ymend : date   [month-end of slice]
+    contract_day : int    [days in this month]
+    total_day : int       [total contract days]
+    paid_price : int      [pro-rated amount]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 2 — MONTHLY RATE CALCULATION (PRE)
+' Monthly-plan products only (lesson-based)
+' ─────────────────────────────────────────
+
+entity "log_monthly_rate_calculation_pre" as monthly_pre {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)
+    student_id : bigint   <<FK>>
+    charge_id : bigint    <<FK>>
+    product_id : bigint   <<FK>>
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    total : int
+    number_of_carried_over_lessons : int
+    number_of_lessons_taken : int
+    number_of_expired_lessons : int
+    number_of_remaining_lessons : int
+    pre_sales : int
+    paid_price : int      [lesson-based amount]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 3 — SUM CALCULATION (PRE)
+' getPaidPriceSumList() does UNION ALL of:
+'   log_daily_rate_calculation_pre  (non-monthly)
+'   log_monthly_rate_calculation_pre (monthly)
+' Then aggregates by order_no + product_type + contract_type
+' Note: No log_sum_calculation_history written for pre
+' ─────────────────────────────────────────
+
+entity "log_sum_calculation_pre" as sum_pre {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    partner_id : int      [resolved from log_freee_invoices]
+    paid_price : int      [aggregated from daily_pre + monthly_pre]
+    ticket_flg : int      [0=normal / 1=ticket]
+    send_date : date
+    status : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' NOTE: No log_sum_calculation_history for pre
+' No Freee API calls
+' No log_balance_transition writes
+' ─────────────────────────────────────────
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' Step 1: charge → daily_pre (non-monthly products)
+charge          ||--o{ daily_pre        : "charge_id\n(excl. monthly plans)"
+product         ||--o{ daily_pre        : "product_id"
+
+' Step 2: charge → monthly_pre (monthly products only)
+charge          ||--o{ monthly_pre      : "charge_id\n(monthly plans only)"
+product         ||--o{ monthly_pre      : "product_id"
+
+' Step 3: UNION ALL of daily_pre + monthly_pre → sum_pre
+daily_pre       }o--|| sum_pre          : "UNION ALL\ngetPaidPriceSumList(preFlg=true)"
+monthly_pre     }o--|| sum_pre          : "UNION ALL\ngetPaidPriceSumList(preFlg=true)"
+
+' Freee invoices resolve partner_id for sum_pre
+freee_inv       }o--o{ sum_pre          : "order_no → partner_id"
+
+@enduml

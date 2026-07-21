@@ -55,7 +55,7 @@ See `agentic-toolkit/knowledge/getting-started.md` for the full lifecycle.
 
 | Project | Directory | Code Repo | Status |
 |---------|-----------|-----------|--------|
-| — | — | — | — |
+| ASC Monthly Plans | `projects/ascm/` | `accounting_related_system_for_freee` | Active |
 
 ## Commands
 

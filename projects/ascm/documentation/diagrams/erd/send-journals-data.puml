@@ -1,0 +1,255 @@
+@startuml erd_send_journals
+title Send Journals Data - Entity Relationship Diagram \nSendJournalsDataCommand
+
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor #FAFAFA
+    BorderColor #333333
+    FontSize 12
+}
+skinparam arrow {
+    Color #555555
+}
+skinparam note {
+    BackgroundColor #FFFDE7
+    BorderColor #F9A825
+}
+
+' ─────────────────────────────────────────
+' SOURCE TABLES (inputs)
+' ─────────────────────────────────────────
+
+entity "trn_charge" as charge {
+    * id : bigint <<PK>>
+    --
+    student_id : bigint
+    product_id : bigint
+    department_id : bigint
+    order_no : bigint
+    paid_price : int
+    paid_at : datetime
+    start_date : date
+    end_date : date
+    contract_type : int
+    status : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "mst_product" as product {
+    * product_id : bigint <<PK>>
+    --
+    product_type : int
+    lesson_type : int  [2=monthly-plan → excluded from daily]
+    lesson_volume : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "log_freee_invoices" as freee_inv {
+    * id : bigint <<PK>>
+    --
+    issue_date : datetime
+    partner_id : int
+    partner_name : varchar
+    invoice_number : varchar  [= order_no]
+    due_date : datetime
+    total_amount : int
+    payment_date : char(10)
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "mst_rule_for_journals" as rule {
+    * id : bigint <<PK>>
+    --
+    parent_department_id : int
+    department_id : int    [section_id in Freee]
+    segment1_id : int
+    segment2_id : int
+    product_type : int     [item_id in Freee]
+    status : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 1 — DAILY RATE CALCULATION
+' Non-monthly-plan products only (BizmatesMonthlyPlanEnum excluded)
+' Pro-rates trn_charge.paid_price across contract months
+' ─────────────────────────────────────────
+
+entity "log_daily_rate_calculation" as daily_calc {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)   [YYYYMM]
+    student_id : bigint   <<FK>>
+    charge_id : bigint    <<FK>>
+    product_id : bigint   <<FK>>
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    start_date : date
+    target_ymend : date   [month-end of slice]
+    contract_day : int    [days in this month]
+    total_day : int       [total contract days]
+    paid_price : int      [pro-rated amount]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 2 — MONTHLY RATE CALCULATION
+' Monthly-plan products only (lesson-based, not day-based)
+' ─────────────────────────────────────────
+
+entity "log_monthly_rate_calculation" as monthly_calc {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)
+    student_id : bigint   <<FK>>
+    charge_id : bigint    <<FK>>
+    product_id : bigint   <<FK>>
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    total : int
+    number_of_carried_over_lessons : int
+    number_of_lessons_taken : int
+    number_of_expired_lessons : int
+    number_of_remaining_lessons : int
+    pre_sales : int
+    paid_price : int      [lesson-based amount]
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 3 — SUM CALCULATION
+' getPaidPriceSumList() does UNION ALL of:
+'   log_daily_rate_calculation  (non-monthly products)
+'   log_monthly_rate_calculation (monthly products)
+' Then aggregates by order_no + product_type + contract_type
+' ─────────────────────────────────────────
+
+entity "log_sum_calculation" as sum_calc {
+    * id : bigint <<PK>>
+    --
+    target_ym : char(6)
+    department_id : bigint
+    order_no : bigint
+    product_type : int
+    contract_type : int
+    partner_id : int      [resolved from log_freee_invoices]
+    paid_price : int      [aggregated from daily + monthly]
+    ticket_flg : int      [0=normal / 1=ticket]
+    send_date : date
+    status : int
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 3b — SUM HISTORY (bridge table)
+' Links sum_calc back to its source rows
+' ─────────────────────────────────────────
+
+entity "log_sum_calculation_history" as sum_hist {
+    * id : bigint <<PK>>
+    --
+    log_sum_calculation_id : bigint       <<FK>>
+    log_daily_rate_calculation_id : bigint <<FK, nullable>>
+    log_monthly_rate_calculation : bigint  <<FK, nullable>>
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 4 — BALANCE TRANSITION
+' Derived from sum_calc after journals are sent
+' ─────────────────────────────────────────
+
+entity "log_balance_transition" as balance {
+    * id : bigint <<PK>>
+    --
+    partner_id : bigint
+    partner_name : varchar
+    target_ym : char(6)
+    ticket_flg : int
+    monthly_balance : bigint    [opening balance]
+    deposit_amount : bigint     [payments received]
+    monthly_amount : bigint     [sales this month]
+    monthlyend_balance : bigint [closing balance]
+    process_at : datetime
+    created_at : datetime
+    updated_at : datetime
+}
+
+entity "log_balance_transition_with_order_number" as balance_order {
+    * id : bigint <<PK>>
+    --
+    partner_id : bigint
+    partner_name : varchar
+    order_no : bigint
+    target_ym : char(6)
+    product_type : int
+    segment2_id : int
+    monthly_balance : bigint
+    deposit_amount : bigint
+    monthly_amount : bigint
+    monthlyend_balance : bigint
+    process_at : datetime
+    created_at : datetime
+    updated_at : datetime
+}
+
+' ─────────────────────────────────────────
+' STEP 5 — FREEE API (external output)
+' ─────────────────────────────────────────
+
+entity "Freee API" as freee_api <<external>> {
+    --
+    T1 : Sales journal (売上)
+    T2 : Deferred revenue (前受金)
+    T3 : Reversal journal (洗替)
+}
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' Step 1: charge → daily calc (non-monthly products)
+charge          ||--o{ daily_calc       : "charge_id\n(excl. monthly plans)"
+product         ||--o{ daily_calc       : "product_id"
+
+' Step 2: charge → monthly calc (monthly products only)
+charge          ||--o{ monthly_calc     : "charge_id\n(monthly plans only)"
+product         ||--o{ monthly_calc     : "product_id"
+
+' Step 3: UNION ALL of daily + monthly → sum calc
+daily_calc      }o--|| sum_calc         : "UNION ALL\ngetPaidPriceSumList()"
+monthly_calc    }o--|| sum_calc         : "UNION ALL\ngetPaidPriceSumList()"
+
+' Step 3b: history bridge
+sum_calc        ||--o{ sum_hist         : "log_sum_calculation_id"
+daily_calc      ||--o{ sum_hist         : "log_daily_rate_calculation_id"
+monthly_calc    ||--o{ sum_hist         : "log_monthly_rate_calculation"
+
+' Freee invoices resolve partner_id for sum_calc
+freee_inv       }o--o{ sum_calc         : "order_no → partner_id"
+
+' Journal rules determine Freee account codes
+rule            }o--o{ sum_calc         : "product_type\n+ contract_type"
+
+' Step 4: balance transition derived from sum_calc
+sum_calc        ||--o{ balance          : "partner_id + target_ym"
+sum_calc        ||--o{ balance_order    : "order_no + target_ym"
+
+' Step 5: journals sent to Freee
+sum_calc        }o--|| freee_api        : "T1 Sales"
+freee_inv       }o--|| freee_api        : "T2 Deferred revenue"
+balance         }o--|| freee_api        : "T3 Reversal"
+
+@enduml
