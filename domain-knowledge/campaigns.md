@@ -353,8 +353,10 @@ The campaign is **not a separate product** in the system. Students subscribe to 
 
 The campaign runs quarterly. Known periods:
 - Jan 2026 (first round — no proration was applied)
-- Apr 2026 (second round — no proration was applied)
-- 2026/7/1 – 2026/7/26 (current round — proration system being built)
+- Apr 2026 (second round — no proration applied; Freee manually adjusted by accounting)
+- 2026/7/1 10:00 – 2026/7/27 23:59 (current round — proration system being built)
+
+Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324, July = 334.
 
 ### Benefit Period
 
@@ -389,7 +391,13 @@ How ASCH will identify Honki Set members per batch run depends on CDB readiness 
 
 ### Creation
 
-Campaign is configured as a record in `mst_first_month_enrollment_discount_schedule` (ID referenced by `config('utm_sources.honki_set_campaign_id')` = 324 in MBTI_backend). Campaign period checking uses `CoachingPage::isHonkiSetCampaignPeriod()` and `AuthService::addHonkiSetCampaignIfActive()`.
+Campaign definition lives in three places:
+1. `config/utm_sources.php` — `honki_set_campaign_ids` + bundle plan_ids (1010/1011)
+2. `mst_first_month_enrollment_discount_schedule` — campaign period records (April = id 324, July = id 334)
+3. `mst_product_price` — half-price tier (tier=2)
+
+Campaign period checking uses `CoachingPage::isHonkiSetCampaignPeriod()` and `AuthService::addHonkiSetCampaignIfActive()`.
+Eligibility logic: `HonkiSetEligibilityService` (5-CTE runtime SQL), called from `HonkiSetEligibility` GraphQL query.
 
 Banner assets managed via `mst_student_banner` (seeder: `InsertBannerForHonkiCPSeeder` in ls-database-migrations).
 
