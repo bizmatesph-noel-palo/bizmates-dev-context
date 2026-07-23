@@ -69,7 +69,7 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 | Component | Description |
 |-----------|-------------|
 | Schema (9 tables) | `asch_*` tables for run management, enrollments, components, prorations, summaries. App price from `mst_new_price_listing` (no dedicated master table). |
-| Honki Set Eligibility | Service to identify eligible members from CDB table (`trn_campaign_discount_eligibility`) with fallback to self-detection |
+| Honki Set Eligibility | Service to identify eligible members from CDB table (`trn_campaign_discount_eligibility`) — per student × product rows with initial_charge_id, discount_flag, plan_id. Fallback to self-detection if CDB not ready. |
 | Proration Calculation (Pattern 1) | O allocation + P proration for simultaneous start at month-start |
 | N-Value Reading & Adjustment | Read existing daily/monthly rate output, calculate P − N |
 | Freee Journal Submission | T1 revenue journals only (no T2/T3). Aggregated adjustment journals to Freee API. |
@@ -154,15 +154,14 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 | # | Item | Owner | Status | Notes |
 |---|------|-------|--------|-------|
-| 1 | Run management model — `run_id` (Option A, 9 tables) vs `_pre`/final (Option B, 12–13 tables) | Dev | 🔲 Pending estimate | Dev team estimating both; decision depends on this + H-19 |
-| 2 | N source for preview runs (_pre vs confirmed tables) | Dev | � Open | Default: preview→_pre, final→confirmed. Auto-resolved in Option B. |
-| 3 | Verify 0-yen App charges in existing ASC output | Dev | ✅ Confirmed | product_type=100, N=0 rows exist on dev04 |
-| 4 | Freee mapping for App — `product_type=100` | Dev / Accounting | � Partially resolved | mst_rule_for_journals has per-contract-type rows on dev04 |
-| 5 | Tax handling of App list price (¥3,980 tax-incl → tax-excl) | Dev / Accounting | 🔲 Open | Rounding must match existing ASC |
-| 6 | Retroactive correction for Jan/Apr 2026 | Accounting | ✅ Decided | Jan: out of scope. Apr: separate decision (H-19) |
-| 7 | CDB prerequisites (production rollout + July backfill before 10/1) | CDB team (Wu-san) | 🔲 Open | Fallback: self-detection via 3 cohort routes |
-| 8 | MySQL version (json/utf8mb4 support) | Dev | 🔲 Open (minor) | |
-| 9 | April 2026 cohort handling (H-19) | Accounting | 🔲 Open | Background: April proration reverted, Freee manually adjusted |
+| 1 | Run management model | Dev | ✅ Decided (2026-07-22) | Option A (run_id, 9 tables). Written confirmation received. |
+| 2 | N source for preview runs | Dev | Open | Default: preview reads _pre tables, final reads confirmed tables. |
+| 3 | Freee mapping for App (freee_code=236270504) | Dev | Action needed | `mst_code_change` (master_data_type=1, code=100) maps to freee_code. Need to verify `mst_rule_for_journals` rows on dev04. Re-investigation requested by Kuroda-san. |
+| 4 | Tax handling of App list price | Dev | Mostly resolved | All ASCH amounts (L, O, P) are tax-inclusive — no conversion in calculation logic. Only open: `mst_new_price_listing` registration value (stores tax-excl integer). |
+| 5 | Retroactive correction for Jan 2026 | Accounting | Out of scope | Decided. |
+| 6 | CDB prerequisites | CDB team (Wu-san) | Open | Production rollout + July backfill + April campaign_id backfill before 10/1. Fallback: self-detection. |
+| 7 | MySQL version (json/utf8mb4 support) | Dev | Open (minor) | |
+| 8 | April 2026 cohort (H-19) | Accounting | Partially resolved | IN SCOPE but no retroactive recalculation — April students hit month-6 in Sep, processed in normal 10/1 run. Sub-items open: (a) reconcile against Freee manual adjustments, (b) CDB April campaign_id backfill. |
 
 ## Documentation
 
@@ -178,23 +177,30 @@ All spec files are maintained in the `accounting_related_system_for_freee` repos
 
 ## Timeline & Milestones
 
-| Milestone | Target | Status |
-|-----------|--------|--------|
-| Research & Specification | July 2026 | ✅ Complete |
-| Requirements Update (Kuroda-san) | 2026-07-16 | ✅ Received |
-| Development Timeline Estimate | 2026-07-20 | ✅ Complete |
-| H-9 Decision (run model) | ASAP (blocks Week 1) | 🔲 Pending |
-| **Phase 1 — Core Engine** | ~8.5 weeks from start | |
-| Spec 01: Foundation | Weeks 1–2 | 🔲 Pending H-9 |
-| Spec 02: Honki Set Eligibility | Week 3 | 🔲 Pending |
-| Spec 03: Pattern 1 Calculation | Weeks 3–4 | 🔲 Pending |
-| Spec 04: Freee Journal Adjustment | Weeks 7–8 | 🔲 Pending |
-| Spec 05: CSV Report Generation | Week 7 | 🔲 Pending |
-| **Phase 2 — Pattern Extensions** | Weeks 5–6 | |
-| Specs 06-09: Patterns 2-9 | Weeks 5–6 | 🔲 Pending |
-| **Testing & Deployment** | Weeks 9–10 | |
-| Testing + Validation | Week 9 | 🔲 Pending |
-| Buffer | Week 10 | |
-| Production Release | 2026/10/1 | 🔲 Target |
+| Milestone | Spec | Target | Dependencies | Status |
+|-----------|------|--------|-------------|--------|
+| Research & Specification | — | July 2026 | — | ✅ Complete |
+| Requirements Update (Kuroda-san) | — | 2026-07-16 | — | ✅ Received |
+| Development Timeline Estimate | — | 2026-07-20 | — | ✅ Complete |
+| H-9 Decision (run model) | — | ASAP | Blocks all | Decided (verbal) |
+| **Phase 1 — Core Engine** | | | | |
+| Spec 01: Foundation | 01 | Weeks 1–2 | None | 🔲 Ready to start |
+| Spec 02: Honki Set Eligibility | 02 | Week 3 | Spec 01 (tables must exist) | 🔲 Pending |
+| Spec 03: Pattern 1 Calculation | 03 | Weeks 4–5 | Spec 01 + 02 | 🔲 Pending |
+| **Phase 2 — Pattern Extensions** | | | | |
+| Specs 06–09: Patterns 2–9 | 06–09 | Weeks 5–6 | Spec 03 (core engine working) | 🔲 Pending |
+| **Phase 3 — Output & Delivery** | | | | |
+| Spec 04: Freee Journal Adjustment | 04 | Week 7 | Spec 03 (P values exist) | 🔲 Pending |
+| Spec 05: CSV Report Generation | 05 | Week 8 | Spec 04 (aggregated results exist) | 🔲 Pending |
+| **Phase 4 — Verification** | | | | |
+| Testing + Validation | — | Week 9 | All specs merged | 🔲 Pending |
+| Buffer | — | Week 10 | — | |
+| Production Release | — | 2026/10/1 | All phases complete | 🔲 Target |
+
+**Dependency chain:**
+```
+Spec 01 → Spec 02 → Spec 03 → Specs 06-09 → Spec 04 → Spec 05
+(Foundation) (Eligibility) (Pattern 1)  (Patterns 2-9)  (Freee)    (CSV)
+```
 
 See `asch-development-timeline-estimate.md` for full breakdown and confidence analysis.
