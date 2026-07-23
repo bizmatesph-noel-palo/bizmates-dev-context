@@ -147,15 +147,15 @@ Step 3 — Prorate:
 
 ## Key Open Items
 
-| # | Item | Owner |
-|---|------|-------|
-| 1 | Run management model — `run_id` vs `_pre`/final two-table | Dev |
-| 2 | N source for preview runs (log_*_pre vs confirmed; default: preview→_pre, final→confirmed) | Dev |
-| 3 | Verify 0-yen App charges in existing ASC output (N=0 rows for product_id=10012; Freee behavior for 0-yen journals) | Dev |
-| 4 | MySQL version of target DB (json type / utf8mb4 assumptions) | Dev |
-| 5 | Tax handling of App list price (¥3,980 tax-incl → ¥3,618.18 tax-excl; rounding must match existing ASC) | Dev / Accounting |
-| 6 | Retroactive correction for Jan/Apr 2026 — in scope? (default: out of scope) | Accounting |
-| 7 | CDB prerequisites: production rollout + July backfill before 10/1; change-log guarantees; App-row flag; month-6 trigger date alignment | CDB team (Wu-san) |
+| # | Item | Owner | Status |
+|---|------|-------|--------|
+| 1 | Run management model — Option A (run_id) | Dev / Kuroda-san | ✅ Decided (written 2026-07-22) |
+| 2 | N source for preview runs (default: preview→_pre, final→confirmed) | Dev | Open |
+| 3 | Freee mapping for App (freee_code=236270504) — re-investigate `mst_rule_for_journals` on dev04 | Dev | Action needed |
+| 4 | MySQL version of target DB (json/utf8mb4) | Dev | Open (minor) |
+| 5 | Tax handling — calculation is tax-inclusive (resolved). Only open: `mst_new_price_listing` registration value | Dev | Mostly resolved |
+| 6 | April 2026 cohort (H-19) — in scope, no retroactive recalc. Open: Freee manual adjustment reconciliation + CDB April backfill | Accounting / CDB | Partially resolved |
+| 7 | CDB prerequisites: production rollout + July/April backfill before 10/1 | CDB team (Wu-san) | Open |
 
 ---
 
@@ -170,8 +170,10 @@ All pre-design research is in `technical-notes/research/ASCH/`. Key files:
 | `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV/zip/email pipeline research — validated integration approach |
 | `REF-ASCH-00-PRJ-Specification.md` | Kuroda-san's full specification (original) |
 | `REF-ASCH-02-Requirements-Update-20260716.md` | **Requirements update — supersedes parts of original spec** |
-| `REF-ASCH-03-DB-Table-Design-Draft.md` | **DB design dual-option (run_id vs _pre/final) for estimation** |
+| `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design dual-option — Option A decided 2026-07-22 |
+| `REF-ASCH-04-Requirements-Update-20260722.md` | **Latest: Option A decided, separate CSV command, rounding accepted** |
 | `REF-CAP-00-Coaching-App-Plan-Overview.md` | CAP project reference — parallel project impact assessment |
+| `REF-CDB-01-Initial-Design-Proposal.md` | CDB initial design — table structure, gaps vs ASCH assumptions |
 | `REF-ASCH-00-PRJ-Brief-Kuroda.md` | Kuroda-san's project brief |
 | `REF-ASCH-00-PATTERNS-Case1-Data.md` | Pattern 1 formula with Excel derivation |
 | `RESEARCH-01-Initial-Research-Analysis.md` | Initial research (pre-spec) |
