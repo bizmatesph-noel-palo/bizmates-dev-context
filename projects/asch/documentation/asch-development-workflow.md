@@ -284,18 +284,34 @@ main
 Specs must be executed in dependency order:
 
 ```
+Phase 1 — Core Engine:
+
 Spec 01: Foundation ─────────────────────────┐
                                              │
-Spec 02: Honki Set Eligibility ──────────────┤ (depends on 01)
+Spec 02: Honki Set Eligibility ──────────────┤ (depends on 01: tables must exist)
                                              │
-Spec 03: Pattern 1 Calculation ──────────────┤ (depends on 01 + 02)
+Spec 03: Pattern 1 Calculation ──────────────┤ (depends on 01 + 02: enrollments + proration engine)
                                              │
-Spec 04: Freee Journal Adjustment ───────────┤ (depends on 01 + 03)
+Phase 2 — Pattern Extensions:                │
                                              │
-Spec 05: CSV Report Generation ──────────────┘ (depends on 01 + 04)
+Specs 06–09: Patterns 2–9 ───────────────────┤ (depends on 03: core engine working)
+                                             │
+Phase 3 — Output & Delivery:                 │
+                                             │
+Spec 04: Freee Journal Adjustment ───────────┤ (depends on 03: P values exist)
+                                             │
+Spec 05: CSV Report Generation ──────────────┘ (depends on 04: aggregated results exist)
 ```
 
-Specs 01 and 02 can potentially run in parallel (02 only needs tables from 01, not commands). All others are sequential.
+**Why this order (not 01→02→03→04→05 sequentially):**
+- Patterns 2–9 (Specs 06–09) extend the core calculation engine (Spec 03) — they add edge cases to the same pipeline
+- Freee submission (Spec 04) needs P values from ALL patterns to be meaningful for integration testing
+- CSV (Spec 05) reads from `asch_sum_calculation` which is populated by Spec 04's aggregation
+
+**Parallelization opportunities:**
+- Spec 02 can start as soon as Spec 01's migrations are merged (doesn't need commands working)
+- Specs 06–09 (patterns) can be split across developers if available
+- Spec 05 (CSV) is mechanically simple and could overlap with Spec 04 if the table schema is stable
 
 ---
 
