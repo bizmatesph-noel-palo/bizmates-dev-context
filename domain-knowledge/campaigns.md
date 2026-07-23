@@ -381,7 +381,7 @@ Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324, Jul
 
 ### Check: How to Verify
 
-**Primary source (planned):** CDB project's `trn_campaign_discount_eligibility` table — one row per student × campaign × product, carrying `initial_charge_id`, `discount_flag`, `discount_eligibility_date`. ASCH snapshots these at batch run start.
+**Primary source (planned):** CDB project's `trn_campaign_discount_eligibility` table — one row per student × campaign × product, carrying `student_id`, `product_id`, `plan_id`, `initial_charge_id`, `discount_flag`, `discount_eligibility_date`. ASCH snapshots at batch run start.
 
 **Current state (runtime):** Honki Set campaign period is identified by config ID (`utm_sources.honki_set_campaign_id` = 324) pointing to `mst_first_month_enrollment_discount_schedule`. No dedicated persisted eligibility table exists yet.
 
@@ -461,4 +461,4 @@ Where:
 | B2B2C | `mst_campaign` | N/A |
 | Focus Course | `mst_focus_course_campaign` | `trn_student_free_product_credits` |
 | Lesson Ticket | `mst_lesson_ticket_campaign` | N/A |
-| Honki Set | TBD | `trn_campaign_discount_eligibility` (CDB — planned) |
+| Honki Set | TBD | `trn_campaign_discount_eligibility` (CDB) |
