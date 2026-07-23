@@ -31,7 +31,7 @@ A batch subsystem that calculates revenue proration for Honki Set bundled paymen
 | Production deadline | 2026/10/1 (quarterly closing — Jul–Sep revenue must be finalized) |
 | Available calendar time | ~10 weeks (Jul 21 – Oct 1) |
 | Team | 1 developer (Throy) executing tasks full-time. Lead (Noel) handles requirements → design → task generation → code review. |
-| Key dependencies | H-9 decision (DB model), CDB table readiness (Wu-san), PM sign-off turnaround |
+| Key dependencies | CDB table readiness by Week 3 (Wu-san), PM sign-off turnaround, ASCH email template |
 
 ---
 
@@ -55,27 +55,72 @@ Single set of 9 new `asch_*` tables. Every result row carries `run_id` as a gene
 
 #### Phase Breakdown
 
-| # | Phase | Scope | Duration | Who |
-|---|---|---|---|---|
-| 1 | Schema & Foundation | 9 migrations, models, FK migrations, structure tests. Run lifecycle. "Active run" resolution. Single command with `--run-type`. | 2 wk | Lead: req + design. PM: sign-off. Dev: execution. Lead: PR review. |
-| 2 | Eligibility & Enrollment | CDB snapshot (per run_id), enrollment/component/period build, fallback detection. | 1 wk | Lead: req + design. PM: sign-off. Dev: execution. Lead: PR review. |
-| 3 | Pattern 1 Calculation | Core proration: O allocation, P proration, N reading, adjustment. Invariants (ΣO=ΣM, ΣP=O). | 1.5 wk | Lead: req + design. PM: sign-off. Dev: execution. Lead: PR review. |
-| 4 | Patterns 2–9 | All remaining patterns. Single code path (no duplication). | 1.5 wk | Lead: design + task gen. Dev: execution. Lead: PR review. |
-| 5 | CSV + Zip/Email | AschCsvUtil, config, integration hook in existing pipeline. | 0.5 wk | Dev: execution. Lead: PR review. |
-| 6 | Freee Submission | Journal factory (T1 only), Freee API, chunking. Final run only. | 1 wk | Lead: design. Dev: execution. Lead: PR review. |
-| 7 | Testing & Validation | Unit tests, pattern walkthroughs, run lifecycle tests, invariant checks. | 1 wk | Dev + Lead. DEV04 deploy + manual validation. |
-| | **Subtotal (core)** | | **8.5 wk** | |
-| 8 | Buffer | PM review cycles, gate rejections, environment issues, CDB alignment, bug fixes. | 1 wk | All |
-| | **Total** | | **9.5 wk** | |
+| # | Phase | Spec | Scope | Duration | Who |
+|---|---|---|---|---|---|
+| 1 | Schema & Foundation | Spec 01 | 9 migrations, models, FK migrations, structure tests. Run lifecycle. "Active run" resolution. Single command with `--run-type`. | 2 wk | Lead: req + design. PM: sign-off. Dev: execution. Lead: PR review. |
+| 2 | Eligibility & Enrollment | Spec 02 | CDB snapshot (per run_id), enrollment/component/period build, fallback detection. **Requires CDB table to exist with data.** | 1 wk | Lead: req + design. PM: sign-off. Dev: execution. Lead: PR review. |
+| 3 | Pattern 1 Calculation | Spec 03 | Core proration: O allocation, P proration, N reading, adjustment. Invariants (ΣO=ΣM, ΣP=O). | 1.5 wk | Lead: req + design. PM: sign-off. Dev: execution. Lead: PR review. |
+| 4 | Patterns 2–9 | Specs 06–09 | All remaining patterns. Single code path (no duplication). | 1.5 wk | Lead: design + task gen. Dev: execution. Lead: PR review. |
+| 5 | Freee Submission | Spec 04 | Journal factory (T1 only), Freee API, chunking. Final run only. | 1 wk | Lead: design. Dev: execution. Lead: PR review. |
+| 6 | CSV + Zip/Email | Spec 05 | AschCsvUtil, config, zip, separate ASCH email. **No hook into existing pipeline** (decided 2026-07-22). | 0.5 wk | Dev: execution. Lead: PR review. |
+| 7 | Dev Testing & Validation | — | Unit tests, pattern walkthroughs, run lifecycle tests, invariant checks. DEV04 deploy. | 1 wk | Dev + Lead. |
+| | **Subtotal (dev)** | | | **8.5 wk** | |
+| 8 | Buffer | — | PM review cycles, gate rejections, environment issues, CDB alignment, bug fixes. | 1 wk | All |
+| | **Dev Total** | | | **9.5 wk** | |
+
+**Dependency chain:** Spec 01 → Spec 02 → Spec 03 → Specs 06–09 → Spec 04 → Spec 05
+
+**CDB dependency (clarified with Kuroda-san 2026-07-22):**
+
+| Need | For development (Week 3) | For production (10/1) |
+|---|---|---|
+| Table structure (DDL) | ASCH creates in own dev branch | CDB owns in production |
+| Test data | ASCH seeds dummy data | CDB batch populates real data |
+| Real student eligibility | Not needed | Must be ready |
+
+Development is **NOT blocked** by CDB. ASCH creates the CDB table structure and seeds test data itself. The real dependency is: **CDB batch must be running with real July + April cohort data before the 10/1 production run.**
+
+---
+
+#### QA Testing (Parallel Track)
+
+QA can start preparing and testing in parallel with development — no need to wait for all specs to be done.
+
+| QA Activity | When | Depends on | Who |
+|---|---|---|---|
+| Test case preparation (from requirements) | **Week 1 onwards** | Requirements.md for each spec (available as soon as Lead generates them) | QA |
+| Spec 01 testing (schema verification, command smoke test) | Week 3 (after Spec 01 merged + DEV04 deploy) | Spec 01 merged to ASCH-master | QA |
+| Spec 02 testing (eligibility accuracy) | Week 4 | Spec 02 merged | QA |
+| Spec 03 testing (Pattern 1 values match Excel) | Week 5–6 | Spec 03 merged | QA |
+| Specs 06–09 testing (Patterns 2–9 values) | Week 7 | Specs 06–09 merged | QA |
+| Spec 04 testing (Freee sandbox journals) | Week 8 | Spec 04 merged | QA |
+| Spec 05 testing (CSV content + zip/email) | Week 8–9 | Spec 05 merged | QA |
+| End-to-end integration test | Week 9 | All specs merged, DEV04 full run | QA + Lead |
+| Regression test (existing ASC unaffected) | Week 9–10 | Full deploy on DEV04 | QA |
+
+**How parallel testing works:**
+- QA prepares test cases as soon as requirements are available (Gate 1 output)
+- After each spec merges to ASCH-master and deploys to DEV04, QA tests that spec
+- Bug fixes from QA are addressed immediately (within the same week or buffer)
+- Final integration test runs the full batch end-to-end with real dev04 data
+- QA does NOT wait for Week 9 — they test incrementally per spec
+
+**QA timeline visual:**
+```
+Dev:  [==Spec 01==][02][====03====][==06-09==][04][05][DevTest][Buffer]
+QA:   [Prep......][QA01][QA02][QA03........][QA06-09][QA04/05][E2E+Reg]
+Week:  W1    W2    W3   W4    W5    W6    W7    W8    W9    W10
+```
 
 #### Risks
 
 | Risk | Impact | Probability | Mitigation |
 |---|---|---|---|
+| **CDB not ready for production by 10/1** | **Fallback self-detection needed for production** | **Medium** | PM tracks CDB delivery with Wu-san. Dev is unblocked (uses own seed data). |
 | Run lifecycle complexity | +2–3 days | Low | Well-defined pattern; single service class |
 | Team unfamiliarity with run_id model | +1–2 days | Low | Clear helper method + documentation |
-| CDB not ready by Week 6 | +1 week | Medium | Fallback: self-contained cohort detection |
 | H-19 (April 2026 cohort in scope) | +0.5 week | Medium | Revision run — clean, no forward-cascade |
+| QA finds bugs in pattern validation | +3–5 days | Medium | Parallel testing catches bugs early (not at Week 9) |
 
 #### Trade-offs
 
@@ -89,7 +134,9 @@ Single set of 9 new `asch_*` tables. Every result row carries `run_id` as a gene
 
 ---
 
-### Option B: Pre/Final Two-Table Model (Existing Pattern — 12–13 tables)
+### Option B: Pre/Final Two-Table Model — DROPPED (2026-07-22)
+
+> ⚠️ **This option was NOT adopted.** Kept here as historical reference for why the decision was made. Build against Option A only.
 
 Adopts the same `_pre` / final table pattern used by existing ASC commands. 12–13 new `asch_*` tables (not reusing existing `log_*` tables — same architectural pattern, different data model). Result tables are paired (`_pre` + final); enrollment tables are single with DELETE→INSERT rebuild.
 
@@ -158,11 +205,12 @@ The estimates are nearly equal because Option A's extra foundation cost is offse
 
 | Risk | Impact | Probability |
 |---|---|---|
+| **CDB not ready for production** AND **fallback self-detection needed** | +1 week | Low (only if CDB fully fails by 10/1) |
 | PM sign-off takes >3 days per spec | +1 week | Low (if PM aware of timeline pressure) |
-| CDB not ready AND fallback self-detection needed | +1 week | Medium |
 | H-19 (April 2026 cohort) added to scope | +0.5–1 week | Medium |
 | Dev environment not available Week 1 | Shifts entire timeline | Unknown |
 | Multiple PR rejections per spec | +0.5 week | Low (design reviewed upfront) |
+| QA finds critical bugs in pattern logic | +0.5 week | Medium (mitigated by parallel testing) |
 
 ### Mitigation options (if worst case materializes)
 
@@ -228,27 +276,30 @@ Review turnaround is included within each phase's time allocation — not a sepa
 
 ## Dependencies & Prerequisites
 
-| Prerequisite | Needed by | Status |
-|---|---|---|
-| H-9 decision (run_id vs _pre/final) | Week 1 start | **PENDING — this estimate is the input** |
-| Dev environment + repo access | Week 1 start | TBD |
-| App tax conversion rule (H-16) | Week 3 (calculation start) | Open |
-| CDB table available (or fallback decision) | Week 6 | Pending (Wu-san) |
-| H-19 decision (April 2026 cohort) | Week 7 (Freee scope) | Pending (accounting) |
-| App Freee mapping confirmation (H-4) | Week 7 (Freee submission) | Partially resolved |
+| Prerequisite | Needed by | Status | Impact if late |
+|---|---|---|---|
+| H-9 decision (run_id vs _pre/final) | Week 1 start | ✅ **Decided: Option A** (2026-07-22) | — |
+| Dev environment + repo access | Week 1 start | TBD | Blocks everything |
+| **CDB table structure finalized** | **Week 1** (ASCH creates in own branch) | **Only need final column spec from Wu-san** | None (ASCH self-creates) |
+| **CDB batch running with real data** | **Before 10/1** (production gate) | **Pending (Wu-san)** | Fallback: self-detection for production |
+| App tax conversion rule (H-16) | Week 4 (calculation start) | Mostly resolved (tax-incl) | Minor |
+| H-19 decision (April 2026 cohort) | Week 7 (Freee scope) | Resolved (in scope, no retro) | — |
+| App Freee mapping confirmation (H-4) | Week 7 (Freee submission) | Partially resolved | May block Spec 04 |
+| CDB April cohort backfill | Week 7 | Pending (Wu-san) | Needed for production run |
+| ASCH email template (subject/body) | Week 8 (Spec 05) | TBD (Kuroda-san) | Blocks email send |
 
 ---
 
 ## Recommendation
 
-Both options meet the 10/1 deadline with 1 developer (tight) or 2 developers (comfortable).
+**Option A (run_id model) has been decided (2026-07-22).** The timeline is 9.5 weeks with 1 developer.
 
-**If the priority is long-term maintainability and audit compliance** → Option A (new design).  
-**If the priority is predictability and operational familiarity** → Option B (existing pattern).
+**Immediate next steps:**
+1. Delete existing spec content (outdated)
+2. Regenerate Spec 01 (Foundation) with current requirements
+3. Get PM sign-off → begin execution
 
-The initial build cost is nearly identical. The difference emerges over the quarters and years after launch — every time the campaign repeats, every retroactive correction, every audit request. Option A pays off continuously; Option B accumulates debt.
-
-**Immediate next step:** H-9 decision from stakeholders to unblock Week 1.
+**Key risk to actively manage:** CDB table readiness by Week 3. PM must track with Wu-san's team.
 
 ---
 
@@ -260,11 +311,13 @@ The initial build cost is nearly identical. The difference emerges over the quar
 Week:        W1      W2      W3      W4      W5      W6      W7      W8      W9      W10
 Date:     Jul 21  Jul 28  Aug 4   Aug 11  Aug 18  Aug 25  Sep 1   Sep 8   Sep 15  Sep 22  Oct 1
              |       |       |       |       |       |       |       |       |       |       |
-Option A: [=====Foundation=====][Elig][====Pattern 1====][==Patterns 2-9==][CSV][==Freee==][Test][Buf]
-Option B: [===Foundation===][Elig][====Pattern 1====][====Patterns 2-9====][CSV][==Freee==][Test][Buf]
+Dev:      [==01: Foundation==][02][====03: Pattern 1====][06-09: Patterns 2-9][04:Freee][05][DevTest][Buf]
+QA:       [Prep.............][QA01][QA02][QA03..........][QA 06-09...][QA04/05][E2E + Regression]
              |       |       |       |       |       |       |       |       |       |       |
-CDB needed:                                          ↑ Week 6
+CDB needed:          ↑ Week 3 (Spec 02 starts — needs CDB table with data)
 Deadline:                                                                                    ↑ 10/1
+
+Dependency: 01 → 02 (needs CDB) → 03 → 06-09 → 04 → 05
 ```
 
 ### With 2 Developers — Realistic Assessment
