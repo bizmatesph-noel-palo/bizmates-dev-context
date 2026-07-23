@@ -335,30 +335,46 @@ class AschSumCalculationCollector
 }
 ```
 
-### 2.9 CSV/Zip/Email Integration — Zipan Precedent Pattern
+### 2.9 CSV/Zip/Email — Separate ASCH Command (Decided 2026-07-22)
 
-ASCH CSVs are included in the **same zip file and email** as existing ASC reports. The integration follows the proven Zipan pattern (already in production):
+ASCH produces its own CSV output via a **dedicated, independent command** — NOT merged into the existing ASC batch pipeline. This avoids regression risk in existing processing.
 
 **How it works:**
-1. ASCH provides a static `AschCsvUtil::addAschData(&$fileNameList)` method
-2. This is called in `SendJournalsDataLogic::createSendMailAttacheFile()` after the Zipan call
-3. A guard (`hasAschDataForMonth()`) returns early for months without Honki Set data — zero impact
-4. ASCH creates its own separate CSV files (does NOT append to existing CSVs like Zipan does)
+1. ASCH command generates CSVs from `asch_monthly_prorations` and `asch_sum_calculation`
+2. Zips them into a single archive
+3. Sends a **separate email** (third email, distinct from existing 速報版 / 確定版)
+4. No modification to `SendJournalsDataLogic` or `DailyRateCalculationPreLogic`
 
 ```php
-// SendJournalsDataLogic::createSendMailAttacheFile() — 1 line added
-ZipanUtil::addZipanData($targetYm, $targetStartDate, $targetEndDate, $fileNameList);
-AschCsvUtil::addAschData($targetYm, $fileNameList);  // ← ASCH hook (same pattern as Zipan)
+class AschCsvUtil
+{
+    public static function generateAndSend(string $targetYm, int $runId): void
+    {
+        $fileNameList = [];
+
+        [$f, $n] = self::createComponentDetailFile($targetYm, $runId);
+        $fileNameList[$f] = $n;
+
+        [$f, $n] = self::createCalculationSummaryFile($targetYm, $runId);
+        $fileNameList[$f] = $n;
+
+        $zipFile = self::zipFiles($fileNameList, $targetYm);
+        CommonUtil::sendMail(
+            config('const.mailType.aschProrationMail'),
+            [$zipFile],
+            self::buildMailContents($fileNameList)
+        );
+    }
+}
 ```
 
-**Why NOT a facade/builder refactor:**
-- The Zipan precedent is proven in production and requires only 1 line per pipeline
-- A builder refactor is optional cleanup (Phase 2, later) — not a prerequisite for ASCH
-- `$fileNameList` is a simple array with no hidden behavior; no abstraction needed yet
+**Why separate (not merged into existing pipeline):**
+- No regression risk to existing ASC CSV/email processing
+- No modification to monolithic `createSendMailAttacheFile()` (1100+ lines)
+- ASCH can be tested independently without touching the existing batch
+- Decided by Kuroda-san — accounting prefers a distinct notification
 
-**Safety:** Months without Honki Set campaigns produce byte-for-byte identical output to pre-ASCH behavior. See `RESEARCH-04-CSV-Zip-Email-Integration.md` for full safety analysis.
-
-**Files touched:** 2 existing files (1 line each) + new `AschCsvUtil.php` + config additions.
+> **Note:** RESEARCH-04 (Zipan-precedent integration approach) is superseded by this decision. The research remains valid as historical context showing how the existing pipeline works.
 
 ---
 
