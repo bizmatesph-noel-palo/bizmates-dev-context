@@ -66,23 +66,22 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 #### Phase 1 — Core Engine (Pattern 1 end-to-end)
 
-| Component | Description |
-|-----------|-------------|
-| Schema (9 tables) | `asch_*` tables for run management, enrollments, components, prorations, summaries. App price from `mst_new_price_listing` (no dedicated master table). |
-| Honki Set Eligibility | Service to identify eligible members from CDB table (`trn_campaign_discount_eligibility`) — per student × product rows with initial_charge_id, discount_flag, plan_id. Fallback to self-detection if CDB not ready. |
-| Proration Calculation (Pattern 1) | O allocation + P proration for simultaneous start at month-start |
-| N-Value Reading & Adjustment | Read existing daily/monthly rate output, calculate P − N |
-| Freee Journal Submission | T1 revenue journals only (no T2/T3). Aggregated adjustment journals to Freee API. |
-| CSV Report Generation | `AschComponentDetail` (detail) + `AschCalculationSummary` (Freee-level). Integrated into existing zip/email pipeline via Zipan-precedent pattern. |
+| Spec | Component | Description |
+|------|-----------|-------------|
+| 01 | Schema & Foundation | 9 `asch_*` tables, run lifecycle, commands, models. App price from `mst_new_price_listing`. |
+| 02 | Honki Set Eligibility | Identify eligible members from CDB table (`trn_campaign_discount_eligibility`). Fallback to self-detection. |
+| 03 | Proration Calculation (Pattern 1) | O allocation + P proration for simultaneous start at month-start. Invariants (ΣO=ΣM, ΣP=O). |
+| 04 | Freee Journal Adjustment | Read N, compute P−N. T1 revenue journals only (no T2/T3). Aggregated adjustment to Freee API. |
+| 05 | CSV Report Generation | `AschComponentDetail` + `AschCalculationSummary`. Separate ASCH command + separate email (decided 2026-07-22). |
 
 #### Phase 2 — Pattern Extensions
 
 | Spec | Patterns | Shared Concern |
 |------|----------|----------------|
-| Spec 06 | 2 + 3 + 9 | Cross-month splitting, independent month-6 counting, discount priority |
-| Spec 07 | 4 + 6 | Plan changes (component revisions, I/J type switching, O recalculation) |
-| Spec 08 | 5 + 7 | Enrollment termination (coaching rest, B2E→B2B exit, negative M) |
-| Spec 09 | 8 | Cooling-off (same-month charge + refund, bundle early death) |
+| 06 | 2 + 3 + 9 | Cross-month splitting, independent month-6 counting, discount priority |
+| 07 | 4 + 6 | Plan changes (component revisions, I/J type switching, O recalculation) |
+| 08 | 5 + 7 | Enrollment termination (coaching rest, B2E→B2B exit, negative M) |
+| 09 | 8 | Cooling-off (same-month charge + refund, bundle early death) |
 
 ### Out of Scope
 
@@ -102,7 +101,7 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 | Project Scaffolding | ✅ Complete | Steering files, spec folders, engineering standards, research docs |
 | Development Timeline Estimate | ✅ Complete | 9.5 weeks (either option). See `asch-development-timeline-estimate.md` |
 | **Phase 1 — Core Engine** | | |
-| Spec 01: Foundation (schema, commands, models) | 🔲 Blocked on H-9 | Requirements defined. Waiting for run model decision. |
+| Spec 01: Foundation (schema, commands, models) | 🔲 Ready to start | H-9 decided (Option A, 2026-07-22). Spec needs regeneration. |
 | Spec 02: Honki Set Eligibility (member identification) | 🔲 Not Started | Requirements defined. CDB integration confirmed. |
 | Spec 03: Pattern 1 Calculation (core O/P engine) | 🔲 Not Started | Requirements defined. All business rules decided. |
 | Spec 04: Freee Journal Adjustment (N-value reading, P−N, T1 journals) | 🔲 Not Started | Requirements defined. T1-only confirmed. |
