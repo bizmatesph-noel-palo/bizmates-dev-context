@@ -16,7 +16,9 @@
 | Software Delivery Manager (SDM) | Roi Patrick Florentino |
 | SCM / Lead Developer | Noel Palo |
 | Developer | Throy Embudo |
-| QA | Alvin Glenn G. Flamiano, Jaymiriz Liwanag |
+| Developer | Cristoff Danganan |
+| QA | Alvin Glenn G. Flamiano |
+| QA | Jaymiriz Liwanag |
 
 ## Repositories
 
@@ -181,18 +183,18 @@ All spec files are maintained in the `accounting_related_system_for_freee` repos
 | Research & Specification | — | July 2026 | — | ✅ Complete |
 | Requirements Update (Kuroda-san) | — | 2026-07-16 | — | ✅ Received |
 | Development Timeline Estimate | — | 2026-07-20 | — | ✅ Complete |
-| H-9 Decision (run model) | — | ASAP | Blocks all | Decided (verbal) |
+| H-9 Decision (run model) | — | 2026-07-22 | — | ✅ Decided (Option A) |
 | **Phase 1 — Core Engine** | | | | |
 | Spec 01: Foundation | 01 | Weeks 1–2 | None | 🔲 Ready to start |
 | Spec 02: Honki Set Eligibility | 02 | Week 3 | Spec 01 (tables must exist) | 🔲 Pending |
-| Spec 03: Pattern 1 Calculation | 03 | Weeks 4–5 | Spec 01 + 02 | 🔲 Pending |
+| Spec 03: Pattern 1 Calculation | 03 | Weeks 4–5 | Spec 01 + 02 (enrollments + proration engine) | 🔲 Pending |
 | **Phase 2 — Pattern Extensions** | | | | |
 | Specs 06–09: Patterns 2–9 | 06–09 | Weeks 5–6 | Spec 03 (core engine working) | 🔲 Pending |
 | **Phase 3 — Output & Delivery** | | | | |
-| Spec 04: Freee Journal Adjustment | 04 | Week 7 | Spec 03 (P values exist) | 🔲 Pending |
-| Spec 05: CSV Report Generation | 05 | Week 8 | Spec 04 (aggregated results exist) | 🔲 Pending |
+| Spec 04: Freee Journal Adjustment | 04 | Week 7 | Specs 03 + 06–09 (P values for all patterns) | 🔲 Pending |
+| Spec 05: CSV Report Generation | 05 | Weeks 7–8 | Spec 04 (aggregated results exist) | 🔲 Pending |
 | **Phase 4 — Verification** | | | | |
-| Testing + Validation | — | Week 9 | All specs merged | 🔲 Pending |
+| Dev Testing + Validation | — | Week 9 | All specs merged | 🔲 Pending |
 | Buffer | — | Week 10 | — | |
 | Production Release | — | 2026/10/1 | All phases complete | 🔲 Target |
 
@@ -200,6 +202,7 @@ All spec files are maintained in the `accounting_related_system_for_freee` repos
 ```
 Spec 01 → Spec 02 → Spec 03 → Specs 06-09 → Spec 04 → Spec 05
 (Foundation) (Eligibility) (Pattern 1)  (Patterns 2-9)  (Freee)    (CSV)
+ Wk 1-2       Wk 3         Wk 4-5       Wk 5-6         Wk 7       Wk 7-8
 ```
 
 See `asch-development-timeline-estimate.md` for full breakdown and confidence analysis.
