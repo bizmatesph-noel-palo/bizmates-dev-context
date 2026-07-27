@@ -14,7 +14,9 @@ This document defines the development lifecycle for the ASCH project using Spec-
 | SDM (Software Delivery Manager) | Patrick-san | Sprint coordination, JIRA management, blocker escalation |
 | Lead Dev | Noel Palo | Scaffolding, requirements, design, task review, code review |
 | Developer | Throy Embudo | Task execution (with AI agent), PR creation |
-| QA | Alvin / Jaymiriz | Testing after development |
+| Developer | Cristoff Danganan | Task execution (with AI agent), PR creation |
+| QA | Alvin Glenn G. Flamiano | Testing after development |
+| QA | Jaymiriz Liwanag | Testing after development |
 
 ---
 
@@ -165,10 +167,10 @@ Phase 1 — Core Engine:
 Epic: Spec 01: Foundation
 ├── Story: Requirements              → Assigned: PM (Kuroda-san) → PR: requirements.md
 ├── Story: Architecture              → Assigned: Lead (Noel) → PR: design.md + tasks.md
-├── Story: Coding                    → Assigned: Dev (Throy) → PR: generated code
+├── Story: Coding                    → Assigned: Dev (Throy or Cristoff) → PR: generated code
 ├── Story: Code Review               → Assigned: Lead (Noel)
 ├── Story: Dev/Manual Testing        → Assigned: Lead (Noel)
-├── Story: Automated Testing         → Assigned: QA (Alvin/Jay)
+├── Story: Automated Testing         → Assigned: QA (Alvin or Jaymiriz)
 └── Story: Deployment                → Assigned: Lead (Noel)
 
 Epic: Spec 02: Honki Set Eligibility
@@ -298,7 +300,7 @@ Specs 06–09: Patterns 2–9 ────────────────�
                                              │
 Phase 3 — Output & Delivery:                 │
                                              │
-Spec 04: Freee Journal Adjustment ───────────┤ (depends on 03: P values exist)
+Spec 04: Freee Journal Adjustment ───────────┤ (depends on 03 + 06–09: P values for all patterns)
                                              │
 Spec 05: CSV Report Generation ──────────────┘ (depends on 04: aggregated results exist)
 ```
@@ -341,7 +343,7 @@ Spec 05: CSV Report Generation ──────────────┘ (de
 6. Review PRs after Dev completes
 7. Deploy
 
-### Dev (Throy-san)
+### Dev (Throy + Cristoff)
 
 1. Review tasks.md with Lead
 2. Create spec branch from ASCH-master
@@ -350,7 +352,7 @@ Spec 05: CSV Report Generation ──────────────┘ (de
 5. Create PR when all tasks done
 6. Address review feedback from Lead
 
-### QA (Alvin / Jaymiriz)
+### QA (Alvin + Jaymiriz)
 
 1. Review requirements.md for testability (optional — if QA wants early involvement)
 2. Prepare test cases from requirements + design (can start during Phase 3)
