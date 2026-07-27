@@ -18,8 +18,11 @@ asch/
 │   │   └── proposals/          ← Design proposals
 │   ├── investigation/          ← Investigation reports
 │   └── research/
-│       └── ASCH/               ← Pre-design research docs
-├── documentation/              ← System docs, diagrams
+│       ├── ASCH/               ← ASCH-specific research & requirements
+│       ├── HCR/                ← HCR (Honki Customer Retention) references
+│       ├── CDB/                ← CDB (Campaign Discount Batch) references
+│       └── CAP/                ← CAP (Coaching App Plan) references
+├── documentation/              ← System docs, diagrams, ADRs
 │   └── diagrams/
 ├── generated-files/            ← Batch output CSVs (gitignored)
 └── .kiro-draft/                ← Draft steering files
