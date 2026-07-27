@@ -174,8 +174,9 @@ All pre-design research is in `technical-notes/research/ASCH/`. Key files:
 | `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design dual-option — Option A decided 2026-07-22 |
 | `REF-ASCH-04-Requirements-Update-20260722.md` | Option A decided, separate CSV command, rounding accepted |
 | `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated specification. Supersedes all prior where conflicts exist.** |
-| `REF-CAP-00-Coaching-App-Plan-Overview.md` | CAP project reference — parallel project impact assessment |
-| `REF-CDB-01-Initial-Design-Proposal.md` | CDB initial design — table structure, gaps vs ASCH assumptions |
+| `research/CAP/REF-CAP-00-Coaching-App-Plan-Overview.md` | CAP project reference — parallel project impact assessment |
+| `research/CDB/REF-CDB-01-Initial-Design-Proposal.md` | CDB design + confirmed table structure |
+| `research/HCR/REF-HCR-*` | HCR (Honki Customer Retention) project references |
 | `REF-ASCH-00-PRJ-Brief-Kuroda.md` | Kuroda-san's project brief |
 | `REF-ASCH-00-PATTERNS-Case1-Data.md` | Pattern 1 formula with Excel derivation |
 | `RESEARCH-01-Initial-Research-Analysis.md` | Initial research (pre-spec) |
