@@ -14,7 +14,7 @@
 
 ## Executive Summary
 
-ASCH requires ~9.5 weeks of development (1 developer) for either database design option. Both fit the 2026/10/1 deadline, but with minimal buffer in the expected case. The two options have nearly identical build cost — the difference is in long-term maintenance and audit capability.
+ASCH requires ~7–8 weeks of development with 2 developers (Throy + Cristoff), fitting comfortably within the 10/1 deadline. Option A (run_id model, 9 tables) is decided. ASCH runs as a separate command with separate email — no modification to existing ASC batch.
 
 ---
 
@@ -30,20 +30,20 @@ A batch subsystem that calculates revenue proration for Honki Set bundled paymen
 |---|---|
 | Production deadline | 2026/10/1 (quarterly closing — Jul–Sep revenue must be finalized) |
 | Available calendar time | ~10 weeks (Jul 21 – Oct 1) |
-| Team | 1 developer (Throy) executing tasks full-time. Lead (Noel) handles requirements → design → task generation → code review. |
+| Team | 2 developers (Throy + Cristoff) executing tasks. Lead (Noel) handles requirements → design → task generation → code review. |
 | Key dependencies | CDB table readiness by Week 3 (Wu-san), PM sign-off turnaround, ASCH email template |
 
 ---
 
 ## Assumptions
 
-- Lead developer handles requirements → design → task generation via spec-driven workflow (Kiro)
-- 1 developer executes generated tasks full-time
+- Lead developer (Noel) handles requirements → design → task generation via spec-driven workflow (Kiro)
+- 2 developers (Throy + Cristoff) execute generated tasks
 - Dev environment and repo access available by start date
-- CDB table ready for integration by Week 6 (fallback self-detection adds +1 week if not)
+- CDB table structure finalized (ASCH creates in own dev branch with seed data)
 - PM clarification turnaround within 1 business day when design questions arise during spec authoring
 - No major scope additions beyond confirmed Patterns 1–9
-- QA testing (Alvin, Jaymiriz) handled separately — not included in this estimate
+- QA testing (Alvin + Jaymiriz) handled separately — not included in this estimate
 
 ---
 
@@ -84,33 +84,29 @@ Development is **NOT blocked** by CDB. ASCH creates the CDB table structure and 
 
 #### QA Testing (Parallel Track)
 
-QA can start preparing and testing in parallel with development — no need to wait for all specs to be done.
+QA runs in parallel with development but **always tests AFTER dev delivers** — never during.
 
-| QA Activity | When | Depends on | Who |
+| QA Phase | When | Depends on | Output |
 |---|---|---|---|
-| Test case preparation (from requirements) | **Week 1 onwards** | Requirements.md for each spec (available as soon as Lead generates them) | QA |
-| Spec 01 testing (schema verification, command smoke test) | Week 3 (after Spec 01 merged + DEV04 deploy) | Spec 01 merged to ASCH-master | QA |
-| Spec 02 testing (eligibility accuracy) | Week 4 | Spec 02 merged | QA |
-| Spec 03 testing (Pattern 1 values match Excel) | Week 5–6 | Spec 03 merged | QA |
-| Specs 06–09 testing (Patterns 2–9 values) | Week 7 | Specs 06–09 merged | QA |
-| Spec 04 testing (Freee sandbox journals) | Week 8 | Spec 04 merged | QA |
-| Spec 05 testing (CSV content + zip/email) | Week 8–9 | Spec 05 merged | QA |
-| End-to-end integration test | Week 9 | All specs merged, DEV04 full run | QA + Lead |
-| Regression test (existing ASC unaffected) | Week 9–10 | Full deploy on DEV04 | QA |
+| Test Planning | Week 1 | Requirements available | Test strategy, scope |
+| Test Case Creation | Weeks 1–3 | Requirements + design per spec | Test cases ready before code arrives |
+| Test Data Preparation | Weeks 2–4 | Pattern data from Kuroda-san's Excel | Seed data for each pattern |
+| **Test Execution: Spec 01** | Week 3 | Spec 01 merged + DEV04 deploy | Schema verified, commands smoke-tested |
+| **Test Execution: Spec 02** | Week 4 | Spec 02 merged | Eligibility accuracy verified |
+| **Test Execution: Pattern 1** | Week 5 | Spec 03 merged | P values match Excel |
+| **Test Execution: Patterns 2–5** | Week 6 | Dev 2 patterns merged | Values match Excel |
+| **Test Execution: Patterns 6–9** | Week 7 | Dev 1 patterns merged | Values match Excel |
+| **Test Execution: Freee + CSV** | Week 8 | Specs 04 + 05 merged | Journals correct, CSVs correct |
+| **End-to-end integration** | Week 9 | All specs merged | Full batch run on DEV04 |
+| **Regression + Release sign-off** | Weeks 9–10 | Full deploy | Existing ASC unaffected |
+| Bug Fix / Retest | Weeks 3–10 (ongoing) | QA finds bugs | Dev fixes, QA retests |
 
-**How parallel testing works:**
-- QA prepares test cases as soon as requirements are available (Gate 1 output)
-- After each spec merges to ASCH-master and deploys to DEV04, QA tests that spec
-- Bug fixes from QA are addressed immediately (within the same week or buffer)
-- Final integration test runs the full batch end-to-end with real dev04 data
-- QA does NOT wait for Week 9 — they test incrementally per spec
+**QA cannot test a spec until:**
+1. Dev has finished coding (PR merged)
+2. Lead has reviewed and approved the PR
+3. Code is deployed to DEV04
 
-**QA timeline visual:**
-```
-Dev:  [==Spec 01==][02][====03====][==06-09==][04][05][DevTest][Buffer]
-QA:   [Prep......][QA01][QA02][QA03........][QA06-09][QA04/05][E2E+Reg]
-Week:  W1    W2    W3   W4    W5    W6    W7    W8    W9    W10
-```
+This means QA testing for Pattern 2-3-9 starts in **Week 6** (after dev delivers end of Week 5), not Week 4 as in Kuroda-san's draft timeline.
 
 #### Risks
 
@@ -197,9 +193,9 @@ The estimates are nearly equal because Option A's extra foundation cost is offse
 
 | Scenario | Duration | Fits 10/1? | Condition |
 |---|---|---|---|
-| **Best case** | 8 weeks | ✅ 2 weeks margin | No blockers, no rejections, CDB ready early |
-| **Expected case** | 9.5 weeks | ✅ 0.5 week margin | Normal review cycles, minor issues |
-| **Worst case** | 11–12 weeks | ❌ Overrun | Gate rejections + CDB delay + H-19 in scope |
+| **Best case** | 6 weeks | ✅ 4 weeks margin | No blockers, parallel execution, no rejections |
+| **Expected case** | 7–8 weeks | ✅ 2–3 weeks margin | Normal review cycles, minor issues |
+| **Worst case** | 10–11 weeks | ⚠️ Tight / slight overrun | Gate rejections + CDB production delay + pattern bugs |
 
 ### What could push past deadline
 
@@ -292,44 +288,94 @@ Review turnaround is included within each phase's time allocation — not a sepa
 
 ## Recommendation
 
-**Option A (run_id model) has been decided (2026-07-22).** The timeline is 9.5 weeks with 1 developer.
+**Option A (run_id model) decided (2026-07-22). 2 developers assigned (Throy + Cristoff). Timeline: ~7–8 weeks with comfortable margin to 10/1.**
 
 **Immediate next steps:**
-1. Delete existing spec content (outdated)
-2. Regenerate Spec 01 (Foundation) with current requirements
-3. Get PM sign-off → begin execution
-
-**Key risk to actively manage:** CDB table readiness by Week 3. PM must track with Wu-san's team.
+1. Regenerate Spec 01 (Foundation) with current requirements
+2. Get PM sign-off → begin execution (Throy starts Foundation, Cristoff preps eligibility research)
+3. Lead manages spec pipeline — always 1 spec ahead in requirements/design
 
 ---
 
 ## Appendix
 
-### Timeline Visual
+### Timeline (Aligned with Kuroda-san's Excel Format)
 
-```
-Week:        W1      W2      W3      W4      W5      W6      W7      W8      W9      W10
-Date:     Jul 21  Jul 28  Aug 4   Aug 11  Aug 18  Aug 25  Sep 1   Sep 8   Sep 15  Sep 22  Oct 1
-             |       |       |       |       |       |       |       |       |       |       |
-Dev:      [==01: Foundation==][02][====03: Pattern 1====][06-09: Patterns 2-9][04:Freee][05][DevTest][Buf]
-QA:       [Prep.............][QA01][QA02][QA03..........][QA 06-09...][QA04/05][E2E + Regression]
-             |       |       |       |       |       |       |       |       |       |       |
-CDB needed:          ↑ Week 3 (Spec 02 starts — needs CDB table with data)
-Deadline:                                                                                    ↑ 10/1
+**Header:**
 
-Dependency: 01 → 02 (needs CDB) → 03 → 06-09 → 04 → 05
-```
+| Item | Details |
+|---|---|
+| Development Approach | run_id (Option A — decided 2026-07-22) |
+| Development Team | 2 Developers + Lead |
+| Development Estimate | 7–8 weeks |
+| Production Deadline | 2026/10/01 |
+| Start Date | 2026/07/21 |
+| QA | Parallel track (starts Week 1 with prep, tests after dev delivers) |
+| Key Dependencies | CDB (production readiness) / H-16 / H-4 |
+| Expected Buffer | Approx. 2 weeks (dev W9 + W10) |
+| Assumption | PM clarification within 1 business day |
+| Note | Lead review remains a single bottleneck. Dependencies are sequential — parallelism is limited. |
 
-### With 2 Developers — Realistic Assessment
+**Development:**
 
-| Track | Developer 1 (Throy) | Developer 2 |
+| Category | Owner | Task / Phase | Start Date | End Date | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Development | Lead + PM | Requirements / design / task generation / approval (ongoing) | 2026/07/21 | 2026/09/08 | ■ | ■ | ■ | ■ | ■ | ■ | ■ | ■ | | |
+| Development | Dev 1 (Throy) | Spec 01: Foundation (schema / models / commands / run lifecycle) | 2026/07/21 | 2026/08/03 | ■ | ■ | | | | | | | | |
+| Development | Dev 2 (Cristoff) | Spec 01: Foundation (FK migrations / structure tests / seeders) | 2026/07/21 | 2026/08/03 | ■ | ■ | | | | | | | | |
+| Development | Dev 1 (Throy) | Spec 02: Eligibility + CDB snapshot + enrollment build | 2026/08/04 | 2026/08/10 | | | ■ | | | | | | | |
+| Development | Dev 2 (Cristoff) | Spec 03: Pattern 1 — O allocation, P proration | 2026/08/04 | 2026/08/17 | | | ■ | ■ | | | | | | |
+| Development | Dev 1 (Throy) | Spec 03: Pattern 1 — N reading, adjustment, invariants | 2026/08/11 | 2026/08/17 | | | | ■ | | | | | | |
+| Development | Dev 1 (Throy) | Specs 06–09: Patterns 2–5 | 2026/08/18 | 2026/08/31 | | | | | ■ | ■ | | | | |
+| Development | Dev 2 (Cristoff) | Specs 06–09: Patterns 6–9 | 2026/08/18 | 2026/08/31 | | | | | ■ | ■ | | | | |
+| Development | Dev 1 (Throy) | Spec 04: Freee submission (T1 journals, API, chunking) | 2026/09/01 | 2026/09/08 | | | | | | | ■ | | | |
+| Development | Dev 2 (Cristoff) | Spec 05: CSV generation / zip / separate email | 2026/09/01 | 2026/09/08 | | | | | | | ■ | | | |
+| Development | Lead + Dev | Dev Testing & Validation (DEV04 full run) | 2026/09/08 | 2026/09/14 | | | | | | | | ■ | | |
+| Buffer | All | Development buffer / bug fixes / QA support | 2026/09/15 | 2026/10/01 | | | | | | | | | ■ | ■ |
+
+**Dependency logic for parallel work:**
+- W1–2: Both devs on Spec 01 (large spec — 9 tables, migrations split between devs)
+- W3: Spec 01 done → Dev 1 starts Spec 02 (1 wk), Dev 2 starts Spec 03 (Spec 02 tables exist by mid-W3 when Dev 2 needs them for N-reading)
+- W4: Dev 1 joins Spec 03 (invariants, adjustment). Both finish Pattern 1 by end of W4.
+- W5–6: Spec 03 done → Patterns 2–9 split between devs (independent from each other, all extend same engine)
+- W7: Specs 06–09 done → Spec 04 (Freee) and Spec 05 (CSV) can run in parallel (Spec 05 depends on Spec 04 for aggregation, but CSV structure/template work can start while Freee is built)
+- W8: Dev testing on DEV04
+- W9–10: Buffer
+
+**QA:**
+
+| Category | Owner | Task / Phase | Start Date | End Date | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| QA | QA Team | Test Planning | 2026/07/21 | 2026/07/25 | ■ | | | | | | | | | |
+| QA | QA Team | Test Case Creation | 2026/07/28 | 2026/08/14 | | ■ | ■ | ■ | | | | | | |
+| QA | QA Team | Test Data Preparation | 2026/07/28 | 2026/08/14 | | ■ | ■ | ■ | | | | | | |
+| QA | QA Team | Test Execution: Spec 01 (schema, commands) | 2026/08/04 | 2026/08/10 | | | ■ | | | | | | | |
+| QA | QA Team | Test Execution: Spec 02 (eligibility) | 2026/08/11 | 2026/08/17 | | | | ■ | | | | | | |
+| QA | QA Team | Test Execution: Pattern 1 (Spec 03) | 2026/08/18 | 2026/08/24 | | | | | ■ | | | | | |
+| QA | QA Team | Test Execution: Patterns 2–9 (Specs 06–09) | 2026/09/01 | 2026/09/08 | | | | | | | ■ | | | |
+| QA | QA Team | Test Execution: Freee + CSV (Specs 04 + 05) | 2026/09/08 | 2026/09/15 | | | | | | | | ■ | | |
+| QA | Dev + QA | Bug Fix / Retest (ongoing) | 2026/08/04 | 2026/09/25 | | | ■ | ■ | ■ | ■ | ■ | ■ | ■ | |
+| QA | QA Team | End-to-end integration | 2026/09/15 | 2026/09/21 | | | | | | | | | ■ | |
+| QA | QA Team | Regression / Release Sign-off | 2026/09/22 | 2026/09/30 | | | | | | | | | | ■ |
+
+**Week Start Dates:** W1=07/21, W2=07/28, W3=08/04, W4=08/11, W5=08/18, W6=08/25, W7=09/01, W8=09/08, W9=09/15, W10=09/22
+
+**Key rules:**
+1. QA tests a spec the week AFTER dev delivers it
+2. Spec dependencies are respected: 01 → 02 → 03 → 06-09 → 04 → 05
+3. Within a spec, two devs can split tasks (e.g., Spec 01: one does migrations, other does models)
+4. Between specs, parallelism is limited by the dependency chain
+
+### With 2 Developers — Actual Plan (Throy + Cristoff)
+
+| Track | Developer 1 (Throy) | Developer 2 (Cristoff) |
 |---|---|---|
 | Weeks 1–2 | Foundation (schema, models, commands) | Eligibility + CDB integration |
 | Weeks 3–4 | Pattern 1 calculation + validation | Patterns 2–5 |
 | Weeks 5–6 | Patterns 6–9 | CSV generation + zip/email |
 | Weeks 7–8 | Freee submission | Integration testing + bug fixes |
 
-**2-developer estimate: ~7–8 weeks** (not 5 weeks — see below)
+**2-developer estimate: ~7–8 weeks**
 
 **Why 2 developers ≠ half the time:**
 
@@ -338,14 +384,15 @@ In spec-driven development, the Lead (Noel) is a single bottleneck across all sp
 - PR review: two PRs queued for review doesn't go faster than one — it queues
 - Specs have sequential dependencies (Spec 02 needs Spec 01's tables to exist)
 
-**What a 2nd developer actually adds:**
-- Parallel execution of independent specs (e.g., Foundation + eligibility research simultaneously)
+**What 2 developers add:**
+- Parallel execution of independent work within a spec (e.g., one does migrations while other does models)
 - One dev starts the next spec while the other's PR is in review — keeps momentum
 - Insurance against sickness, leave, or unexpected blockers on one developer
+- Pattern work (Specs 06–09) can be split between them
 
 **What it does NOT add:**
 - Cannot reduce Lead review time (still one person reviewing)
-- Cannot parallelize dependent specs (must wait for tables/models to exist)
+- Cannot parallelize dependent specs at the foundation level
 - Does not change PM sign-off turnaround
 
 **Bottom line:** A 2nd developer provides ~2 weeks of margin (from 9.5 → 7–8 weeks). The value is **safety margin and insurance**, not a dramatic speed increase. With 1 developer the timeline already fits 10/1.
