@@ -150,12 +150,13 @@ Step 3 — Prorate:
 | # | Item | Owner | Status |
 |---|------|-------|--------|
 | 1 | Run management model — Option A (run_id) | Dev / Kuroda-san | ✅ Decided (written 2026-07-22) |
-| 2 | N source for preview runs (default: preview→_pre, final→confirmed) | Dev | Open |
-| 3 | Freee mapping for App (freee_code=236270504) — re-investigate `mst_rule_for_journals` on dev04 | Dev | Action needed |
-| 4 | MySQL version of target DB (json/utf8mb4) | Dev | Open (minor) |
-| 5 | Tax handling — calculation is tax-inclusive (resolved). Only open: `mst_new_price_listing` registration value | Dev | Mostly resolved |
-| 6 | April 2026 cohort (H-19) — in scope, no retroactive recalc. Open: Freee manual adjustment reconciliation + CDB April backfill | Accounting / CDB | Partially resolved |
-| 7 | CDB prerequisites: production rollout + July/April backfill before 10/1 | CDB team (Wu-san) | Open |
+| 2 | N source for preview/final | Dev | ✅ Decided (2026-07-24): preview→_pre, final→confirmed. Persist asc_source_table + asc_source_id per row. |
+| 3 | Freee mapping for App | Dev | ✅ Resolved (2026-07-24): freee_code=236270504 via mst_code_change. No config change needed. |
+| 4 | MySQL version (json/utf8mb4) | Dev | Open (minor) |
+| 5 | Tax handling — all tax-inclusive | Dev | ✅ Resolved. |
+| 6 | April 2026 cohort (H-19) | Accounting / CDB | ✅ In scope. No retro recalc. CDB backfills April campaign_id. |
+| 7 | CDB table name alignment | CDB team (Wu-san) | ⚠️ "trn_campaign_price_eligibility" (tentative in Kuroda spec) vs "trn_campaign_discount_eligibility" (CDB session). Need final confirmation. |
+| 8 | ASCH email subject/body | Kuroda-san | Open — must approve before go-live |
 
 ---
 
@@ -171,7 +172,8 @@ All pre-design research is in `technical-notes/research/ASCH/`. Key files:
 | `REF-ASCH-00-PRJ-Specification.md` | Kuroda-san's full specification (original) |
 | `REF-ASCH-02-Requirements-Update-20260716.md` | **Requirements update — supersedes parts of original spec** |
 | `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design dual-option — Option A decided 2026-07-22 |
-| `REF-ASCH-04-Requirements-Update-20260722.md` | **Latest: Option A decided, separate CSV command, rounding accepted** |
+| `REF-ASCH-04-Requirements-Update-20260722.md` | Option A decided, separate CSV command, rounding accepted |
+| `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated specification. Supersedes all prior where conflicts exist.** |
 | `REF-CAP-00-Coaching-App-Plan-Overview.md` | CAP project reference — parallel project impact assessment |
 | `REF-CDB-01-Initial-Design-Proposal.md` | CDB initial design — table structure, gaps vs ASCH assumptions |
 | `REF-ASCH-00-PRJ-Brief-Kuroda.md` | Kuroda-san's project brief |
