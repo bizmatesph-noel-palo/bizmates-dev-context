@@ -12,9 +12,30 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 
 ## Active Projects
 
-| Project Code | Code Repo(s) | Artifacts Directory | Status |
-|---|---|---|---|
-| — | — | — | — |
+| Project Code | Code Repo(s) | Artifacts Directory | Status | Deadline |
+|---|---|---|---|---|
+| ASCM | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
+| ASCH | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | Active — development starting Aug 3 | 2026/10/01 |
+| ASC for CAP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CAP/` | Estimation complete — pending team confirmation | 2026/12/17 |
+| ASC for CIP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CIP/` | Estimation complete — pending team confirmation | 2026/12/17 |
+| CDB | `MBTI_backend` | `projects/asch/technical-notes/research/CDB/` | Active (separate team) | Before ASCH 10/1 |
+
+## Cross-Project Resource Plan (from meeting 2026-07-28, unconfirmed)
+
+> ⚠️ Team assignments below are Patrick-san's proposed plan. Not yet confirmed by Kuroda-san. Do not treat as final.
+
+| Project | Overall Lead | Sub-Lead | Developer(s) | Status |
+|---|---|---|---|---|
+| ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ✅ Confirmed |
+| ASC for CAP | Noel Palo (overall) | Paolo (sub-lead) | Raymark | Proposed — pending confirmation |
+| ASC for CIP | Noel Palo (overall) | Bricx or Orlino (sub-lead) | TBD | Proposed — pending confirmation |
+| CDB | Paolo | — | Efren | ✅ Active (separate project) |
+
+**Planned timeline:**
+- ASCH: starts Aug 3, deadline Oct 1
+- ASC for CAP: starts ~September, deadline Dec 17
+- ASC for CIP: starts ~September, deadline Dec 17
+- All 3 run in parallel from September (each with own sub-lead + dev)
 
 ## Routing Rules
 
@@ -71,4 +92,3 @@ Full methodology rules (knowledge resolution, git safety, report standards, docu
 - Generic methodology (goes in the toolkit repo)
 - Personal notes unrelated to a project
 - Credentials or secrets
-| `ascm` | TBA | `projects/ascm/` | Active |
