@@ -1,113 +1,120 @@
-# ASCH Workspace Ordering Guide
+# ASCH / ASC Projects — Developer Onboarding
 
-**Audience:** Developers using the ASCH (Agentic Shared Context Hub) workspace configuration for AI-assisted development.
-**Purpose:** Explains how to order repos in the multi-root workspace so that Kiro's features (specs, steering, artifacts) work correctly.
-
----
-
-## TL;DR
-
-Put the main code repo first (specs anchor there), dev-context second (artifacts go there), toolkit third (methodology auto-loads), remaining repos after.
-
-```
-1. accounting_related_system_for_freee   ← specs + code (primary)
-2. bizmates-dev-context                  ← artifacts (reports, tickets, investigations)
-3. agentic-toolkit                       ← methodology (workflows, templates, rules)
-4. ls-database-migrations
-5. bizmates.jp
-6. MBTI_backend
-```
+**Audience:** Developers and sub-leads joining ASCH, ASC for CAP, or ASC for CIP.  
+**Prerequisite:** Complete the generic workspace setup first → `docs/workspace-setup.md`
 
 ---
 
-## Context
+## Your Project
 
-In a Kiro multi-root workspace, the first folder has a special role — specs anchor there and it acts as the default workspace root. All folders' steering files auto-load regardless of position, but later folders override earlier ones on conflicts. Getting the order wrong means specs end up in the wrong repo or steering doesn't apply as expected.
-
----
-
-## How It Works
-
-### Position mechanics
-
-| Position | Behavior |
-|----------|----------|
-| **First folder** | Specs (requirements.md, design.md, tasks.md) anchor here under `.kiro/specs/`. Acts as the default workspace root. |
-| **All folders** | `.kiro/steering/` files auto-load into every session regardless of position. |
-| **Later folders** | Override earlier folders when merged settings conflict. |
-
-### Role of each repo
-
-**Slot 1 — `accounting_related_system_for_freee`**
-
-The primary code repo where implementation happens. First position because:
-
-- Specs (requirements.md, design.md, tasks.md) live in this repo's `.kiro/specs/` — following existing team convention
-- Its `.kiro/steering/` provides project-specific conventions (architecture, tech stack, coding standards)
-- Code changes from the spec workflow land here
-
-**Slot 2 — `bizmates-dev-context`**
-
-The artifact store. Its `workspace-identity.md` steering tells the agent how to route non-code outputs:
-
-- Investigation reports → `projects/asch/technical-notes/investigation/`
-- JIRA tickets → `projects/asch/technical-notes/jira/tickets/`
-- Project knowledge → `projects/asch/`
-
-Does not need first position because it doesn't own specs — it stores artifacts produced alongside the spec workflow.
-
-**Slot 3 — `agentic-toolkit`**
-
-Read-only methodology layer. Provides:
-
-- Workflows (how to investigate, fix bugs, create PRs, run spec-driven development)
-- Templates (tickets, reports, steering skeletons)
-- Auto-loaded steering (git safety, naming conventions, report standards)
-
-Never modified during normal work. Consulted on demand when you trigger a workflow.
-
-**Slots 4–6 — Supporting repos**
-
-Available for cross-repo reference when a feature touches multiple codebases. Order among these doesn't matter unless their `.kiro/steering/` files conflict (later wins).
-
-### ASCH vs ASCM
-
-| | ASCH | ASCM |
+| If you're on... | Scope doc to read | Formula |
 |---|---|---|
-| **Primary repo** | `accounting_related_system_for_freee` | `accounting_related_system_for_freee` |
-| **Work style** | Full agentic: spec → design → tasks → execute → PR | Targeted: `tc.md`-driven, known-scope fixes |
-| **Methodology** | `agentic-toolkit` workflows guide the process | Minimal — direct implementation |
-| **Artifacts** | Specs, reports, tickets produced alongside code | Mostly code changes only |
-| **When to use** | New features, investigations, design-required work | Scoped fixes, known-target changes |
+| ASCH (Honki Set) | `research/ASCH/REF-ASCH-05-Requirements-Update-20260724.md` | 3-product allocation (Lesson + Coaching + App), conditional basis |
+| ASC for CAP | `research/CAP/REF-CAP-01-ASC-Scope-20260724.md` | 2-product allocation (Coaching + App), fixed ratio |
+| ASC for CIP | `research/CIP/REF-CIP-00-ASC-Scope-20260727.md` | 2-product allocation (Coaching + App), fixed ratio |
 
-Same primary repo, different operating mode. ASCH adds the methodology and artifact layers for work that needs discovery and design.
+All three share the same architectural pattern (run_id model, separate command, T1 journals only) but with different complexity levels.
 
 ---
 
-## Step-by-Step
+## Loading Context
 
-1. Open Kiro and create a multi-root workspace with the order above.
-2. Load the project context:
-   > "Read `projects/asch/project-context.md`"
-3. Use a workflow trigger:
-   > "Start a new feature" / "Investigate this issue" / "Fix this bug" / "Create a PR"
+At session start:
 
-The agent uses: project context (from dev-context) + toolkit workflows + code repo steering to work across all three layers.
+```
+"Read projects/asch/project-context.md"
+```
 
----
+For deeper understanding of the existing batch system:
 
-## Reference
-
-| Question | Answer |
-|----------|--------|
-| Where do specs go? | `accounting_related_system_for_freee/.kiro/specs/` |
-| Where do investigation reports go? | `bizmates-dev-context/projects/asch/technical-notes/investigation/` |
-| Where do tickets go? | `bizmates-dev-context/projects/asch/technical-notes/jira/tickets/` |
-| Where does code go? | `accounting_related_system_for_freee` |
-| Where does methodology live? | `agentic-toolkit/` (read-only reference) |
-| Which steering files load? | All `.kiro/steering/` from every folder |
-| What wins on conflict? | Later folders override earlier ones |
+```
+"Also read projects/ascm/project-context.md"
+```
 
 ---
 
-*Last updated: July 2026*
+## What Kiro Knows (Auto-Loaded via Steering)
+
+Once the workspace is open, Kiro automatically loads these from `accounting_related_system_for_freee/.kiro/steering/`:
+
+| File | What it tells Kiro |
+|---|---|
+| `system-overview.md` | Batch commands, owned tables, ASCH/CAP/CIP status |
+| `backend-patterns.md` | Command → Logic → Service → Strategy → DTO (with code examples) |
+| `database-standards.md` | Connections, table prefixes, ASCH read-only tables, model patterns |
+| `batch-execution-flow.md` | What runs when, execution order, ASCH timing |
+| `csv-generation.md` | How CSVs are built, ASCH separate command approach |
+| `coding-standards.md` | PSR-12, SOLID principles, DRY, composition over inheritance |
+| `conventions.md` | File placement, naming, branch strategy |
+| `multi-tenancy.md` | Bizmates vs Zipan, ASCH is Bizmates-only |
+| `glossary.md` | All project codes, terms, and abbreviations |
+| `product.md` | Business context, subsystems, what ASCH/CAP/CIP do |
+| `repository-map.md` | Which repo owns what, key files in each |
+| `tech-stack.md` | Laravel, Docker, PHPUnit, common commands |
+
+**You don't need to read all of these.** Kiro reads them automatically. But for manual understanding, start with:
+1. `system-overview.md` — what the system does
+2. `backend-patterns.md` — how code is structured
+3. `asch-engineering-standards.md` — design patterns to follow
+
+---
+
+## Key Documents by Role
+
+### Sub-Lead (Requirements + Design + Review)
+
+| Must read | Location |
+|---|---|
+| Engineering standards | `documentation/asch-engineering-standards.md` |
+| Development workflow | `documentation/asch-development-workflow.md` |
+| ADR-001 (CSV delivery decision) | `documentation/ADR-001-csv-delivery-method.md` |
+| Your project's scope doc | See table above |
+| ASCH code (once available) | Reference implementation — the "golden path" |
+
+### Developer (Task Execution)
+
+| Must read | Location |
+|---|---|
+| Engineering standards | `documentation/asch-engineering-standards.md` |
+| Your spec's tasks.md | `.kiro/specs/{spec-name}/tasks.md` (generated by Lead) |
+| Backend patterns | `.kiro/steering/backend-patterns.md` |
+
+---
+
+## The "Golden Path" (ASCH as Reference)
+
+ASCH is implemented first. CAP and CIP follow the same patterns:
+
+| Pattern | ASCH establishes | CAP/CIP copies |
+|---|---|---|
+| Run management | `asch_calculation_runs` + lifecycle service | Same pattern, `cap_*` / `cip_*` tables |
+| Source snapshot | `asch_source_documents` | Same pattern |
+| Allocation logic | O = ΣM × basis/Σbasis | Simpler: N × App_ref / (Coaching_ref + App_ref) |
+| Freee submission | T1 journal factory + API call | Same factory, different summary source |
+| CSV output | Separate command + separate email | Same approach |
+| Testing | Pattern walkthrough + invariant checks | Same approach, fewer scenarios |
+
+**Rule:** When in doubt, look at how ASCH does it. Then simplify for your project.
+
+---
+
+## What You DON'T Need to Do
+
+- ❌ Read all 22 ASCH research documents — Kiro has them in context
+- ❌ Understand the 9 ASCH patterns — CAP/CIP are simpler (fixed ratio)
+- ❌ Figure out how the existing batch works — steering files explain it
+- ❌ Ask Noel for every coding convention — engineering standards doc has examples
+- ❌ Design the architecture from scratch — copy ASCH's proven patterns
+
+---
+
+## Getting Help
+
+| Question | Where to look first |
+|---|---|
+| "How does the existing system work?" | Ask Kiro with context loaded |
+| "What pattern should I use?" | `backend-patterns.md` or `asch-engineering-standards.md` |
+| "Why was this decision made?" | `documentation/ADR-*.md` or `research/` docs |
+| "What tables exist?" | `database-standards.md` |
+| "How do I run locally?" | `tech-stack.md` (Docker commands) |
+| Architecture question | Escalate to Noel (overall lead) |
