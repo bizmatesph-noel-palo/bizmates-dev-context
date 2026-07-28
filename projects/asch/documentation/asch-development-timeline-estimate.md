@@ -5,16 +5,18 @@
 | | |
 |---|---|
 | **Document type** | Project Estimation |
-| **Date** | 2026-07-20 |
+| **Date** | 2026-07-28 (revised) |
 | **Author** | Noel Palo, Lead Developer (SCM) |
 | **Audience** | Kuroda-san (PM), Patrick-san (SDM), Stakeholders |
-| **Status** | Draft |
+| **Status** | Final (Option A decided, 2 developers confirmed) |
 
 ---
 
 ## Executive Summary
 
-ASCH requires ~7–8 weeks of development with 2 developers (Throy + Cristoff), fitting comfortably within the 10/1 deadline. Option A (run_id model, 9 tables) is decided. ASCH runs as a separate command with separate email — no modification to existing ASC batch.
+ASCH estimated at **8–9 weeks with 2 developers** or **11–12 weeks with 1 developer**. With 2 developers, the 10/1 deadline is achievable with reasonable buffer. With 1 developer, the deadline is at risk. Option A (run_id model, 9 tables) is decided. ASCH runs as a separate command with separate email — no modification to existing ASC batch.
+
+> **Honesty note:** These estimates include real-world friction (first-time patterns, PR rejection cycles, environment issues, QA rework, spec refinement during execution). The previous 7–8 week estimate was an ideal case that assumed smooth execution with no surprises.
 
 ---
 
@@ -38,16 +40,57 @@ A batch subsystem that calculates revenue proration for Honki Set bundled paymen
 ## Assumptions
 
 - Lead developer (Noel) handles requirements → design → task generation via spec-driven workflow (Kiro)
-- 2 developers (Throy + Cristoff) execute generated tasks
+- This is the FIRST project using spec-driven dev for this team — expect first-time friction
 - Dev environment and repo access available by start date
 - CDB table structure finalized (ASCH creates in own dev branch with seed data)
-- PM clarification turnaround within 1 business day when design questions arise during spec authoring
+- PM clarification turnaround within 1 business day when design questions arise
 - No major scope additions beyond confirmed Patterns 1–9
 - QA testing (Alvin + Jaymiriz) handled separately — not included in this estimate
+- PR review cycles may require 1–2 iterations (not always first-pass approval)
+- Environment issues (Docker, dev04, DB seeding) will consume unplanned time
+- Spec tasks may need refinement during execution (dev asks questions, Lead updates)
 
 ---
 
-## Estimation Options
+## Team Scenarios
+
+### Scenario 1: Lead + 1 Developer (11–12 weeks)
+
+| Phase | Scope | Duration |
+|---|---|---|
+| Foundation (Spec 01) | 9 tables, run lifecycle, command | 2.5 wk |
+| Eligibility (Spec 02) | CDB snapshot, enrollment build | 1.5 wk |
+| Pattern 1 (Spec 03) | Core O/P/N calculation + invariants | 2 wk |
+| Patterns 2–9 (Specs 06–09) | All remaining patterns | 2.5 wk |
+| Freee + CSV (Specs 04 + 05) | T1 journals, CSV, zip, email | 1.5 wk |
+| Dev Testing | DEV04 deploy, validation, bug fixes | 1 wk |
+| **Subtotal** | | **11.5 wk** |
+| Buffer | First-time friction, PR cycles, environment issues | Included in phase estimates |
+
+**Why 11–12 weeks with 1 dev:**
+- All work is sequential — Lead reviews, then dev works on next task, then Lead reviews again
+- No overlap between specs — each must fully complete before next starts
+- PR rejection → fix → re-review adds 1–2 days per spec
+- First-time patterns (run_id lifecycle, Freee API integration) take longer than repeat implementations
+
+### Scenario 2: Lead + 2 Developers (8–9 weeks)
+
+| Phase | Scope | Duration |
+|---|---|---|
+| Foundation (Spec 01) | Both devs on migrations/models/commands (split tasks) | 2 wk |
+| Eligibility + Pattern 1 start (Spec 02 + 03) | Dev 1: Spec 02 → joins Spec 03. Dev 2: starts Spec 03. | 2 wk |
+| Patterns 2–9 (Specs 06–09) | Split between devs (independent patterns) | 2 wk |
+| Freee + CSV (Specs 04 + 05) | Dev 1: Freee. Dev 2: CSV. | 1 wk |
+| Dev Testing + Bug fixes | Both devs + Lead on DEV04 | 1 wk |
+| **Subtotal** | | **8 wk** |
+| Buffer | QA rework, environment, unexpected edge cases | 1 wk |
+| **Total** | | **9 wk** |
+
+**Why only ~25% faster with 2 devs (not 50%):**
+- Lead is single bottleneck for design/review (can't parallelize own capacity)
+- Spec dependencies limit parallelism (Spec 02 needs Spec 01 done)
+- Two PRs queued for review don't go faster than one — they queue
+- Pattern work (Specs 06–09) is where parallelism helps most
 
 ### Option A: run_id Generation Model (New Design — 9 tables)
 
@@ -191,11 +234,23 @@ The estimates are nearly equal because Option A's extra foundation cost is offse
 
 ## Timeline Confidence
 
+### With 2 developers (recommended):
+
 | Scenario | Duration | Fits 10/1? | Condition |
 |---|---|---|---|
-| **Best case** | 6 weeks | ✅ 4 weeks margin | No blockers, parallel execution, no rejections |
-| **Expected case** | 7–8 weeks | ✅ 2–3 weeks margin | Normal review cycles, minor issues |
-| **Worst case** | 10–11 weeks | ⚠️ Tight / slight overrun | Gate rejections + CDB production delay + pattern bugs |
+| **Best case** | 7 weeks | ✅ 3 weeks margin | Smooth execution, no rejections, patterns work first try |
+| **Expected case** | 8–9 weeks | ✅ 1–2 weeks margin | Normal friction (PR cycles, minor env issues, 1–2 QA bugs) |
+| **Worst case** | 11–12 weeks | ❌ Overrun | Major unexpected issues (Freee API problems, fundamental design rework, team availability) |
+
+### With 1 developer:
+
+| Scenario | Duration | Fits 10/1? | Condition |
+|---|---|---|---|
+| **Best case** | 10 weeks | ⚠️ Barely | Everything goes perfectly |
+| **Expected case** | 11–12 weeks | ❌ Overrun by 1–2 weeks | Normal friction |
+| **Worst case** | 14+ weeks | ❌ Significant overrun | Problems compound without parallel capacity |
+
+**Recommendation: 2 developers is required to meet the 10/1 deadline with confidence.**
 
 ### What could push past deadline
 
