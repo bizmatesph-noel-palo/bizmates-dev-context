@@ -5,16 +5,18 @@
 | | |
 |---|---|
 | **Document type** | Project Estimation |
-| **Date** | 2026-07-24 |
+| **Date** | 2026-07-28 (revised) |
 | **Author** | Noel Palo, Lead Developer |
 | **Audience** | Kuroda-san (PM), Patrick-san (SDM), Stakeholders |
-| **Status** | Draft (preliminary — pending D-1 resolution) |
+| **Status** | Draft (pending D-1 resolution — estimates revised for realistic friction) |
 
 ---
 
 ## Executive Summary
 
-ASC for CAP is structurally similar to ASCH but ~25% smaller in scope (2 products vs 3, simple fixed ratio vs conditional basis logic, plan_id discriminator vs CDB campaign eligibility). Estimated at **5–6 weeks with 2 developers (Option A)** or **7–8 weeks (Option B, if combined monthly-count charges are in scope)**. The ASCH implementation provides a proven architectural template, significantly reducing design risk.
+ASC for CAP is structurally similar to ASCH but ~25% smaller in scope. Estimated at **6–7 weeks with 2 developers (Option A)** or **8–9 weeks with 1 developer (Option A)**. Option B (combined monthly-count charges) adds 2.5–3 weeks to either scenario. Assumes ASCH is completed first, providing a proven architectural template.
+
+> **Honesty note:** These estimates include real-world friction (PR rejection cycles, environment issues, first-time implementation of CAP-specific scenarios, QA rework). The formula may be simpler than ASCH, but CAP is still a new project with its own unknowns.
 
 ---
 
@@ -121,12 +123,13 @@ If 8L/10L/15L plans create a combined Lesson+Coaching+App charge, CAP must handl
 
 | Dimension | Option A (Separate charges) | Option B (+ Combined charges) |
 |---|---|---|
-| **Total (2 devs)** | **6 weeks** | **8.5 weeks** |
+| **Total (Lead + 2 devs)** | **6–7 weeks** | **9–10 weeks** |
+| **Total (Lead + 1 dev)** | **8–9 weeks** | **11–12 weeks** |
 | Complexity | Simple ratio allocation | + Ticket consumption |
 | Tables | ~5 | ~5 (same — extra logic, not tables) |
 | Acceptance scenarios | ~10 | ~15 |
-| Risk | Low | Medium (monthly-count adds ASCH-level complexity for subset) |
-| Depends on | ASCH patterns (reference only) | ASCH Monthly-15 implementation (direct dependency) |
+| Risk | Low–Medium (first CAP build) | Medium–High (monthly-count adds ASCH-level complexity) |
+| Depends on | ASCH patterns (reference) | ASCH Monthly-15 implementation (direct dependency) |
 
 ---
 
