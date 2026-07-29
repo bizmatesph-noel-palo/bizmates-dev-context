@@ -10,18 +10,18 @@
 Three layers work together. Clone all three, open in Kiro as a multi-root workspace, run one prompt.
 
 ```
-┌──────────────────────────────────────────────────────────┐
+┌───────────────────────────────────────────────────────────┐
 │  [code-repo]/.kiro/steering/      WHAT you're working with│
 │                                   Codebase conventions    │
-├──────────────────────────────────────────────────────────┤
-│  bizmates-dev-context/            WHERE artifacts live     │
+├───────────────────────────────────────────────────────────┤
+│  bizmates-dev-context/            WHERE artifacts live    │
 │                                   Reports, knowledge,     │
 │                                   domain docs, projects   │
-├──────────────────────────────────────────────────────────┤
+├───────────────────────────────────────────────────────────┤
 │  agentic-toolkit/                 HOW to work             │
 │                                   Rules, workflows,       │
 │                                   templates, methodology  │
-└──────────────────────────────────────────────────────────┘
+└───────────────────────────────────────────────────────────┘
 ```
 
 ---
