@@ -1,71 +1,207 @@
-# ASC for CAP — Development Scope (from Kuroda-san, 2026-07-24)
+# ASC for CAP — Scope for Development Estimation
 
-**Source:** Confluence — "ASC for CAP - Scope for Development (as of 260724)"  
+**Source:** Kuroda-san (Confluence: "ASC for CAP - Scope for Development (as of 260724)")  
+**Date:** 2026-07-24  
 **Status:** Draft for engineering estimation  
-**Purpose:** Define accounting-system development scope for CAP (automatic App attachment to Coaching)
+**Companion:** `docs/CAP-Initial analysis and breakdown for Coaching App Plan (アプリ自動付帯)-240726-045237.pdf` (application-side analysis, separate)
 
 ---
 
-## Quick Summary for Estimation
+## 1. Objective
 
-CAP is structurally similar to ASCH but significantly simpler:
+CAP changes Coaching sales so that Bizmates App is automatically attached to eligible Coaching purchases. The customer sees and pays a single Coaching price that includes the App benefit; the App price is not displayed separately.
 
-| Dimension | ASCH | CAP |
+For accounting, the received Coaching amount must be allocated between Coaching and App:
+
+```
+Existing Coaching / ASC recognition (unchanged) → recognized Coaching amount N
+CAP allocation batch                            → final Coaching and App amounts P
+Freee adjustment                                → P − N
+```
+
+---
+
+## 2. Scope Boundaries
+
+### In Scope
+- CAP-eligible Coaching/App charges and their existing-recognition records
+- Monthly accounting processing (refund, plan-change, contract-type-change effects)
+- CAP revenue allocation, audit/detail output, summary output, Freee adjustment journals
+
+### Out of Scope (Non-negotiable)
+- Do not modify existing ASC calculation logic or overwrite existing ASC journals
+- Do not alter App Store / Google Play payment processing (not a CAP allocation input)
+- Do not allocate revenue for legacy Coaching plans that do not include App
+- LMS display unchanged
+- **New CAP tables must use `cap_*` namespace. Do not reuse ASCH tables merely because their design is similar.**
+- Application-side work excluded (plan/master creation, purchase flows, renewal, Admin Portal UI, LP/terms, email, LMS/LAZ) — covered by companion analysis
+
+---
+
+## 3. Confirmed Functional and Data Assumptions
+
+| Topic | Assumption |
+|---|---|
+| App contract creation | CAP purchase creates separate App contract/charge for product_id=10012, synchronized with Coaching contract period |
+| App amount in CAP | paid_price=0 and sales_price=0 for all CAP payment paths |
+| Coaching amount | Contains customer-paid, App-inclusive Coaching amount. Without CAP adjustment, existing recognition books entirely as Coaching. |
+| CAP eligibility | CAP-specific plan_id is primary eligibility key. Must maintain explicit mapping of all CAP plan IDs. |
+| Store App subscription | Represented by subscription status (trn_student_app_info.has_app_subscription). NOT a CAP allocation target. |
+| App reference price | **JPY 3,980 tax inclusive** (CAP batch configuration constant). Do not update mst_product_price or mst_new_price_listing for CAP. |
+| Rounding | Follow existing ASC rounding and remainder-absorption behavior |
+| Freee | Required. CAP sends adjustment journals only; existing journals unchanged. |
+
+---
+
+## 4. Application-Side Boundary
+
+The companion application-side analysis covers:
+- New CAP plan IDs and mst_plan_content composition
+- Price/plan master and model constants in bizmates.jp and MBTI_backend
+- B2C purchase and B2B/B2E Admin Portal registration flows
+- Monthly charge and redo-charge batches
+- BCO renewal/ticket-related plan mappings
+- Legacy-plan recovery behavior and payment-error notifications
+- Coaching plan-change mappings, email templates, Admin Portal/report mappings
+- Regression testing of low/no-impact consumers (LMS, BDash/Sprocket, credit-card expiry, MyStage, Trainer Portal)
+
+These are prerequisites and sources of CAP charge data, but not included in this accounting-system estimate.
+
+---
+
+## 5. Revenue Allocation Design
+
+### 5.1 Eligibility and Source Records
+
+For each accounting month, select CAP Coaching charges using plan_id mapping:
+- Read existing recognized amount for Coaching charge
+- Verify related zero-yen App contract/charge (product_id=10012, synchronized period)
+- Exclude legacy Coaching plans and independently purchased App contracts
+- Preserve source charge IDs, plan ID, product IDs, contract type, partner/department, source-recognition record ID
+
+**plan_id is mandatory discriminator.** A real App purchase must never become a CAP allocation target merely because the student also has a CAP contract.
+
+### 5.2 Amount Formula
+
+```
+App allocation       = N × App reference price / (Coaching reference price + App reference price)
+Coaching allocation  = N − App allocation
+```
+
+- All tax-inclusive JPY
+- App reference price: **JPY 3,980** (tax inclusive)
+- Coaching reference price: applicable Coaching 15-minute or 30-minute reference price
+- Apply existing ASC rounding/remainder rule (App + Coaching always = N)
+- Freee adjustment = final allocated amount − existing recognized amount
+
+### 5.3 Refunds and Changes
+
+- Refund of already-allocated amount: same original ratio, negative values
+- Refund before booking: must not produce duplicate allocation
+- Contract-type changes: preserve effective contract_type, partner, department for accounting period
+- Plan change: processed charge by charge (month can have >1 CAP allocation record)
+
+---
+
+## 6. Existing-Recognition Inputs
+
+CAP must use existing recognized amount, not independently reimplement recognition.
+
+| Underlying plan type | Recognition input | CAP responsibility |
 |---|---|---|
-| Products in bundle | 3 (Lesson + Coaching + App) | 2 (Coaching + App) |
-| Patterns/scenarios | 9 complex patterns | ~10 scenarios (simpler) |
-| Formula | Complex (basis = L or M depending on discount type) | Simple ratio: App/(Coaching+App) × N |
-| Discount complexity | Multiple discount types affect basis | No discount-type logic — always same ratio |
-| Monthly-count plans | Monthly 15 (ticket consumption) | Option B only (if combined charge exists) |
-| CDB dependency | Yes (eligibility from external batch) | No (plan_id is the discriminator) |
-| Eligible population | Campaign-specific, quarterly | All CAP plan purchases (permanent) |
-| Tables | 9 (run_id model) | ~5 (similar pattern, fewer layers) |
-| Existing code modified | 0 lines | 0 lines |
-| Freee integration | T1 only, same as ASCH | T1 only, same as ASCH |
+| Daily lesson / Coaching arrangement | `log_daily_rate_calculation` (or preview equivalent) | Allocate recognized CAP Coaching amount between Coaching and App |
+| Monthly-count lesson arrangement | `log_monthly_rate_calculation` (or preview equivalent), if CAP transaction is represented there | Allocate only CAP-eligible amount; do not recreate ticket-consumption logic |
+
+Must store specific source table and join key per CAP allocation detail row. Support preview and final source records consistently.
 
 ---
 
-## Key Design Decisions Already Made (from scope doc)
+## 7. Monthly-Count Plan Dependency (Required Before Final Estimate)
 
-1. **Separate namespace:** `cap_*` tables — do NOT reuse ASCH tables
-2. **plan_id is the discriminator** — no CDB needed, no campaign logic
-3. **App reference price:** ¥3,980 tax-incl (constant, not from DB)
-4. **Formula:** `App = N × 3,980 / (CoachingRef + 3,980)`, `Coaching = N - App`
-5. **Same operational pattern as ASCH:** preview (1st), final (3rd), revision
-6. **Separate command + separate email** (implied by ASCH precedent)
-7. **Run_id model** (implied — same pattern as ASCH)
-8. **Zero modification to existing ASC**
+New-plan list includes monthly-count cases:
 
----
+| Existing lesson plan | CAP availability |
+|---|---|
+| 15L | B2C: Coaching + App can be added to existing lesson plan. B2B: not available. |
+| 8L | B2B: available as a set once enabled in Admin Portal. |
+| 10L | B2B: available as a set once enabled in Admin Portal. |
 
-## Estimation Comparison to ASCH
+Application-side proposes new plan IDs for 15L combinations. 8L/10L described as "set" without plan IDs, product composition, or charge structure clarified.
 
-Since we just estimated ASCH at 7–8 weeks (2 devs), CAP can be estimated by comparing scope:
+### Estimation Option A — Separate Coaching + App Charge
 
-| ASCH Phase | ASCH Effort | CAP Equivalent | CAP Effort (estimated) | Why |
-|---|---|---|---|---|
-| Foundation (schema + run lifecycle) | 2 wk | Same pattern, fewer tables (~5 vs 9) | 1–1.5 wk | Reuse architectural knowledge from ASCH |
-| Eligibility | 1 wk | Simple plan_id lookup (no CDB) | 0.5 wk | Trivial compared to ASCH |
-| Core calculation | 1.5 wk | Simpler formula (fixed ratio, no basis logic) | 1 wk | No 9 patterns, no discount-type branching |
-| Pattern extensions | 1.5 wk | Refund, plan change, contract change, cooling-off | 1–1.5 wk | Fewer scenarios but still needs coverage |
-| Freee submission | 1 wk | Same T1 pattern | 0.5–1 wk | Can reference ASCH implementation |
-| CSV + email | 0.5 wk | Same pattern | 0.5 wk | Copy ASCH approach |
-| Testing | 1 wk | ~10 scenarios | 1 wk | |
-| Buffer | 1 wk | | 1 wk | |
-| **Total** | **9.5 wk (1 dev)** | | **7–8 wk (1 dev)** | ~25% smaller scope |
-| **With 2 devs** | **7–8 wk** | | **5–6 wk** | |
+If existing monthly-count lesson contract remains unchanged and Coaching + App is a separate charge, CAP allocates only the Coaching charge. Existing ASC ticket-consumption recognition for lesson remains unchanged. **This is the base scope.**
+
+### Estimation Option B — Combined Lesson + Coaching + App Plan/Charge
+
+If 8L/10L set creates one combined Lesson + Coaching + App plan/charge, lesson amount may also need allocation. Requires additional design for ticket consumption, partial-month recognition, suspension, refund, plan change, contract-type change. **Potentially comparable to ASCH-style monthly-count complexity.**
+
+**Required answer:** For 15L, 8L, and 10L — provide CAP plan_id, product composition, charge structure, and key linking CAP Coaching/App records to underlying monthly-count lesson recognition record.
 
 ---
 
-## Open Question: Option A vs Option B
+## 8. CAP Data Model and Outputs
 
-**Option A (base):** CAP Coaching + App are separate charges. CAP only allocates the Coaching charge. Simple.
+Use CAP-specific tables. Exact names to be proposed by engineering:
 
-**Option B (combined):** 8L/10L monthly-count plans create a combined Lesson+Coaching+App charge. CAP must then also handle ticket-consumption allocation — approaching ASCH-level complexity for those plan types.
+| Logical Record | Purpose |
+|---|---|
+| CAP calculation run | Preview/final/revision metadata, target month, status, audit trail |
+| CAP source snapshot | Immutable snapshot of inputs used for a run |
+| CAP allocation detail | Per charge/component/month: N, reference prices, allocated amounts, adjustment, rounding, source IDs |
+| CAP Freee summary | Aggregation at existing CalculationSummary grain |
+| CAP summary-to-detail trace | Audit from summary to detail rows |
 
-| | Option A | Option B (additional) |
+**Outputs (preview and final):**
+- CAP allocation detail CSV (source charge ID, plan ID, month, N, allocated amounts, negative = refund)
+- CAP Freee summary CSV (existing aggregation grain)
+- Final-run: Freee adjustment journals only
+
+---
+
+## 9. Freee Integration
+
+- Determine: generalize existing sender vs dedicated adapter (D-2)
+- CAP summary must NOT be inserted into or confused with ASCH tables
+- App uses product_id=10012 mapping; confirm production Freee dimensions (D-3)
+- Preview: generate outputs, no journals. Final: generate + send approved adjustments.
+- Revisions: preserve earlier calculations, send only new delta.
+
+---
+
+## 10. Acceptance Scenarios
+
+Required automated tests and accounting-reviewed fixtures:
+
+1. B2C CAP purchase: Coaching 15 minutes and 30 minutes
+2. B2B manual App registration and B2E CAP purchase
+3. Normal monthly renewal with new zero-yen App charge
+4. Legacy Coaching renewal: no CAP allocation
+5. Student with both CAP App and App Store / independently purchased App
+6. Plan change from Coaching 15 minutes to 30 minutes in same accounting month
+7. B2C/B2E contract-type change and resulting Freee dimensions
+8. Suspension, cancellation, cooling-off refund (before and after allocation booked)
+9. Preview, final, failed validation, revision delta processing
+10. Monthly-count plans: Option A base case, plus Option B if combined-charge confirmed
+11. CSV aggregation, rounding/remainder handling, Freee adjustment totals
+
+---
+
+## 11. Open Dependencies
+
+| ID | Dependency | Requested treatment |
 |---|---|---|
-| Scope | Coaching allocation only | + Monthly-count lesson allocation |
-| Complexity | Simple ratio | + Ticket consumption (I/J), partial months |
-| Effort | Base estimate | +2–3 weeks |
-| Risk | Low | Medium (new territory for CAP) |
+| D-1 | 15L/8L/10L CAP plan IDs, product composition, charges, recognition join key | Provide Option A and Option B estimates until confirmed |
+| D-2 | CAP-specific Freee sender approach | State chosen approach, repos, assumptions |
+| D-3 | Production App Freee mapping and accounting dimensions | Include config/data setup + accounting confirmation task |
+
+---
+
+## 12. Requested Estimation Format
+
+Provide:
+- Effort by workstream (CAP batch/data model, Freee/CSV integration, testing/UAT support)
+- Impacted repositories and major components
+- Option A base estimate AND Option B monthly-count combined-charge estimate
+- Assumptions, exclusions, and risks
+- Earliest feasible delivery schedule and required external dependencies
