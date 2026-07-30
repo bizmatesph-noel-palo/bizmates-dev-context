@@ -361,8 +361,16 @@ Review turnaround is included within each phase's time allocation — not a sepa
 | Item | Details |
 |---|---|
 | Development Approach | run_id (Option A — decided 2026-07-22) |
-| Development Team | 2 Developers + Lead |
-| Development Estimate | 7–8 weeks |
+| Development Team | Lead (Noel) + 2 Developers (Throy + Cristoff) |
+| Development Estimate | 8–9 weeks (expected case with real-world friction) |
+| Production Deadline | 2026/10/01 |
+| Official Start Date | 2026/08/03 |
+| Actual Start Date | 2026/07/30 (team ready — Kuroda-san cleared early start) |
+| QA | Separate parallel track |
+| Key Dependencies | CDB (production readiness by 10/1), ASCH email template (Kuroda-san) |
+| Expected Buffer | ~9 days (if starting Jul 30) or ~5 days (if starting Aug 3) |
+| Assumption | PM clarification within 1 business day |
+| Note | Lead review is single bottleneck. First-time patterns — expect friction. |
 | Production Deadline | 2026/10/01 |
 | Start Date | 2026/07/21 |
 | QA | Parallel track (starts Week 1 with prep, tests after dev delivers) |
