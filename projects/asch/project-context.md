@@ -33,11 +33,11 @@
 ## Honki Set Campaign
 
 Honki Set (本気セット) is a **marketing campaign** (not a product or plan) where students purchase a discounted bundle of:
-- Online Lessons (Daily 1, Daily 2, or Monthly 15)
+- Online Lessons (Daily 1/2/3/4, Monthly 15, legacy Daily 25/50/75/100)
 - Bizmates Coaching (30-minute plan only)
 - Bizmates App (free companion — ¥0 to student, but must carry allocated revenue)
 
-**Campaign period (current round):** 2026/7/1 – 2026/7/26 (application window). Repeats quarterly.
+**Campaign period (current round):** 2026/7/1 10:00 – 2026/7/27 23:59 JST (application window). Repeats quarterly.
 **Benefit period:** 6 months from application date.
 **Scope:** Bizmates only. B2B excluded. Non-Japan excluded.
 
@@ -107,9 +107,10 @@ Step 3 — Prorate:
 | 4 | Plan change Daily1 → Daily2 | New revision; discount applies to active plan at month-6 |
 | 5 | Coaching rest | App removed from following month; month-6 lost |
 | 6 | Plan change Daily1 → Monthly15 | I/J switches from days to ticket counts |
-| 7 | B2E → B2B switch with refund | Contract period history; App possibly excluded after switch |
-| 8 | Cooling-off refund / B2E + Loyal | Negative M values; basis uses M (non-Honki discount) |
-| 9 | Additional combination cases | TBD |
+| 7 | B2E → B2B switch with refund | Contract period history; refund prorated (same ratio as original) |
+| 8-1 | Cooling-off (same month) | Payment not prorated yet → refund not prorated |
+| 8-2 | Cooling-off (cross-month) | Payment already prorated → refund prorated with same ratio |
+| 9 | B2E with Loyal discount | B2E 5% + Loyal 10% priority; discount changes shift O for entire group |
 
 ---
 
@@ -138,10 +139,11 @@ Step 3 — Prorate:
 | Output | Content |
 |--------|---------|
 | `AschComponentDetail_{YYYYMM}.csv` | One row per proration row — detail level |
-| `AschCalculationSummary_{YYYYMM}.csv` | Freee-submission granularity with N, P, adjustment |
-| Freee adjustment journals | `ΣP − ΣN` — reuses T1/T2/T3 logic from `SendJournalsDataLogic` |
+| `AschCalculationSummary_{YYYYMM}.csv` | Freee-submission granularity with N and P columns |
+| Freee adjustment journals | `ΣP − ΣN` — T1 revenue journals only (no T2/T3). Separate ASCH command + separate email. |
 
-**Batch schedule:** Same as ASC — 1st of month (preview), 3rd of month (final + Freee submission).
+**Batch schedule:** Same as ASC — 1st of month (preview), 3rd of month (final + Freee submission).  
+**Delivery:** Separate ASCH command, separate zip, separate email (decided 2026-07-22).
 
 ---
 
@@ -162,30 +164,27 @@ Step 3 — Prorate:
 
 ## Research Documents
 
-All pre-design research is in `technical-notes/research/ASCH/`. Key files:
+All research is in `technical-notes/research/` organized by project:
+
+**ASCH (in `research/ASCH/`):**
 
 | File | What it is |
 |------|-----------|
-| `RESEARCH-02-specification-analysis.md` | Full spec analysis — most current synthesis |
-| `RESEARCH-03-Integration-Points-Analysis.md` | Code-level integration points, Pre/Final analysis, ASCM improvements |
-| `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV/zip/email pipeline research — validated integration approach |
-| `REF-ASCH-00-PRJ-Specification.md` | Kuroda-san's full specification (original) |
-| `REF-ASCH-02-Requirements-Update-20260716.md` | **Requirements update — supersedes parts of original spec** |
-| `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design dual-option — Option A decided 2026-07-22 |
-| `REF-ASCH-04-Requirements-Update-20260722.md` | Option A decided, separate CSV command, rounding accepted |
-| `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated specification. Supersedes all prior where conflicts exist.** |
-| `research/CAP/REF-CAP-00-Coaching-App-Plan-Overview.md` | CAP project reference — parallel project impact assessment |
-| `research/CDB/REF-CDB-01-Initial-Design-Proposal.md` | CDB design + confirmed table structure |
-| `research/HCR/REF-HCR-*` | HCR (Honki Customer Retention) project references |
-| `REF-ASCH-00-PRJ-Brief-Kuroda.md` | Kuroda-san's project brief |
-| `REF-ASCH-00-PATTERNS-Case1-Data.md` | Pattern 1 formula with Excel derivation |
-| `RESEARCH-01-Initial-Research-Analysis.md` | Initial research (pre-spec) |
-| `RESEARCH-01-REF-Kuroda-Response.md` | Kuroda-san's answers to RESEARCH-01 |
-| `REF-ASCH-01-MOM-20260702-Honkiset-Discussion.md` | Kickoff meeting minutes |
-| `REF-HCR-00-Customer-Retention-Overview.md` | HCR project overview (existing MBTI feature ASCH depends on) |
-| `REF-HCR-01-Campaign-Implementation.md` | Honki Set campaign implementation design |
-| `REF-HCR-02-mst-honki-set-Design.md` | `mst_honki_set` table schema and service pattern |
-| `REF-HCR-03-Eligibility-Checker.md` | Eligibility checker flow |
+| `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated spec. Start here.** |
+| `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design (Option A decided) |
+| `REF-ASCH-00-PRJ-Specification.md` | Original specification (superseded by REF-05) |
+| `REF-ASCH-00-PATTERNS-Case{1-9}-Data.md` | Pattern calculation data from Excel |
+| `RESEARCH-03-Integration-Points-Analysis.md` | Code-level integration analysis |
+| `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV pipeline research (superseded — separate command decided) |
+
+**Related projects (in `research/{PROJECT}/`):**
+
+| Directory | What it contains |
+|---|---|
+| `research/CDB/` | CDB design proposal + ASCH alignment gaps |
+| `research/CAP/` | CAP scope + ASC-for-CAP estimate |
+| `research/CIP/` | CIP scope + ASC-for-CIP estimate |
+| `research/HCR/` | HCR (Honki Customer Retention) project references |
 
 ---
 
@@ -215,7 +214,9 @@ Parallel projects: CAP and CDB running concurrently — need status sync.
 | Item | Status |
 |------|--------|
 | Research | ✅ Complete |
-| Requirements update (Kuroda-san 2026-07-16) | ✅ Received — major decisions made |
-| Design | 🔲 Not started — pending remaining open items |
-| Implementation | 🔲 Not started |
+| Requirements (Kuroda-san) | ✅ Authoritative spec: REF-ASCH-05 (2026-07-24) |
+| Decisions | ✅ All major decisions made (Option A, separate command, T1-only, tax-inclusive) |
+| Design & Implementation | 🔲 Starting Aug 3 — specs to be regenerated fresh |
+| Start date | **2026-08-03** (confirmed by Kuroda-san) |
+| Deadline | **2026-10-01** (first production run) |
 | JIRA project | 🔲 TBA — project code ASCH not yet created |
