@@ -47,13 +47,11 @@ Needs business team approval before proceeding.
 
 ## Our Recommendation (if asked)
 
-Use the **plan_id approach** that's already in the CAP scope doc (Section 5.1):
+> ⚠️ **UPDATE (2026-07-28): Decision made by Kuroda-san — new dedicated App product_id will be used, NOT plan_id. See `REF-CAP-02-Open-Items-Update-20260728.md`. The recommendation below is superseded but the technical analysis remains valid.**
 
-> "plan_id is the mandatory discriminator. A real App purchase must never become a CAP allocation target merely because the student also has a CAP contract."
+~~Use the **plan_id approach** that's already in the CAP scope doc (Section 5.1):~~
 
-If the Coaching charge is on a CAP plan_id → it's a target. The App charge is just verification (confirm it exists and is synchronized). Whether the App has a new product_id or uses the existing 10012 with ¥0 doesn't change the primary eligibility — the **Coaching plan_id** is what triggers allocation, not the App charge's properties.
-
-This aligns with what Kuroda-san already specified and avoids the ambiguity of ¥0-based detection entirely.
+The decided approach: a **new CAP-dedicated App product_id** (distinct from 10012) identifies CAP bundle targets. If a charge with that product_id exists linked to the student → the Coaching charge is an allocation target. This resolves the ¥0 ambiguity completely — FVP (10011) and standard App (10012) won't match.
 
 ## Code Evidence: FVP Already Creates ¥0 Charges (Confirms Kuroda-san's Concern)
 
