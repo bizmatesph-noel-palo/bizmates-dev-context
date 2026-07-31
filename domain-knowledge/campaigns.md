@@ -1,6 +1,6 @@
 # Campaigns Overview
 
-**Last updated:** 2026-07-16
+**Last updated:** 2026-07-31
 
 ---
 
@@ -376,7 +376,7 @@ Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324, Jul
 - **Honki Set discounts** (Coaching month-1 50%, month-6 50% for Lesson/Coaching): do NOT affect the proration basis → use List Price (L). The discount is reflected in ΣM being distributed, not in the ratio.
 - **All other discounts** (First Month B2C/B2E, Okaeri/REST campaign, Loyal benefits, B2E campaign): the product's paid amount already includes the discount → use Paid Amount (M).
 - **Month-1 overlap**: Both Lesson and Coaching appear 50% off, but only the Coaching discount is Honki Set. The Lesson month-1 discount is the standalone First Month campaign (non-Honki → uses M).
-- **Month-6 trigger**: Coaching reaching its own month 6 (C6). Once C6 fulfilled, 50% applies to the first Lesson payment arriving after that point.
+- **Month-6 trigger**: Coaching reaching its own month 6 (C6). The 50% discount applies to the Lesson payment that falls within the **calendar month** in which Coaching reaches C6 — regardless of whether the Lesson payment occurs before or after the Coaching payment within that month. *(Corrected 2026-07-31 — previously described as sequence-based.)*
 - **Priority**: Month-1/6 Honki Set 50% overrides B2E 5% and Loyal 5%/10% when they overlap (higher discount wins).
 
 ### Check: How to Verify
