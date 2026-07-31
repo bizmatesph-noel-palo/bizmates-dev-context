@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Estimation |
-| **Date** | 2026-07-28 (revised) |
+| **Date** | 2026-07-30 (revised) |
 | **Author** | Noel Palo, Lead Developer |
 | **Audience** | Kuroda-san (PM), Patrick-san (SDM), Stakeholders |
 | **Status** | Draft (preliminary — pending D-1 reference prices) |
@@ -14,9 +14,11 @@
 
 ## Executive Summary
 
-ASC for CIP is structurally identical to CAP Option A (2-product allocation: Coaching + App, simple list-price ratio, plan_id discriminator, daily-rate N source only). Estimated at **6–7 weeks with 2 developers** or **8–9 weeks with 1 developer**. December 2026 delivery is **feasible** with either team size if development starts by mid-October to early November.
+ASC for CIP is structurally identical to CAP Option A (2-product allocation: Coaching + App, simple list-price ratio, daily-rate N source only). Estimated at **6–7 weeks with 2 developers** or **8–9 weeks with 1 developer**. December 2026 delivery is **feasible** with either team size if development starts by mid-October to early November.
 
 > **Honesty note:** These estimates include real-world friction (PR cycles, environment issues, scenario edge cases, QA rework). Even though CIP is "the same formula as CAP," it's still a distinct project with its own test scenarios, table namespace, and unknowns around reference prices and contract-type handling.
+>
+> **Note (2026-07-28):** CAP's eligibility detection changed from plan_id to a new dedicated App product_id. CIP may follow the same approach — pending confirmation. The estimate is unaffected either way (same effort for either detection method).
 
 ---
 
