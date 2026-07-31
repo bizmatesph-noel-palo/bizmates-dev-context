@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Estimation |
-| **Date** | 2026-07-28 (revised) |
+| **Date** | 2026-07-30 (revised) |
 | **Author** | Noel Palo, Lead Developer |
 | **Audience** | Kuroda-san (PM), Patrick-san (SDM), Stakeholders |
 | **Status** | Draft (pending D-1 resolution — estimates revised for realistic friction) |
@@ -14,9 +14,11 @@
 
 ## Executive Summary
 
-ASC for CAP is structurally similar to ASCH but ~25% smaller in scope. Estimated at **6–7 weeks with 2 developers (Option A)** or **8–9 weeks with 1 developer (Option A)**. Option B (combined monthly-count charges) adds 2.5–3 weeks to either scenario. Assumes ASCH is completed first, providing a proven architectural template.
+ASC for CAP is structurally similar to ASCH but significantly simpler. Estimated at **6–7 weeks with 2 developers** or **8–9 weeks with 1 developer**. Option B (combined monthly-count charges) has been **eliminated** — confirmed 2026-07-28 that Coaching + App are always separate charges. Assumes ASCH is completed first, providing a proven architectural template.
 
 > **Honesty note:** These estimates include real-world friction (PR rejection cycles, environment issues, first-time implementation of CAP-specific scenarios, QA rework). The formula may be simpler than ASCH, but CAP is still a new project with its own unknowns.
+>
+> **Update 2026-07-28:** Eligibility detection changed from plan_id to **new dedicated App product_id**. Option B eliminated. Deadline confirmed 12/17.
 
 ---
 
@@ -121,15 +123,17 @@ If 8L/10L/15L plans create a combined Lesson+Coaching+App charge, CAP must handl
 
 ## Comparison Summary
 
-| Dimension | Option A (Separate charges) | Option B (+ Combined charges) |
-|---|---|---|
-| **Total (Lead + 2 devs)** | **6–7 weeks** | **9–10 weeks** |
-| **Total (Lead + 1 dev)** | **8–9 weeks** | **11–12 weeks** |
-| Complexity | Simple ratio allocation | + Ticket consumption |
-| Tables | ~5 | ~5 (same — extra logic, not tables) |
-| Acceptance scenarios | ~10 | ~15 |
-| Risk | Low–Medium (first CAP build) | Medium–High (monthly-count adds ASCH-level complexity) |
-| Depends on | ASCH patterns (reference) | ASCH Monthly-15 implementation (direct dependency) |
+| Dimension | Option A (Separate charges) — CONFIRMED |
+|---|---|
+| **Total (Lead + 2 devs)** | **6–7 weeks** |
+| **Total (Lead + 1 dev)** | **8–9 weeks** |
+| Complexity | Simple ratio allocation |
+| Tables | ~5 |
+| Acceptance scenarios | ~11 |
+| Eligibility detection | New dedicated App product_id (decided 2026-07-28) |
+| Risk | Low–Medium (first CAP build) |
+| Depends on | ASCH patterns (reference) |
+| Option B | **ELIMINATED** (2026-07-28 — always separate charges) |
 
 ---
 
@@ -160,9 +164,10 @@ If 8L/10L/15L plans create a combined Lesson+Coaching+App charge, CAP must handl
 
 | ID | Dependency | Required by | Status |
 |---|---|---|---|
-| D-1 | 15L/8L/10L CAP plan_ids, product composition, charge structure | Before design starts | **OPEN — blocks Option B scope** |
+| D-1 | 15L/8L/10L CAP plan structure | — | ✅ **RESOLVED** (2026-07-28): always separate charges. Option B eliminated. |
 | D-2 | CAP Freee sender approach (reuse ASCH pattern or new adapter) | Phase 5 (Freee) | Recommend: same pattern as ASCH (dedicated command) |
 | D-3 | Production App Freee mapping dimensions | Phase 5 (Freee) | Resolved (freee_code=236270504, same as ASCH) |
+| D-4 | New CAP-dedicated App product_id value | Phase 2 (Eligibility) | **OPEN** — application-side team to create |
 | D-4 | ASCH implementation (architectural reference) | Design phase | In progress (ASCH Spec 01 starting) |
 
 ---
