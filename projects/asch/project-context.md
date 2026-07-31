@@ -225,4 +225,4 @@ Parallel projects: CAP and CDB running concurrently — need status sync.
 | Design & Implementation | 🔲 Starting Aug 3 — specs to be regenerated fresh |
 | Start date | **2026-08-03** (confirmed by Kuroda-san) |
 | Deadline | **2026-10-01** (first production run) |
-| JIRA project | 🔲 TBA — project code ASCH not yet created |
+| JIRA project | ✅ Created — project code ASCH |
