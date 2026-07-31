@@ -2,6 +2,7 @@
 
 **Source:** Kuroda-san (Confluence: "CIP - Engineering Scope for Development Estimation")  
 **Date:** 2026-07-27  
+**Last updated:** 2026-07-31 (addendum: ASC pipeline sufficiency analysis)  
 **Status:** Draft for engineering estimation  
 **Deadline:** December 2026 (first batch run: 2027/01/01)
 
@@ -215,3 +216,17 @@ Provide:
 | RA-07 | Contract-type/dept/order_no on new charges | Open (D-5) |
 | RA-09 | CIP uses `cip_*` namespace (no ASCH/CAP table reuse) | Decided |
 | RA-10 | Post-release correction process | Open (D-6) |
+
+
+---
+
+## Addendum: ASC Pipeline Sufficiency Analysis (2026-07-31)
+
+Code-trace investigation confirmed that the existing ASC daily rate calculation and Freee journal pipeline handles new Coaching products (product_type=9) without code changes. However, the CIP-specific revenue allocation (splitting N between Coaching and App) still requires:
+- 1 new artisan command (`cip:calculate`)
+- 3–4 `cip_*` tables (run management, allocation detail, summary)
+- Eligibility query, formula, CSV generation, and Freee adjustment sender
+
+The standard pipeline provides N (input). The allocation and adjustment are separate new logic.
+
+**Full analysis:** `technical-notes/investigation/20260731-asc-cap-cip-code-change-analysis/REPORT-00-asc-pipeline-sufficiency-analysis.md`
