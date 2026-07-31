@@ -103,14 +103,16 @@ Step 3 — Prorate:
 |---|---------|---------------|
 | 1 | Simultaneous start, month-start | Baseline — simplest |
 | 2 | Different start dates | Period boundary mismatch — J/I differs per product |
-| 3 | Start before campaign | Month-6 discount dates differ per product |
-| 4 | Plan change Daily1 → Daily2 | New revision; discount applies to active plan at month-6 |
+| 3 | Start before campaign | ~~Month-6 discount dates differ per product~~ → Calendar-month trigger (REF-06 §1) simplifies this |
+| 4 | Plan change Daily1 → Daily2 | New revision; discount applies to new plan's price (REF-06 §2) |
 | 5 | Coaching rest | App removed from following month; month-6 lost |
 | 6 | Plan change Daily1 → Monthly15 | I/J switches from days to ticket counts |
-| 7 | B2E → B2B switch with refund | Contract period history; refund prorated (same ratio as original) |
+| 7 | B2E → B2B switch with refund | Contract period history; future-only reversion (REF-06 §3) |
 | 8-1 | Cooling-off (same month) | Payment not prorated yet → refund not prorated |
 | 8-2 | Cooling-off (cross-month) | Payment already prorated → refund prorated with same ratio |
-| 9 | B2E with Loyal discount | B2E 5% + Loyal 10% priority; discount changes shift O for entire group |
+| 9 | B2E with Loyal discount | ~~Sequence-based split with P3~~ → Calendar-month trigger eliminates this split (REF-06 §1) |
+
+**⚠️ REF-06 §1 impact:** Patterns 3 and 9 previously required separate handling for "Lesson payment before vs after Coaching C6 payment." This sequence-based split no longer applies — month-6 discount triggers for any Lesson payment in the same calendar month as Coaching C6.
 
 ---
 
@@ -153,12 +155,15 @@ Step 3 — Prorate:
 |---|------|-------|--------|
 | 1 | Run management model — Option A (run_id) | Dev / Kuroda-san | ✅ Decided (written 2026-07-22) |
 | 2 | N source for preview/final | Dev | ✅ Decided (2026-07-24): preview→_pre, final→confirmed. Persist asc_source_table + asc_source_id per row. |
-| 3 | Freee mapping for App | Dev | ✅ Resolved (2026-07-24): freee_code=236270504 via mst_code_change. No config change needed. |
+| 3 | Freee mapping for App | Dev | ✅ Partially confirmed (2026-07-31): code=100, mst_rule_for_journals has 4 rows. 3 narrower sub-items remain (see REF-06 §5). |
 | 4 | MySQL version (json/utf8mb4) | Dev | Open (minor) |
 | 5 | Tax handling — all tax-inclusive | Dev | ✅ Resolved. |
 | 6 | April 2026 cohort (H-19) | Accounting / CDB | ✅ In scope. No retro recalc. CDB backfills April campaign_id. |
 | 7 | CDB table name alignment | CDB team (Wu-san) | ⚠️ "trn_campaign_price_eligibility" (tentative in Kuroda spec) vs "trn_campaign_discount_eligibility" (CDB session). Need final confirmation. |
 | 8 | ASCH email subject/body | Kuroda-san | Open — must approve before go-live |
+| 9 | H-4 sub-item: B2C department_id differs (1652034 vs 1652032) | Accounting / Kuroda-san | ⚠️ New (2026-07-31) |
+| 10 | H-4 sub-item: 2026-05-20 update context for rows 102/109 | Accounting / Kuroda-san | ⚠️ New (2026-07-31) |
+| 11 | H-4 sub-item: Were rows 109–111 added specifically for ASCH? | Accounting / Kuroda-san | ⚠️ New (2026-07-31) |
 
 ---
 
@@ -170,7 +175,8 @@ All research is in `technical-notes/research/` organized by project:
 
 | File | What it is |
 |------|-----------|
-| `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated spec. Start here.** |
+| `REF-ASCH-06-Requirements-Update-20260731.md` | **Month-6 timing correction (calendar-month not sequence), plan-change pricing, eligibility-loss, target_month anchor, H-4 partial confirmation. Supersedes sequence-based month-6 descriptions.** |
+| `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated spec. Start here for full picture.** |
 | `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design (Option A decided) |
 | `REF-ASCH-00-PRJ-Specification.md` | Original specification (superseded by REF-05) |
 | `REF-ASCH-00-PATTERNS-Case{1-9}-Data.md` | Pattern calculation data from Excel |
@@ -214,7 +220,7 @@ Parallel projects: CAP and CDB running concurrently — need status sync.
 | Item | Status |
 |------|--------|
 | Research | ✅ Complete |
-| Requirements (Kuroda-san) | ✅ Authoritative spec: REF-ASCH-05 (2026-07-24) |
+| Requirements (Kuroda-san) | ✅ Authoritative spec: REF-ASCH-05 (2026-07-24) + REF-ASCH-06 (2026-07-31) |
 | Decisions | ✅ All major decisions made (Option A, separate command, T1-only, tax-inclusive) |
 | Design & Implementation | 🔲 Starting Aug 3 — specs to be regenerated fresh |
 | Start date | **2026-08-03** (confirmed by Kuroda-san) |
