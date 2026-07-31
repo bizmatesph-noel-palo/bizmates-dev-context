@@ -151,7 +151,7 @@ Our ASC projects read data that upstream projects produce. If the upstream proje
 | Project | Formula | Complexity | Lead + 2 Devs | Deadline | Buffer |
 |---|---|---|---|---|---|
 | ASCH | 3-product, conditional basis | High (9 patterns) | 8–9 weeks | 10/1 | ~9 days |
-| ASC for CAP | 2-product, fixed ratio | Low–Medium | 6–7 weeks | 12/17 | ~3 weeks |
+| ASC for CAP | 2-product, fixed ratio | Low–Medium (Option B eliminated) | 6–7 weeks | 12/17 | ~3 weeks |
 | ASC for CIP | 2-product, fixed ratio | Low–Medium | 6–7 weeks | 12/17 | ~3 weeks |
 
 ---
