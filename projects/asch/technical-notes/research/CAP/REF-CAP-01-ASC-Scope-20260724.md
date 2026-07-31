@@ -5,6 +5,11 @@
 **Status:** Draft for engineering estimation  
 **Companion:** `docs/CAP-Initial analysis and breakdown for Coaching App Plan (アプリ自動付帯)-240726-045237.pdf` (application-side analysis, separate)
 
+> ⚠️ **Partially superseded (2026-07-28):** Key decisions in `REF-CAP-02-Open-Items-Update-20260728.md` override parts of this document:
+> - Eligibility: NEW dedicated App product_id (not plan_id as stated in §3/§5.1)
+> - Option B: ELIMINATED (always separate charges — §7 is no longer applicable)
+> - App price: confirmed flat ¥3,980 regardless of contract type
+
 ---
 
 ## 1. Objective
