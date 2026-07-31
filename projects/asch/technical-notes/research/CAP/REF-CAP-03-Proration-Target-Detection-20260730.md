@@ -2,6 +2,7 @@
 
 **Source:** Kuroda-san (Slack, 2026-07-30), raised by Soli-san  
 **Status:** Under consideration — pending business team approval  
+**Last updated:** 2026-07-31 (addendum: ASC pipeline sufficiency analysis)  
 **Affects:** ASC for CAP eligibility logic (how the batch identifies which charges to allocate)
 
 ---
@@ -153,3 +154,14 @@ if (MstPlan::isOnlineLessonFvpPlan((int)$item['plan_id'])) {
 - No estimate change regardless of outcome
 - Flagged for CAP sub-lead awareness when onboarding
 - Code evidence added: FVP (10011) confirmed at ¥0 in both MBTI_backend and charge.php
+
+
+---
+
+## Addendum: ASC Pipeline Sufficiency Analysis (2026-07-31)
+
+Soli-san's claim (via DevinAI) that `accounting_related_system_for_freee` needs no code changes for new Coaching products has been verified by code trace.
+
+**Result:** Correct for the standard daily rate → sum → journal pipeline. A new product with `product_type = 9` flows through unchanged. However, the CAP/CIP accounting requirement (revenue allocation between Coaching and App) still requires new commands and tables — the standard pipeline produces N (recognized amount), but the allocation P and adjustment (P − N) are separate concerns.
+
+**Full analysis:** `technical-notes/investigation/20260731-asc-cap-cip-code-change-analysis/REPORT-00-asc-pipeline-sufficiency-analysis.md`
