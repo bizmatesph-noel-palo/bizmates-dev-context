@@ -70,7 +70,8 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 | Spec | Component | Description |
 |------|-----------|-------------|
-| 01 | Schema & Foundation | 9 `asch_*` tables, run lifecycle, commands, models. App price from `mst_new_price_listing`. |
+| 01a | Database Migrations (ls-db) | 9 `asch_*` table CREATE migrations, FK constraint migration, structure tests. Lives in `ls-database-migrations`. |
+| 01b | Foundation (Application) | Eloquent models, enums, run lifecycle service, artisan command skeleton, logic class skeleton. Lives in `accounting_related_system_for_freee`. |
 | 02 | Honki Set Eligibility | Identify eligible members from CDB table (`trn_campaign_discount_eligibility`). Fallback to self-detection. |
 | 03 | Proration Calculation (Pattern 1) | O allocation + P proration for simultaneous start at month-start. Invariants (ΣO=ΣM, ΣP=O). |
 | 04 | Freee Journal Adjustment | Read N, compute P−N. T1 revenue journals only (no T2/T3). Aggregated adjustment to Freee API. |
@@ -103,7 +104,7 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 | Project Scaffolding | ✅ Complete | Steering files, spec folders, engineering standards, research docs |
 | Development Timeline Estimate | ✅ Complete | 9.5 weeks (either option). See `asch-development-timeline-estimate.md` |
 | **Phase 1 — Core Engine** | | |
-| Spec 01: Foundation (schema, commands, models) | 🔲 Ready to start | H-9 decided (Option A, 2026-07-22). Spec needs regeneration. |
+| Spec 01: Foundation (schema, commands, models) | 🔲 Ready to start | H-9 decided (Option A, 2026-07-22). Split across 2 repos: migrations in ls-db, application code in accounting repo. |
 | Spec 02: Honki Set Eligibility (member identification) | 🔲 Not Started | Requirements defined. CDB integration confirmed. |
 | Spec 03: Pattern 1 Calculation (core O/P engine) | 🔲 Not Started | Requirements defined. All business rules decided. |
 | Spec 04: Freee Journal Adjustment (N-value reading, P−N, T1 journals) | 🔲 Not Started | Requirements defined. T1-only confirmed. |
@@ -166,15 +167,18 @@ ASCH does NOT modify existing calculations. It reads existing output (N), calcul
 
 ## Documentation
 
-All spec files are maintained in the `accounting_related_system_for_freee` repository under `.kiro/specs/`:
+Spec files are split across repositories based on which repo owns the deliverable:
 
-| Spec | Path |
-|------|------|
-| 01: Foundation | `.kiro/specs/asch-foundation/` |
-| 02: Honki Set Eligibility | `.kiro/specs/asch-honki-set-eligibility/` |
-| 03: Pattern 1 Calculation | `.kiro/specs/asch-pattern1-calculation/` |
-| 04: Freee Journal Adjustment | `.kiro/specs/asch-freee-journal-adjustment/` |
-| 05: CSV Report Generation | `.kiro/specs/asch-csv-report-generation/` |
+| Spec | Path | Repository |
+|------|------|-----------|
+| 01a: Database Migrations | `.kiro/specs/asch-database-migrations/` | `ls-database-migrations` |
+| 01b: Foundation (Application) | `.kiro/specs/asch-spec-01-foundation/` | `accounting_related_system_for_freee` |
+| 02: Honki Set Eligibility | `.kiro/specs/asch-honki-set-eligibility/` | `accounting_related_system_for_freee` |
+| 03: Pattern 1 Calculation | `.kiro/specs/asch-pattern1-calculation/` | `accounting_related_system_for_freee` |
+| 04: Freee Journal Adjustment | `.kiro/specs/asch-freee-journal-adjustment/` | `accounting_related_system_for_freee` |
+| 05: CSV Report Generation | `.kiro/specs/asch-csv-report-generation/` | `accounting_related_system_for_freee` |
+
+**Split-spec principle:** Each repo has its own self-contained `requirements.md` for the deliverables it owns. A developer working in one repo doesn't need to cross-reference the other repo's spec. The `ls-database-migrations` spec covers migrations + structure tests. The `accounting_related_system_for_freee` spec covers models, services, commands, and logic.
 
 ## Timeline & Milestones
 
