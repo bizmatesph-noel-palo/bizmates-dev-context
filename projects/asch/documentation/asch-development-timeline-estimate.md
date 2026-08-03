@@ -5,10 +5,10 @@
 | | |
 |---|---|
 | **Document type** | Project Estimation |
-| **Date** | 2026-07-28 (revised) |
+| **Date** | 2026-08-03 (revised — actual start date confirmed) |
 | **Author** | Noel Palo, Lead Developer (SCM) |
 | **Audience** | Kuroda-san (PM), Patrick-san (SDM), Stakeholders |
-| **Status** | Final (Option A decided, 2 developers confirmed) |
+| **Status** | Final (Option A decided, 2 developers confirmed, development starts Aug 3) |
 
 ---
 
@@ -31,9 +31,9 @@ A batch subsystem that calculates revenue proration for Honki Set bundled paymen
 | Constraint | Value |
 |---|---|
 | Production deadline | 2026/10/1 (quarterly closing — Jul–Sep revenue must be finalized) |
-| Available calendar time | ~10 weeks (Jul 21 – Oct 1) |
+| Available calendar time | ~8.5 weeks (Aug 3 – Oct 1) |
 | Team | 2 developers (Throy + Cristoff) executing tasks. Lead (Noel) handles requirements → design → task generation → code review. |
-| Key dependencies | CDB table readiness by Week 3 (Wu-san), PM sign-off turnaround, ASCH email template |
+| Key dependencies | CDB table readiness by Week 3 (CDB team), PM sign-off turnaround, ASCH email template |
 
 ---
 
@@ -155,7 +155,7 @@ This means QA testing for Pattern 2-3-9 starts in **Week 6** (after dev delivers
 
 | Risk | Impact | Probability | Mitigation |
 |---|---|---|---|
-| **CDB not ready for production by 10/1** | **Fallback self-detection needed for production** | **Medium** | PM tracks CDB delivery with Wu-san. Dev is unblocked (uses own seed data). |
+| **CDB not ready for production by 10/1** | **Fallback self-detection needed for production** | **Medium** | PM tracks CDB delivery with CDB team. Dev is unblocked (uses own seed data). |
 | Run lifecycle complexity | +2–3 days | Low | Well-defined pattern; single service class |
 | Team unfamiliarity with run_id model | +1–2 days | Low | Clear helper method + documentation |
 | H-19 (April 2026 cohort in scope) | +0.5 week | Medium | Revision run — clean, no forward-cascade |
@@ -234,40 +234,44 @@ The estimates are nearly equal because Option A's extra foundation cost is offse
 
 ## Timeline Confidence
 
-### With 2 developers (recommended):
+### With 2 developers (confirmed team):
 
 | Scenario | Duration | Fits 10/1? | Condition |
 |---|---|---|---|
-| **Best case** | 7 weeks | ✅ 3 weeks margin | Smooth execution, no rejections, patterns work first try |
-| **Expected case** | 8–9 weeks | ✅ 1–2 weeks margin | Normal friction (PR cycles, minor env issues, 1–2 QA bugs) |
-| **Worst case** | 11–12 weeks | ❌ Overrun | Major unexpected issues (Freee API problems, fundamental design rework, team availability) |
+| **Best case** | 7 weeks (ends Sep 22) | ✅ 9 days margin | Smooth execution, no rejections, patterns work first try |
+| **Expected case** | 8 weeks (ends Sep 29) | ✅ 3 days margin | Normal friction (PR cycles, minor env issues, 1–2 QA bugs) |
+| **Stretch case** | 9 weeks (ends Oct 6) | ⚠️ 5 days over | Moderate friction — 1 week of compressed QA needed |
+| **Worst case** | 11+ weeks | ❌ Overrun | Major unexpected issues (Freee API problems, fundamental design rework) |
 
-### With 1 developer:
+**Assessment:** With Aug 3 start, we have 8.5 weeks to deadline. The expected case (8 weeks) fits with minimal buffer. No room for the 9-week stretch scenario without descoping or overtime.
 
-| Scenario | Duration | Fits 10/1? | Condition |
-|---|---|---|---|
-| **Best case** | 10 weeks | ⚠️ Barely | Everything goes perfectly |
-| **Expected case** | 11–12 weeks | ❌ Overrun by 1–2 weeks | Normal friction |
-| **Worst case** | 14+ weeks | ❌ Significant overrun | Problems compound without parallel capacity |
+### Risk: Tighter Than Original Estimate
 
-**Recommendation: 2 developers is required to meet the 10/1 deadline with confidence.**
+The original estimate assumed a Jul 21 start (10 weeks available). We now have 8.5 weeks. The 1.5-week reduction comes from research taking longer than planned (6 requirement updates from Kuroda-san, each requiring re-analysis). The development scope hasn't changed — just the available calendar.
+
+**What this means:**
+- Expected case barely fits (3 days buffer)
+- Any single major issue pushes past deadline
+- QA parallel testing is critical — can't afford sequential test-after-dev for the full suite
+- PM sign-off must be same-day or next-day (no 3-day turnaround)
 
 ### What could push past deadline
 
 | Risk | Impact | Probability |
 |---|---|---|
 | **CDB not ready for production** AND **fallback self-detection needed** | +1 week | Low (only if CDB fully fails by 10/1) |
-| PM sign-off takes >3 days per spec | +1 week | Low (if PM aware of timeline pressure) |
-| H-19 (April 2026 cohort) added to scope | +0.5–1 week | Medium |
-| Dev environment not available Week 1 | Shifts entire timeline | Unknown |
-| Multiple PR rejections per spec | +0.5 week | Low (design reviewed upfront) |
-| QA finds critical bugs in pattern logic | +0.5 week | Medium (mitigated by parallel testing) |
+| PM sign-off takes >2 days per spec | +3–5 days | Medium (tight timeline makes this critical) |
+| Dev environment not available Week 1 | Shifts entire timeline | Low (pre-check on Aug 3) |
+| Multiple PR rejections per spec | +3–5 days | Low (design reviewed upfront) |
+| QA finds critical bugs in pattern logic | +3–5 days | Medium (mitigated by parallel testing) |
+| First-time spec-driven workflow friction | +3–5 days | Medium (team hasn't used this process before) |
 
-### Mitigation options (if worst case materializes)
+### Mitigation options (if timeline slips)
 
-- **Add 2nd developer** → reduces to ~7–8 weeks (provides margin, not dramatic speed increase — see Appendix)
-- **Descope Patterns 7–9 to post-10/1 release** (rarest edge cases; can ship as Phase 2)
+- **Descope Patterns 7–9 to post-10/1 release** (rarest edge cases — cooling-off, B2E→B2B switch; can ship as immediate follow-up)
 - **Pre-align PM sign-off:** share requirements drafts before formal submission to reduce turnaround
+- **Compressed QA:** QA starts testing Spec 01 while dev works on Spec 02 (already planned in the Gantt)
+- **Weekend work:** Last resort — Lead available for weekend PR reviews in final 2 weeks if needed
 
 ---
 
@@ -331,12 +335,12 @@ Review turnaround is included within each phase's time allocation — not a sepa
 |---|---|---|---|
 | H-9 decision (run_id vs _pre/final) | Week 1 start | ✅ **Decided: Option A** (2026-07-22) | — |
 | Dev environment + repo access | Week 1 start | TBD | Blocks everything |
-| **CDB table structure finalized** | **Week 1** (ASCH creates in own branch) | **Only need final column spec from Wu-san** | None (ASCH self-creates) |
-| **CDB batch running with real data** | **Before 10/1** (production gate) | **Pending (Wu-san)** | Fallback: self-detection for production |
+| **CDB table structure finalized** | **Week 1** (ASCH creates in own branch) | **Only need final column spec from CDB team** | None (ASCH self-creates) |
+| **CDB batch running with real data** | **Before 10/1** (production gate) | **Pending (CDB team)** | Fallback: self-detection for production |
 | App tax conversion rule (H-16) | Week 4 (calculation start) | Mostly resolved (tax-incl) | Minor |
 | H-19 decision (April 2026 cohort) | Week 7 (Freee scope) | Resolved (in scope, no retro) | — |
 | App Freee mapping confirmation (H-4) | Week 7 (Freee submission) | Partially resolved | May block Spec 04 |
-| CDB April cohort backfill | Week 7 | Pending (Wu-san) | Needed for production run |
+| CDB April cohort backfill | Week 7 | Pending (CDB team) | Needed for production run |
 | ASCH email template (subject/body) | Week 8 (Spec 05) | TBD (Kuroda-san) | Blocks email send |
 
 ---
@@ -364,79 +368,75 @@ Review turnaround is included within each phase's time allocation — not a sepa
 | Development Team | Lead (Noel) + 2 Developers (Throy + Cristoff) |
 | Development Estimate | 8–9 weeks (expected case with real-world friction) |
 | Production Deadline | 2026/10/01 |
-| Official Start Date | 2026/08/03 |
-| Actual Start Date | 2026/07/30 (team ready — Kuroda-san cleared early start) |
+| Development Start Date | 2026/08/03 (Monday — first coding day) |
+| Research Phase | 2026/07/02 – 2026/08/01 (completed) |
+| Available Calendar Time | ~8.5 weeks (Aug 3 – Oct 1) = 43 working days |
 | QA | Separate parallel track |
 | Key Dependencies | CDB (production readiness by 10/1), ASCH email template (Kuroda-san) |
-| Expected Buffer | ~9 days (if starting Jul 30) or ~5 days (if starting Aug 3) |
+| Expected Buffer | ~3–5 days (tight — no room for major surprises) |
 | Assumption | PM clarification within 1 business day |
-| Note | Lead review is single bottleneck. First-time patterns — expect friction. |
-| Production Deadline | 2026/10/01 |
-| Start Date | 2026/07/21 |
-| QA | Parallel track (starts Week 1 with prep, tests after dev delivers) |
-| Key Dependencies | CDB (production readiness) / H-16 / H-4 |
-| Expected Buffer | Approx. 2 weeks (dev W9 + W10) |
-| Assumption | PM clarification within 1 business day |
-| Note | Lead review remains a single bottleneck. Dependencies are sequential — parallelism is limited. |
+| Note | Lead review is single bottleneck. First-time patterns — expect friction. Split spec for Spec 01 (ls-db + accounting repo). |
 
 **Development:**
 
-| Category | Owner | Task / Phase | Start Date | End Date | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| Development | Lead + PM | Requirements / design / task generation / approval (ongoing) | 2026/07/21 | 2026/09/08 | ■ | ■ | ■ | ■ | ■ | ■ | ■ | ■ | | |
-| Development | Dev 1 (Throy) | Spec 01: Foundation (schema / models / commands / run lifecycle) | 2026/07/21 | 2026/08/03 | ■ | ■ | | | | | | | | |
-| Development | Dev 2 (Cristoff) | Spec 01: Foundation (FK migrations / structure tests / seeders) | 2026/07/21 | 2026/08/03 | ■ | ■ | | | | | | | | |
-| Development | Dev 1 (Throy) | Spec 02: Eligibility + CDB snapshot + enrollment build | 2026/08/04 | 2026/08/10 | | | ■ | | | | | | | |
-| Development | Dev 2 (Cristoff) | Spec 03: Pattern 1 — O allocation, P proration | 2026/08/04 | 2026/08/17 | | | ■ | ■ | | | | | | |
-| Development | Dev 1 (Throy) | Spec 03: Pattern 1 — N reading, adjustment, invariants | 2026/08/11 | 2026/08/17 | | | | ■ | | | | | | |
-| Development | Dev 1 (Throy) | Specs 06–09: Patterns 2–5 | 2026/08/18 | 2026/08/31 | | | | | ■ | ■ | | | | |
-| Development | Dev 2 (Cristoff) | Specs 06–09: Patterns 6–9 | 2026/08/18 | 2026/08/31 | | | | | ■ | ■ | | | | |
-| Development | Dev 1 (Throy) | Spec 04: Freee submission (T1 journals, API, chunking) | 2026/09/01 | 2026/09/08 | | | | | | | ■ | | | |
-| Development | Dev 2 (Cristoff) | Spec 05: CSV generation / zip / separate email | 2026/09/01 | 2026/09/08 | | | | | | | ■ | | | |
-| Development | Lead + Dev | Dev Testing & Validation (DEV04 full run) | 2026/09/08 | 2026/09/14 | | | | | | | | ■ | | |
-| Buffer | All | Development buffer / bug fixes / QA support | 2026/09/15 | 2026/10/01 | | | | | | | | | ■ | ■ |
+| Category | Owner | Task / Phase | Start Date | End Date | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| Development | Lead + PM | Requirements / design / task generation / approval (ongoing) | 2026/08/03 | 2026/09/19 | ■ | ■ | ■ | ■ | ■ | ■ | ■ | | |
+| Development | Dev 1 (Throy) | Spec 01a: Foundation — ls-db migrations (9 tables + FK + structure tests) | 2026/08/03 | 2026/08/15 | ■ | ■ | | | | | | | |
+| Development | Dev 2 (Cristoff) | Spec 01b: Foundation — models / enums / run lifecycle / command | 2026/08/03 | 2026/08/15 | ■ | ■ | | | | | | | |
+| Development | Dev 1 (Throy) | Spec 02: Eligibility + CDB snapshot + enrollment build | 2026/08/18 | 2026/08/22 | | | ■ | | | | | | |
+| Development | Dev 2 (Cristoff) | Spec 03: Pattern 1 — O allocation, P proration | 2026/08/18 | 2026/08/29 | | | ■ | ■ | | | | | |
+| Development | Dev 1 (Throy) | Spec 03: Pattern 1 — N reading, adjustment, invariants | 2026/08/25 | 2026/08/29 | | | | ■ | | | | | |
+| Development | Dev 1 (Throy) | Specs 06–09: Patterns 2–5 | 2026/09/01 | 2026/09/12 | | | | | ■ | ■ | | | |
+| Development | Dev 2 (Cristoff) | Specs 06–09: Patterns 6–9 | 2026/09/01 | 2026/09/12 | | | | | ■ | ■ | | | |
+| Development | Dev 1 (Throy) | Spec 04: Freee submission (T1 journals, API, chunking) | 2026/09/15 | 2026/09/19 | | | | | | | ■ | | |
+| Development | Dev 2 (Cristoff) | Spec 05: CSV generation / zip / separate email | 2026/09/15 | 2026/09/19 | | | | | | | ■ | | |
+| Development | Lead + Dev | Dev Testing & Validation (DEV04 full run) | 2026/09/22 | 2026/09/26 | | | | | | | | ■ | |
+| Buffer | All | Development buffer / bug fixes / QA support | 2026/09/29 | 2026/10/01 | | | | | | | | | ■ |
 
 **Dependency logic for parallel work:**
-- W1–2: Both devs on Spec 01 (large spec — 9 tables, migrations split between devs)
-- W3: Spec 01 done → Dev 1 starts Spec 02 (1 wk), Dev 2 starts Spec 03 (Spec 02 tables exist by mid-W3 when Dev 2 needs them for N-reading)
+- W1–2: Spec 01 split across repos. Dev 1 on ls-db migrations. Dev 2 on accounting repo models/services. Both finish by end of W2.
+- W3: Spec 01 done → Dev 1 starts Spec 02 (1 wk), Dev 2 starts Spec 03 (enrollments exist by mid-W3 when Dev 2 needs them for N-reading)
 - W4: Dev 1 joins Spec 03 (invariants, adjustment). Both finish Pattern 1 by end of W4.
 - W5–6: Spec 03 done → Patterns 2–9 split between devs (independent from each other, all extend same engine)
-- W7: Specs 06–09 done → Spec 04 (Freee) and Spec 05 (CSV) can run in parallel (Spec 05 depends on Spec 04 for aggregation, but CSV structure/template work can start while Freee is built)
+- W7: Specs 06–09 done → Spec 04 (Freee) and Spec 05 (CSV) run in parallel
 - W8: Dev testing on DEV04
-- W9–10: Buffer
+- W9: Buffer (only 3 days before deadline)
 
 **QA:**
 
-| Category | Owner | Task / Phase | Start Date | End Date | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| QA | QA Team | Test Planning | 2026/07/21 | 2026/07/25 | ■ | | | | | | | | | |
-| QA | QA Team | Test Case Creation | 2026/07/28 | 2026/08/14 | | ■ | ■ | ■ | | | | | | |
-| QA | QA Team | Test Data Preparation | 2026/07/28 | 2026/08/14 | | ■ | ■ | ■ | | | | | | |
-| QA | QA Team | Test Execution: Spec 01 (schema, commands) | 2026/08/04 | 2026/08/10 | | | ■ | | | | | | | |
-| QA | QA Team | Test Execution: Spec 02 (eligibility) | 2026/08/11 | 2026/08/17 | | | | ■ | | | | | | |
-| QA | QA Team | Test Execution: Pattern 1 (Spec 03) | 2026/08/18 | 2026/08/24 | | | | | ■ | | | | | |
-| QA | QA Team | Test Execution: Patterns 2–9 (Specs 06–09) | 2026/09/01 | 2026/09/08 | | | | | | | ■ | | | |
-| QA | QA Team | Test Execution: Freee + CSV (Specs 04 + 05) | 2026/09/08 | 2026/09/15 | | | | | | | | ■ | | |
-| QA | Dev + QA | Bug Fix / Retest (ongoing) | 2026/08/04 | 2026/09/25 | | | ■ | ■ | ■ | ■ | ■ | ■ | ■ | |
-| QA | QA Team | End-to-end integration | 2026/09/15 | 2026/09/21 | | | | | | | | | ■ | |
-| QA | QA Team | Regression / Release Sign-off | 2026/09/22 | 2026/09/30 | | | | | | | | | | ■ |
+| Category | Owner | Task / Phase | Start Date | End Date | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| QA | QA Team | Test Planning + Case Creation | 2026/08/03 | 2026/08/22 | ■ | ■ | ■ | | | | | | |
+| QA | QA Team | Test Data Preparation | 2026/08/11 | 2026/08/22 | | ■ | ■ | | | | | | |
+| QA | QA Team | Test Execution: Spec 01 (schema, commands) | 2026/08/18 | 2026/08/22 | | | ■ | | | | | | |
+| QA | QA Team | Test Execution: Spec 02 (eligibility) | 2026/08/25 | 2026/08/29 | | | | ■ | | | | | |
+| QA | QA Team | Test Execution: Pattern 1 (Spec 03) | 2026/09/01 | 2026/09/05 | | | | | ■ | | | | |
+| QA | QA Team | Test Execution: Patterns 2–9 (Specs 06–09) | 2026/09/15 | 2026/09/19 | | | | | | | ■ | | |
+| QA | QA Team | Test Execution: Freee + CSV (Specs 04 + 05) | 2026/09/22 | 2026/09/26 | | | | | | | | ■ | |
+| QA | Dev + QA | Bug Fix / Retest (ongoing) | 2026/08/18 | 2026/09/30 | | | ■ | ■ | ■ | ■ | ■ | ■ | ■ |
+| QA | QA Team | End-to-end integration + Regression | 2026/09/22 | 2026/09/30 | | | | | | | | ■ | ■ |
 
-**Week Start Dates:** W1=07/21, W2=07/28, W3=08/04, W4=08/11, W5=08/18, W6=08/25, W7=09/01, W8=09/08, W9=09/15, W10=09/22
+**Week Start Dates:** W1=08/03, W2=08/11, W3=08/18, W4=08/25, W5=09/01, W6=09/08, W7=09/15, W8=09/22, W9=09/29
 
 **Key rules:**
 1. QA tests a spec the week AFTER dev delivers it
-2. Spec dependencies are respected: 01 → 02 → 03 → 06-09 → 04 → 05
-3. Within a spec, two devs can split tasks (e.g., Spec 01: one does migrations, other does models)
+2. Spec dependencies are respected: 01a/01b → 02 → 03 → 06-09 → 04 → 05
+3. Spec 01 is split across repos: Dev 1 on ls-db migrations, Dev 2 on accounting models/services (parallel)
 4. Between specs, parallelism is limited by the dependency chain
+5. Buffer is tight (3 days) — no room for major rework
 
 ### With 2 Developers — Actual Plan (Throy + Cristoff)
 
 | Track | Developer 1 (Throy) | Developer 2 (Cristoff) |
 |---|---|---|
-| Weeks 1–2 | Foundation (schema, models, commands) | Eligibility + CDB integration |
-| Weeks 3–4 | Pattern 1 calculation + validation | Patterns 2–5 |
-| Weeks 5–6 | Patterns 6–9 | CSV generation + zip/email |
-| Weeks 7–8 | Freee submission | Integration testing + bug fixes |
+| Weeks 1–2 | Foundation: ls-db migrations + structure tests | Foundation: models, enums, services, command |
+| Week 3 | Eligibility + CDB snapshot | Pattern 1: O allocation, P proration (start) |
+| Week 4 | Pattern 1: N reading, adjustment, invariants | Pattern 1: (continues from W3) |
+| Weeks 5–6 | Patterns 2–5 | Patterns 6–9 |
+| Week 7 | Freee submission | CSV generation + zip/email |
+| Week 8 | Dev testing + bug fixes | Dev testing + bug fixes |
+| Week 9 | Buffer | Buffer |
 
 **2-developer estimate: ~7–8 weeks**
 
