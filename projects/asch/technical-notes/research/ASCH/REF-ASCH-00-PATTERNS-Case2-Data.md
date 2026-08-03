@@ -1,8 +1,8 @@
 # ASCH Pattern 2 — Case Data (from Kuroda-san's Excel)
 
-**Source:** Kuroda-san's specification Excel v3
+**Source:** Kuroda-san's specification Excel v4 (updated 2026-08-01 — calendar-month trigger correction applied)
 **Pattern:** 2 — Different start dates (Lesson month-start, Coaching mid-month)
-**Scenario:** B2C new student, Loyal discount applies
+**Scenario:** B2C new student, no Loyal discount in this pattern (Pattern 2 is B2C)
 
 ## Key Characteristics
 
@@ -60,10 +60,10 @@
 | | App | 2027/3/15 | 2027/4/14 | 2027/3/15 | 2027/3/31 | 31 | 17 | | 3,600 | 0 | 0 | 1,678 | 920 | 2,598 | 2,598 |
 | | **Totals** | | | | | | | | | 24,750 | | | 34,872 | | |
 | **Month 7 (2027/4)** | | | | | | | | | | | | | | | |
-| | Lesson - Daily 1 | 2027/4/1 | 2027/4/30 | 2027/4/1 | 2027/4/30 | 30 | 30 | 5% | 13,500 | 12,825 | 12,825 | 12,825 | 12,825 | 12,825 | 0 |
+| | Lesson - Daily 1 | 2027/4/1 | 2027/4/30 | 2027/4/1 | 2027/4/30 | 30 | 30 | | 13,500 | 13,500 | 13,500 | 13,500 | 13,500 | 13,500 | 0 |
 | | Coaching - 30 Min | 2027/3/15 | 2027/4/14 | 2027/4/1 | 2027/4/14 | 31 | 14 | 50% | 36,000 | 8,129 | | 16,780 | 7,578 | | |
 | | App | 2027/3/15 | 2027/4/14 | 2027/4/1 | 2027/4/14 | 31 | 14 | | 3,600 | 0 | 0 | 1,678 | 758 | | |
-| | **Totals** | | | | | | | | | 12,825 | | | 21,161 | | |
+| | **Totals** | | | | | | | | | 13,500 | | | 21,836 | | |
 
 ## Observations
 
@@ -94,17 +94,17 @@ When a month contains the tail of contract A and the start of contract B:
 - Coaching month-6 = 2027/3 (for the 15th-cycle coaching, 6th charge from 2026/10/15)
 - When 50% applies: basis = L (list price), same as month-1 Honki Set discount
 
-### Month 7 — Loyal Discount (5%)
+### Month 7 — Post-Honki Set (No Discount)
 
-- After Honki Set benefit period ends, Loyal discount kicks in
-- Lesson: basis = M (paid amount with 5% discount = ¥12,825) — non-Honki discount
-- O = M for Lesson (since it's a non-Honki discount)
-- Coaching still in tail period from month-6 contract
+- After Honki Set benefit period ends (month 7+), Lesson returns to full price
+- Lesson: ¥13,500 (full price, no discount) — Honki Set benefits expired
+- O = M = ¥13,500 (single product in group, trivial allocation)
+- Adjustment = 0 (P = N after Honki Set ends — no proration needed)
 
 ### Validation
 
-- Grand total Paid Price across all months: ¥260,325
-- Grand total P across all months: ¥260,325
+- Grand total Paid Price across all months: ¥261,000
+- Grand total P across all months: ¥261,000
 - ΣP = ΣPaid (lifetime invariant holds) ✓
 
 ## Implications for Phase 2 Design
