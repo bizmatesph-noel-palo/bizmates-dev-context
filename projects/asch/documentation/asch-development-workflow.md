@@ -69,10 +69,12 @@ Each feature (spec) follows this cycle from start to finish:
 
 | Step | Action | Who | Output |
 |------|--------|-----|--------|
-| 1.1 | Generate requirements.md | Lead Dev + AI | `.kiro/specs/{name}/requirements.md` |
+| 1.1 | Generate requirements.md | Lead Dev + AI | `.kiro/specs/{name}/requirements.md` (per repo — split specs get one per repo) |
 | 1.2 | Review and refine | Lead Dev | Corrected requirements |
 | 1.3 | Share with PM for sign-off | Lead Dev → SDM → PM | Confluence notification |
 | 1.4 | PM approves | PM (Kuroda-san) | Go signal to proceed |
+
+**Split-spec rule:** When a spec spans multiple repos (e.g., Spec 01 spans `ls-database-migrations` + `accounting_related_system_for_freee`), each repo gets its own self-contained `requirements.md`. PM sign-off covers both as one logical unit. Design and tasks are generated per repo.
 
 **If blocked:** Lead Dev escalates to SDM. SDM routes to PM or resolves.
 
@@ -165,25 +167,26 @@ Each spec gets its own Epic with 7 stories following the standard phase structur
 Phase 1 — Core Engine:
 
 Epic: Spec 01: Foundation
-├── Story: Requirements              → Assigned: PM (Kuroda-san) → PR: requirements.md
-├── Story: Architecture              → Assigned: Lead (Noel) → PR: design.md + tasks.md
-├── Story: Coding                    → Assigned: Dev (Throy or Cristoff) → PR: generated code
+├── Story: Requirements              → Assigned: PM (Kuroda-san) → PR: requirements.md (both repos)
+├── Story: Architecture              → Assigned: Lead (Noel) → PR: design.md + tasks.md (both repos)
+├── Story: Coding (ls-db migrations) → Assigned: Dev (Throy or Cristoff) → PR: migrations + structure tests
+├── Story: Coding (application)      → Assigned: Dev (Throy or Cristoff) → PR: models, enums, services, command
 ├── Story: Code Review               → Assigned: Lead (Noel)
 ├── Story: Dev/Manual Testing        → Assigned: Lead (Noel)
 ├── Story: Automated Testing         → Assigned: QA (Alvin or Jaymiriz)
 └── Story: Deployment                → Assigned: Lead (Noel)
 
 Epic: Spec 02: Honki Set Eligibility
-├── (same 7-story structure)
+├── (same 7-story structure — single repo)
 
 Epic: Spec 03: Pattern 1 Calculation
-├── (same 7-story structure)
+├── (same 7-story structure — single repo)
 
 Epic: Spec 04: Freee Journal Adjustment
-├── (same 7-story structure)
+├── (same 7-story structure — single repo)
 
 Epic: Spec 05: CSV Report Generation
-├── (same 7-story structure)
+├── (same 7-story structure — single repo)
 
 Phase 2 — Pattern Extensions:
 
@@ -199,6 +202,8 @@ Epic: Spec 08: Patterns 5+7 (enrollment termination, negative M)
 Epic: Spec 09: Pattern 8 (cooling-off)
 ├── (same 7-story structure)
 ```
+
+**Note on Spec 01:** This epic has 8 stories instead of the standard 7 because the Coding phase spans two repos (ls-db migrations + accounting application code). Each gets its own story for accurate time logging and PR tracking. Alternatively, a single "Coding" story can track both PRs if the team prefers — this is a JIRA housekeeping decision, not a process change.
 
 ### How It Works
 
@@ -247,7 +252,7 @@ Requirements → Architecture → Coding → Code Review → Testing → Deploym
 main
 └── feature/ASCH/ASCH-master (long-lived feature branch)
     │
-    ├── feature/ASCH/asch-foundation         (Spec 01 → PR to ASCH-master)
+    ├── feature/ASCH/asch-foundation         (Spec 01b → PR to ASCH-master)
     ├── feature/ASCH/asch-honki-set-eligibility (Spec 02 → PR to ASCH-master)
     ├── feature/ASCH/asch-pattern1-calculation  (Spec 03 → PR to ASCH-master)
     ├── feature/ASCH/asch-freee-journal-adjustment (Spec 04 → PR to ASCH-master)
@@ -258,26 +263,52 @@ main
     │
     └── release/ASCH/prod                    (deploy to production after QA pass)
         └── → deployment/prod → main
+
+ls-database-migrations:
+main
+└── feature/ASCH/ASCH-master (long-lived feature branch)
+    │
+    └── feature/ASCH/asch-database-migrations (Spec 01a → PR to ASCH-master)
 ```
 
 ### Branch Flow
 
 ```
-1. Development:
+1. Development (accounting_related_system_for_freee):
    feature/ASCH/ASCH-master → feature/ASCH/{spec-name}
    feature/ASCH/{spec-name} → PR → feature/ASCH/ASCH-master
 
-2. QA (DEV04):
-   feature/ASCH/ASCH-master → release/ASCH/dev04
+2. Development (ls-database-migrations):
+   feature/ASCH/ASCH-master → feature/ASCH/asch-database-migrations
+   feature/ASCH/asch-database-migrations → PR → feature/ASCH/ASCH-master
+
+3. QA (DEV04):
+   Both repos: feature/ASCH/ASCH-master → release/ASCH/dev04
    release/ASCH/dev04 → deployment/dev04
 
-3. QA (Staging):
-   feature/ASCH/ASCH-master → release/ASCH/prod
+4. QA (Staging):
+   Both repos: feature/ASCH/ASCH-master → release/ASCH/prod
    release/ASCH/prod → deployment/prod
 
-4. Production:
+5. Production:
    deployment/prod → main
 ```
+
+### Multi-Repo Coordination for Spec 01
+
+Spec 01 spans two repos. Execution order matters:
+
+```
+ls-database-migrations (Spec 01a)     accounting_related_system_for_freee (Spec 01b)
+─────────────────────────────────     ──────────────────────────────────────────────
+1. Create migration files              (blocked — tables must exist first)
+2. Run migrations on dev DB            
+3. Generate structure tests            
+4. PR → merge                         3. Create models, enums, services, command
+                                       4. PR → merge
+```
+
+**Rule:** ls-db migrations must be merged and run BEFORE the accounting repo's models can be tested against real tables. However, model code can be written in parallel (it just can't be integration-tested until tables exist).
 
 ---
 
@@ -288,11 +319,13 @@ Specs must be executed in dependency order:
 ```
 Phase 1 — Core Engine:
 
-Spec 01: Foundation ─────────────────────────┐
+Spec 01a: Database Migrations (ls-db) ───────┐
+                                             │ (tables must exist before models)
+Spec 01b: Foundation (accounting repo) ──────┤
                                              │
-Spec 02: Honki Set Eligibility ──────────────┤ (depends on 01: tables must exist)
+Spec 02: Honki Set Eligibility ──────────────┤ (depends on 01b: models + run lifecycle)
                                              │
-Spec 03: Pattern 1 Calculation ──────────────┤ (depends on 01 + 02: enrollments + proration engine)
+Spec 03: Pattern 1 Calculation ──────────────┤ (depends on 01b + 02: enrollments + proration engine)
                                              │
 Phase 2 — Pattern Extensions:                │
                                              │
@@ -305,13 +338,20 @@ Spec 04: Freee Journal Adjustment ───────────┤ (depends 
 Spec 05: CSV Report Generation ──────────────┘ (depends on 04: aggregated results exist)
 ```
 
+**Multi-repo note for Spec 01:**
+- Spec 01a (ls-database-migrations): migrations + FK constraints + structure tests
+- Spec 01b (accounting_related_system_for_freee): models + enums + run lifecycle + command + logic skeleton
+- Execution: 01a runs first (or in parallel with 01b code writing, but 01a must merge first for integration testing)
+- Two separate PRs in two repos, but logically one "Foundation" delivery
+
 **Why this order (not 01→02→03→04→05 sequentially):**
 - Patterns 2–9 (Specs 06–09) extend the core calculation engine (Spec 03) — they add edge cases to the same pipeline
 - Freee submission (Spec 04) needs P values from ALL patterns to be meaningful for integration testing
 - CSV (Spec 05) reads from `asch_sum_calculation` which is populated by Spec 04's aggregation
 
 **Parallelization opportunities:**
-- Spec 02 can start as soon as Spec 01's migrations are merged (doesn't need commands working)
+- Spec 01a and 01b can be worked in parallel (model code doesn't need real tables until testing)
+- Spec 02 can start as soon as Spec 01b's run lifecycle service is merged
 - Specs 06–09 (patterns) can be split across developers if available
 - Spec 05 (CSV) is mechanically simple and could overlap with Spec 04 if the table schema is stable
 
