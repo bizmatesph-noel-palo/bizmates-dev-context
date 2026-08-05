@@ -177,10 +177,12 @@ Constraint: whichever option, sending must remain independent per project.
 | 5 | Tax handling — all tax-inclusive | Dev | ✅ Resolved. |
 | 6 | April 2026 cohort (H-19) | Accounting / CDB | ✅ In scope. No retro recalc. CDB backfills April campaign_id. |
 | 7 | CDB table name alignment | CDB team (Wu-san) | ⚠️ "trn_campaign_price_eligibility" (tentative in Kuroda spec) vs "trn_campaign_discount_eligibility" (CDB session). Need final confirmation. |
-| 8 | ASCH email subject/body | Kuroda-san | Open — must approve before go-live |
+| 8 | ASCH email subject/body | Kuroda-san | Open — must approve before go-live. Now part of unified email (REF-07). |
 | 9 | H-4 sub-item: B2C department_id differs (1652034 vs 1652032) | Accounting / Kuroda-san | ⚠️ New (2026-07-31) |
 | 10 | H-4 sub-item: 2026-05-20 update context for rows 102/109 | Accounting / Kuroda-san | ⚠️ New (2026-07-31) |
 | 11 | H-4 sub-item: Were rows 109–111 added specifically for ASCH? | Accounting / Kuroda-san | ⚠️ New (2026-07-31) |
+| 12 | Freee sending approach — option (a) vs (b) | Dev / Kuroda-san | ⚠️ Open decision (2026-08-05). See REF-ASCH-08. |
+| 13 | Rounding rule | Dev | ✅ Decided: floor() per row, remainder absorbed by largest-O row (REF-03/05). |
 
 ---
 
@@ -239,9 +241,11 @@ Parallel projects: CAP and CDB running concurrently — need status sync.
 | Item | Status |
 |------|--------|
 | Research | ✅ Complete |
-| Requirements (Kuroda-san) | ✅ Authoritative spec: REF-ASCH-05 (2026-07-24) + REF-ASCH-06 (2026-07-31) |
-| Decisions | ✅ All major decisions made (Option A, separate command, T1-only, tax-inclusive) |
-| Design & Implementation | 🔲 Starting Aug 3 — specs to be regenerated fresh |
+| Requirements (Kuroda-san) | ✅ Authoritative spec: REF-ASCH-05 (2026-07-24) + REF-ASCH-06 (2026-07-31) + REF-ASCH-07/08 (2026-08-05) |
+| Decisions | ✅ All major decisions made (Option A, unified email, T1-only, tax-inclusive, floor rounding) |
+| DB Migrations Spec | ✅ Requirements approved (ls-database-migrations) — ready for design |
+| Foundation Spec | ✅ Requirements approved (accounting repo) — ready for design |
+| Design & Implementation | 🔲 In progress — specs being refined with Kuroda-san feedback |
 | Start date | **2026-08-03** (confirmed by Kuroda-san) |
 | Deadline | **2026-10-01** (first production run) |
 | JIRA project | ✅ Created — project code ASCH |
