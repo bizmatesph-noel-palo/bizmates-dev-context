@@ -142,10 +142,27 @@ Step 3 — Prorate:
 |--------|---------|
 | `AschComponentDetail_{YYYYMM}.csv` | One row per proration row — detail level |
 | `AschCalculationSummary_{YYYYMM}.csv` | Freee-submission granularity with N and P columns |
-| Freee adjustment journals | `ΣP − ΣN` — T1 revenue journals only (no T2/T3). Separate ASCH command + separate email. |
+| Freee adjustment journals | `ΣP − ΣN` — T1 revenue journals only (no T2/T3). Independent per project, never blocked by other projects. |
 
 **Batch schedule:** Same as ASC — 1st of month (preview), 3rd of month (final + Freee submission).  
-**Delivery:** Separate ASCH command, separate zip, separate email (decided 2026-07-22).
+**Delivery:** Unified email across ASCH/CAP/CIP (requirement update 2026-08-05). ASCH delivers first; CAP and CIP add their CSVs to the same email when released. CSV generation is per-project and failure-isolated; email delivery is a separate downstream step that collects available CSVs.
+
+### Unified Email Delivery Constraints (from Kuroda-san, 2026-08-05)
+
+1. **Failure isolation:** An error in one project's allocation must not prevent CSV generation or email delivery of other projects.
+2. **Partial delivery:** If one project fails, email still sends with available CSVs. Body states per-project status (succeeded/failed/not executed).
+3. **Email body:** Per-project summary table (project, run status, records, total adjustment amount, validation result).
+4. **Freee sending stays independent per project:** A failure or revision in one project must not block/alter another project's journal delivery.
+5. **Design constraint for ASCH:** Separate CSV generation step from email delivery step, so CAP/CIP can plug in later without reworking ASCH's path.
+6. **Existing ASC unchanged:** Unified delivery is an additional downstream step — ASC pipeline not modified.
+
+### Freee Sending Approach (open decision)
+
+Two options under discussion — not yet decided:
+- **(a) Generalize existing sender** — make input source pluggable (risk: touches existing ASC pipeline)
+- **(b) Dedicated thin sender per project** — each project sends its own journals, reusing only mapping/lookup logic (risk: some orchestration duplication)
+
+Constraint: whichever option, sending must remain independent per project.
 
 ---
 
@@ -175,13 +192,15 @@ All research is in `technical-notes/research/` organized by project:
 
 | File | What it is |
 |------|-----------|
+| `REF-ASCH-07-Unified-CSV-Delivery-20260805.md` | **Unified email delivery for ASCH/CAP/CIP. Failure isolation constraints. Phasing plan.** |
+| `REF-ASCH-08-Freee-Sending-Approach-Decision.md` | **Open decision: generalize existing sender (a) vs dedicated thin sender per project (b). Awaiting dev team input.** |
 | `REF-ASCH-06-Requirements-Update-20260731.md` | **Month-6 timing correction (calendar-month not sequence), plan-change pricing, eligibility-loss, target_month anchor, H-4 partial confirmation. Supersedes sequence-based month-6 descriptions.** |
 | `REF-ASCH-05-Requirements-Update-20260724.md` | **AUTHORITATIVE — complete consolidated spec. Start here for full picture.** |
 | `REF-ASCH-03-DB-Table-Design-Draft.md` | DB design (Option A decided) |
 | `REF-ASCH-00-PRJ-Specification.md` | Original specification (superseded by REF-05) |
 | `REF-ASCH-00-PATTERNS-Case{1-9}-Data.md` | Pattern calculation data from Excel |
 | `RESEARCH-03-Integration-Points-Analysis.md` | Code-level integration analysis |
-| `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV pipeline research (superseded — separate command decided) |
+| `RESEARCH-04-CSV-Zip-Email-Integration.md` | CSV pipeline research (partially superseded by REF-07) |
 
 **Related projects (in `research/{PROJECT}/`):**
 
