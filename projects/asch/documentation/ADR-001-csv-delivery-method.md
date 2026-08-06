@@ -1,8 +1,11 @@
 # ADR-001: ASCH CSV Delivery Method
 
-**Status:** Accepted  
+**Status:** Partially Superseded  
 **Date:** 2026-07-22  
+**Superseded by:** REF-ASCH-07 (Unified CSV Delivery, 2026-08-05) — email delivery changed from separate to unified  
 **Deciders:** Hayato Kuroda (PM), Noel Palo (Lead Dev)
+
+> **Note (2026-08-05):** The core processing decision (Option A — independent ASCH commands) remains valid. What changed: email delivery is now unified across ASCH/CAP/CIP into a single email per run cycle, with CSV generation remaining per-project and failure-isolated. This is effectively a hybrid of Option A (processing) + Option C (delivery orchestrator). See REF-ASCH-07 for the updated delivery requirement.
 
 ---
 
