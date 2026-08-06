@@ -175,6 +175,51 @@ Kiro now has all context loaded. Use any workflow:
 
 ---
 
+## Step 5: Resuming Work Across Sessions (Spec Continuity)
+
+Specs span multiple sessions. Each phase (requirements → design → tasks → implement) may happen in a different session. Here's how to resume:
+
+### Starting a new session to continue a spec
+
+1. **Open a new Kiro session** (new chat)
+2. **Load full context** — paste the standard prompt:
+   ```
+   Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
+   ```
+3. **Tell Kiro which spec to continue and what phase to generate:**
+   ```
+   Read .kiro/specs/{spec-name}/requirements.md in {repo-name} and generate the design.md for this spec
+   ```
+
+### Phase-specific prompts
+
+| Current phase | What to say |
+|---|---|
+| Requirements → Design | `Read .kiro/specs/{name}/requirements.md in {repo} and generate the design.md` |
+| Design → Tasks | `Read .kiro/specs/{name}/design.md in {repo} and generate the tasks.md` |
+| Tasks → Implement | `Read .kiro/specs/{name}/tasks.md in {repo} and start implementing from task 1` |
+| Resume mid-implementation | `Read .kiro/specs/{name}/tasks.md in {repo} and continue from task N` |
+
+### Example (ASCH project)
+
+```
+# Session 1: Requirements review (done)
+# Session 2: Design generation
+Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
+
+# Then:
+Read .kiro/specs/asch-database-migrations/requirements.md in ls-database-migrations and generate the design.md for this spec
+```
+
+### Why new sessions for each phase?
+
+- **Context budget** — design generation produces substantial content; a fresh window gives maximum room
+- **No information loss** — all decisions are persisted in files (requirements.md, project-context.md, knowledge-base, REF docs)
+- **Reload is cheap** — one prompt, one turn, full context restored
+- **Clean boundaries** — each phase gets a focused session without accumulated noise from prior discussions
+
+---
+
 ## Workspace Ordering by Project
 
 ### Accounting System Projects (ASCH, ASC for CAP, ASC for CIP)
