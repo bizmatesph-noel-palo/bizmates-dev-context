@@ -243,8 +243,8 @@ Parallel projects: CAP and CDB running concurrently — need status sync.
 | Research | ✅ Complete |
 | Requirements (Kuroda-san) | ✅ Authoritative spec: REF-ASCH-05 (2026-07-24) + REF-ASCH-06 (2026-07-31) + REF-ASCH-07/08 (2026-08-05) |
 | Decisions | ✅ All major decisions made (Option A, unified email, T1-only, tax-inclusive, floor rounding) |
-| DB Migrations Spec | ✅ Requirements approved (ls-database-migrations) — ready for design |
-| Foundation Spec | ✅ Requirements approved (accounting repo) — ready for design |
+| DB Migrations Spec | ✅ Requirements signed off by Kuroda-san (ls-database-migrations) |
+| Foundation Spec | ✅ Requirements signed off by Kuroda-san (accounting repo) |
 | Design & Implementation | 🔲 In progress — specs being refined with Kuroda-san feedback |
 | Start date | **2026-08-03** (confirmed by Kuroda-san) |
 | Deadline | **2026-10-01** (first production run) |
