@@ -1,6 +1,6 @@
 # ASCH Engineering Standards
 
-**Last updated:** 2026-07-10  
+**Last updated:** 2026-08-05  
 **Audience:** Developers working on the ASCH (ASC Honki Set) subsystem  
 **Scope:** Design patterns, coding principles, and standards specific to ASCH within `accounting_related_system_for_freee`
 
@@ -37,7 +37,7 @@ Thin artisan command delegates to a Logic class. The command only handles argume
 ```php
 class AschProrationCommand extends Command
 {
-    protected $signature = 'command:AschProrationCommand {exeDate?}';
+    protected $signature = 'command:AschProrationCommand {exeDate?} {--run-type=final} {--force}';
 
     public function handle(): int
     {
@@ -45,8 +45,11 @@ class AschProrationCommand extends Command
         CommonUtil::setSystemDate($exeDate);
         [$startDate, $endDate] = CommonUtil::getTargetFromTo();
 
+        $runType = RunType::fromLabel($this->option('run-type'));
+        $force = (bool) $this->option('force');
+
         $logic = app()->make(AschProrationLogic::class);
-        $logic->execute($startDate, $endDate, RunType::Final);
+        $logic->execute($startDate, $endDate, $runType, $force);
 
         return Command::SUCCESS;
     }
@@ -163,19 +166,25 @@ class AschJournalEntryFactory
 
 ### 2.5 Pipeline — Sequential Calculation Flow
 
-ASCH's calculation is a clear sequential pipeline. Each step takes the output of the previous.
+ASCH's calculation is a clear sequential pipeline. Each step takes the output of the previous. Uses a **3-transaction model** where run management and calculation work are independent commits.
 
 ```php
 class AschProrationLogic
 {
-    public function execute(string $startDate, string $endDate, RunType $runType): void
+    public function execute(string $startDate, string $endDate, RunType $runType, bool $force = false): void
     {
         Log::info('[ASCH_PRORATION] - STARTED');
 
         $targetYm = date('Ym', strtotime($startDate));
-        $run = $this->createRun($targetYm, $runType);
+
+        // Phase A — Create run (own commit, persists even on failure)
+        if ($force) {
+            $this->runLifecycleService->abortStaleRun($targetYm, $runType);
+        }
+        $run = $this->runLifecycleService->createRun($targetYm, $runType);
 
         try {
+            // Phase B — Calculation work (own transaction, rollback-safe)
             DB::connection('mysql')->beginTransaction();
 
             $enrollments = $this->enrollmentService->identifyEligibleStudents($targetYm);
@@ -185,35 +194,64 @@ class AschProrationLogic
             $adjustments = $this->computeAdjustments($prorations, $runType);
             $this->aggregate($adjustments, $run);
 
+            $run->update(['validation_status' => 1]);
+
+            DB::connection('mysql')->commit();
+
+            // Phase C — Finalize (own commit)
+            $this->runLifecycleService->finalizeRun($run->id);
+
             if ($runType->sendsToFreee()) {
                 $this->sendToFreee($run);
             }
 
-            DB::connection('mysql')->commit();
             Log::info('DATA CREATION COMPLETED SUCCESSFULLY!');
         } catch (\Throwable $e) {
             DB::connection('mysql')->rollBack();
+            // Phase C — Mark failed (own commit, independent of rollback)
+            $this->runLifecycleService->markFailed($run->id, $e->getMessage());
             Log::error('EXECUTION FAILED!');
             throw $e;
+        } finally {
+            Log::info('[ASCH_PRORATION] - END');
         }
-
-        Log::info('[ASCH_PRORATION] - END');
     }
 }
 ```
+
+**Key property:** A rollback in Phase B never rolls back Phase A or C. The run row always persists for audit/debugging.
 
 Implemented as discrete methods — not a Laravel Pipeline object (overhead not justified for a single execution path).
 
 ### 2.6 Enums — Typed Value Sets with Behavior
 
-PHP 8.1 backed enums replace magic strings/integers. Enums are the primary mechanism for composition over inheritance.
+PHP 8.1 backed enums replace magic strings/integers. Enums are the primary mechanism for composition over inheritance. **All domain enums are int-backed** (matching DB column types), with a `label()` method for string representation in CSV output, logs, and CLI.
 
 ```php
-enum RunType: string
+enum RunType: int
 {
-    case Preview = 'preview';
-    case Final = 'final';
-    case Revision = 'revision';
+    case Preview = 0;
+    case Final = 1;
+    case Revision = 2;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Preview => 'preview',
+            self::Final => 'final',
+            self::Revision => 'revision',
+        };
+    }
+
+    public static function fromLabel(string $label): self
+    {
+        return match ($label) {
+            'preview' => self::Preview,
+            'final' => self::Final,
+            'revision' => self::Revision,
+            default => throw new \ValueError("Invalid run type: {$label}"),
+        };
+    }
 
     public function readsPreTables(): bool
     {
@@ -226,11 +264,20 @@ enum RunType: string
     }
 }
 
-enum ComponentType: string
+enum ComponentType: int
 {
-    case Lesson = 'lesson';
-    case Coaching = 'coaching';
-    case App = 'app';
+    case Lesson = 1;
+    case Coaching = 2;
+    case App = 3;
+
+    public function label(): string
+    {
+        return match ($this) {
+            self::Lesson => 'lesson',
+            self::Coaching => 'coaching',
+            self::App => 'app',
+        };
+    }
 }
 
 enum ProrationMethod: string
@@ -247,6 +294,8 @@ enum ProrationMethod: string
     }
 }
 ```
+
+**Important:** `ComponentType::Lesson->value` returns `1` (int), not `'lesson'`. Anywhere downstream (CSV output, logs, Freee mapping) that needs the string form must call `->label()` explicitly, never `->value`.
 
 **Composition over inheritance via enums:**
 
@@ -271,8 +320,9 @@ final readonly class ProrationGroupDTO
     public function __construct(
         public int $enrollmentId,
         public string $targetYm,
-        public float $paidTotal,        // ΣM
-        public float $denominatorTotal, // Σbasis
+        public int $groupSeq,
+        public int $paidTotal,          // ΣM (int yen)
+        public float $denominatorTotal, // Σbasis (decimal 14,4)
         /** @var ProrationComponentDTO[] */
         public array $components,
     ) {}
@@ -282,11 +332,11 @@ final readonly class ProrationComponentDTO
 {
     public function __construct(
         public int $productId,
-        public int $productType,
-        public float $listPrice,       // L
-        public float $paidAmount,      // M
-        public float $prorationBasis,  // M or L depending on discount type
-        public float $allocatedAmount, // O
+        public int $componentType,     // 1=lesson, 2=coaching, 3=app
+        public int $salesPrice,        // L (list price in yen)
+        public int $paidPrice,         // M (paid amount in yen, negative for refunds)
+        public int $prorationBasis,    // 0=list_price, 1=paid_price
+        public float $baseAmount,      // O (decimal 14,4)
     ) {}
 }
 
@@ -296,9 +346,9 @@ final readonly class AdjustmentResultDTO
         public int $enrollmentId,
         public int $chargeId,
         public string $targetYm,
-        public float $pValue,
-        public float $nValue,
-        public float $adjustment, // P - N
+        public float $accountingAmount,  // P
+        public float $grossAmountAsc,    // N
+        public float $adjustmentAmount,  // P - N
     ) {}
 }
 ```
@@ -335,46 +385,68 @@ class AschSumCalculationCollector
 }
 ```
 
-### 2.9 CSV/Zip/Email — Separate ASCH Command (Decided 2026-07-22)
+### 2.9 CSV Generation + Unified Email Delivery (REF-ASCH-07, 2026-08-05)
 
-ASCH produces its own CSV output via a **dedicated, independent command** — NOT merged into the existing ASC batch pipeline. This avoids regression risk in existing processing.
+ASCH produces its own CSVs via a **dedicated, independent step**. Email delivery is a **separate downstream orchestrator** that collects CSVs from all projects (ASCH/CAP/CIP) into a single email.
+
+**Design principle:** CSV generation and email delivery are separate concerns. This allows CAP and CIP to plug into the same email without reworking ASCH's generation path.
 
 **How it works:**
-1. ASCH command generates CSVs from `asch_monthly_prorations` and `asch_sum_calculation`
-2. Zips them into a single archive
-3. Sends a **separate email** (third email, distinct from existing 速報版 / 確定版)
-4. No modification to `SendJournalsDataLogic` or `DailyRateCalculationPreLogic`
+1. ASCH batch generates CSVs from `asch_monthly_prorations` and `asch_sum_calculation` → returns file paths
+2. Email orchestrator collects available CSVs for the target month across all projects
+3. Sends a **single unified email** with per-project status table in the body
+4. If one project failed, email still sends with available CSVs (failure isolation)
 
 ```php
-class AschCsvUtil
+// Step 11: CSV generation (per-project, failure-isolated)
+class AschCsvGenerator
 {
-    public static function generateAndSend(string $targetYm, int $runId): void
+    public function generate(string $targetYm, int $runId): array
     {
-        $fileNameList = [];
+        $files = [];
+        $files[] = $this->createComponentDetailFile($targetYm, $runId);
+        $files[] = $this->createCalculationSummaryFile($targetYm, $runId);
+        return $files; // file paths — does NOT send email
+    }
+}
 
-        [$f, $n] = self::createComponentDetailFile($targetYm, $runId);
-        $fileNameList[$f] = $n;
+// Step 12: Email delivery (separate downstream orchestrator)
+class AllocationEmailOrchestrator
+{
+    public function deliver(string $targetYm): void
+    {
+        $attachments = [];
+        $projectStatuses = [];
 
-        [$f, $n] = self::createCalculationSummaryFile($targetYm, $runId);
-        $fileNameList[$f] = $n;
+        foreach ($this->getRegisteredProjects() as $project) {
+            $status = $project->getRunStatus($targetYm);
+            $projectStatuses[] = $status;
 
-        $zipFile = self::zipFiles($fileNameList, $targetYm);
+            if ($status->succeeded) {
+                $attachments = array_merge($attachments, $project->getCsvFiles($targetYm));
+            }
+        }
+
+        $zipFile = self::zipFiles($attachments, $targetYm);
         CommonUtil::sendMail(
-            config('const.mailType.aschProrationMail'),
+            config('const.mailType.allocationProrationMail'),
             [$zipFile],
-            self::buildMailContents($fileNameList)
+            self::buildMailContents($projectStatuses)
         );
     }
 }
 ```
 
-**Why separate (not merged into existing pipeline):**
-- No regression risk to existing ASC CSV/email processing
-- No modification to monolithic `createSendMailAttacheFile()` (1100+ lines)
-- ASCH can be tested independently without touching the existing batch
-- Decided by Kuroda-san — accounting prefers a distinct notification
+**Failure isolation constraints:**
+- CSV generation failure in CAP must not prevent ASCH CSVs from being included
+- Email body states per-project status (succeeded / failed / not executed)
+- Freee journal sending remains completely independent per project
 
-> **Note:** RESEARCH-04 (Zipan-precedent integration approach) is superseded by this decision. The research remains valid as historical context showing how the existing pipeline works.
+**Phasing:**
+- Phase 1 (ASCH release): only ASCH CSVs in email, CAP/CIP show "not executed"
+- Phase 2/3: CAP/CIP CSVs added as they release — no rework to ASCH
+
+> **Note:** RESEARCH-04 (Zipan-precedent integration approach) is partially superseded by REF-ASCH-07. The research remains valid as historical context showing how the existing pipeline works.
 
 ---
 
@@ -445,18 +517,32 @@ app/
 
 ### Error Handling
 
+Run management uses the 3-transaction model — run row persists even on failure:
+
 ```php
+// Phase A: createRun() — own commit, never rolled back
+$run = $this->runLifecycleService->createRun($targetYm, $runType);
+
 try {
+    // Phase B: calculation work — rollback-safe
     DB::connection('mysql')->beginTransaction();
     // ... pipeline steps ...
+    $run->update(['validation_status' => 1]);
     DB::connection('mysql')->commit();
+
+    // Phase C: finalize — own commit
+    $this->runLifecycleService->finalizeRun($run->id);
     Log::info('DATA CREATION COMPLETED SUCCESSFULLY!');
 } catch (\Throwable $e) {
     DB::connection('mysql')->rollBack();
+    // Phase C: mark failed — own commit, independent of rollback
+    $this->runLifecycleService->markFailed($run->id, $e->getMessage());
     Log::error('EXECUTION FAILED!');
     Log::error($e->getMessage());
     Log::error($e->getTraceAsString());
     throw $e; // Never swallow, never use exit()
+} finally {
+    Log::info('[ASCH_PRORATION] - END');
 }
 ```
 
@@ -498,6 +584,8 @@ ASCH is a **new subsystem** that:
 - Shares config infrastructure (`config/code.php`, `mst_rule_for_journals`, `mst_code_change`)
 - Sends **T1 revenue journals only** (no T2 advance payment, no T3 wash) — simpler than `SendJournalsDataLogic`
 - Uses `decimal(14,4)` for O values, `decimal(12,2)` for N/P/adjustment, `int` for M/L
+- Column naming: `sales_price` (L), `paid_price` (M), `base_amount` (O), `gross_amount_asc` (N), `accounting_amount` (P), `adjustment_amount` (P−N)
+- Rounding: `floor()` per row, remainder absorbed by largest-O row in the group
 
 ASCH does NOT:
 - Modify existing ASC commands or logic
