@@ -182,34 +182,83 @@ Specs span multiple sessions. Each phase (requirements → design → tasks → 
 ### Starting a new session to continue a spec
 
 1. **Open a new Kiro session** (new chat)
+
 2. **Load full context** — paste the standard prompt:
    ```
    Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
    ```
-3. **Tell Kiro which spec to continue and what phase to generate:**
+
+3. **Load supplementary context (design phase only)** — if you're generating design.md, load architecture docs that inform design decisions:
+   ```
+   Also read these for design context:
+   - projects/asch/documentation/asch-engineering-standards.md
+   - projects/asch/knowledge-base/01-architecture-patterns-note.md
+   - projects/asch/knowledge-base/02-calc-rule-code-convention.md
+   ```
+   > Skip this step for tasks or implementation phases — design.md already encodes these decisions.
+
+4. **Tell Kiro which spec to continue and what phase to generate:**
    ```
    Read .kiro/specs/{spec-name}/requirements.md in {repo-name} and generate the design.md for this spec
    ```
 
-### Phase-specific prompts
+### Phase-specific prompts (for Step 4)
 
-| Current phase | What to say |
+| Current phase | Step 3 needed? | Step 4 prompt |
+|---|---|---|
+| Requirements → Design | ✅ Yes | `Read .kiro/specs/{name}/requirements.md in {repo} and generate the design.md` |
+| Design → Tasks | ❌ Skip step 3 | `Read .kiro/specs/{name}/design.md in {repo} and generate the tasks.md` |
+| Tasks → Implement | ❌ Skip step 3 | `Read .kiro/specs/{name}/tasks.md in {repo} and start implementing from task 1` |
+| Resume mid-implementation | ❌ Skip step 3 | `Read .kiro/specs/{name}/tasks.md in {repo} and continue from task N` |
+
+### Supplementary files by spec domain (for Step 3)
+
+| Spec domain | Files to load |
 |---|---|
-| Requirements → Design | `Read .kiro/specs/{name}/requirements.md in {repo} and generate the design.md` |
-| Design → Tasks | `Read .kiro/specs/{name}/design.md in {repo} and generate the tasks.md` |
-| Tasks → Implement | `Read .kiro/specs/{name}/tasks.md in {repo} and start implementing from task 1` |
-| Resume mid-implementation | `Read .kiro/specs/{name}/tasks.md in {repo} and continue from task N` |
+| DB schema / migrations | Engineering standards, architecture patterns, relevant knowledge-base articles |
+| Application foundation | Engineering standards, architecture patterns, relevant knowledge-base articles |
+| Calculation logic | Engineering standards, architecture patterns, pattern case data |
+| Freee/CSV delivery | Engineering standards, ADR-001, REF-ASCH-07, REF-ASCH-08 |
 
-### Example (ASCH project)
+**ASCH — DB migrations or foundation specs:**
+```
+Also read these for design context:
+- projects/asch/documentation/asch-engineering-standards.md
+- projects/asch/knowledge-base/01-architecture-patterns-note.md
+- projects/asch/knowledge-base/02-calc-rule-code-convention.md
+```
+
+**ASCH — Freee/CSV delivery specs (Spec 04/05):**
+```
+Also read these for design context:
+- projects/asch/documentation/asch-engineering-standards.md
+- projects/asch/documentation/ADR-001-csv-delivery-method.md
+- projects/asch/technical-notes/research/ASCH/REF-ASCH-07-Unified-CSV-Delivery-20260805.md
+- projects/asch/technical-notes/research/ASCH/REF-ASCH-08-Freee-Sending-Approach-Decision.md
+```
+
+### Full example (ASCH — design phase for DB migrations spec)
 
 ```
-# Session 1: Requirements review (done)
-# Session 2: Design generation
+# Step 2: Load context
 Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
 
-# Then:
+# Step 3: Load supplementary design context
+Also read these for design context:
+- projects/asch/documentation/asch-engineering-standards.md
+- projects/asch/knowledge-base/01-architecture-patterns-note.md
+- projects/asch/knowledge-base/02-calc-rule-code-convention.md
+
+# Step 4: Generate design
 Read .kiro/specs/asch-database-migrations/requirements.md in ls-database-migrations and generate the design.md for this spec
 ```
+
+### Why new sessions for each phase?
+
+- **Context budget** — design generation produces substantial content; a fresh window gives maximum room
+- **No information loss** — all decisions are persisted in files (requirements.md, project-context.md, knowledge-base, REF docs)
+- **Reload is cheap** — one prompt, one turn, full context restored
+- **Clean boundaries** — each phase gets a focused session without accumulated noise from prior discussions
 
 ### Why new sessions for each phase?
 
