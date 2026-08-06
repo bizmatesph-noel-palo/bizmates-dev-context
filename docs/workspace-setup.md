@@ -188,7 +188,7 @@ Specs span multiple sessions. Each phase (requirements → design → tasks → 
    Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
    ```
 
-3. **Load supplementary context (design phase only)** — if you're generating design.md, load architecture docs that inform design decisions:
+3. **Load supplementary context (design phase only)** — if you're about to generate design.md, load architecture docs that inform design decisions:
    ```
    Also read these for design context:
    - projects/asch/documentation/asch-engineering-standards.md
@@ -197,19 +197,21 @@ Specs span multiple sessions. Each phase (requirements → design → tasks → 
    ```
    > Skip this step for tasks or implementation phases — design.md already encodes these decisions.
 
-4. **Tell Kiro which spec to continue and what phase to generate:**
-   ```
-   Read .kiro/specs/{spec-name}/requirements.md in {repo-name} and generate the design.md for this spec
-   ```
+4. **Open the spec file in the editor and use the spec UI to advance:**
+   - Open the current phase's file in the editor (e.g. `requirements.md` for design generation)
+   - Click **"Continue to Design"** (or the equivalent next-phase button) in Kiro's spec panel
+   - Kiro generates the next phase file in the same spec folder
 
-### Phase-specific prompts (for Step 4)
+   > **Do NOT** ask Kiro in chat to "generate the design.md" — that produces a freeform response, not the structured spec format. Always use the spec UI button.
 
-| Current phase | Step 3 needed? | Step 4 prompt |
-|---|---|---|
-| Requirements → Design | ✅ Yes | `Read .kiro/specs/{name}/requirements.md in {repo} and generate the design.md` |
-| Design → Tasks | ❌ Skip step 3 | `Read .kiro/specs/{name}/design.md in {repo} and generate the tasks.md` |
-| Tasks → Implement | ❌ Skip step 3 | `Read .kiro/specs/{name}/tasks.md in {repo} and start implementing from task 1` |
-| Resume mid-implementation | ❌ Skip step 3 | `Read .kiro/specs/{name}/tasks.md in {repo} and continue from task N` |
+### Phase-by-phase guide
+
+| Current phase | Step 3 needed? | Open this file in editor | Then click |
+|---|---|---|---|
+| Requirements → Design | ✅ Yes | `.kiro/specs/{name}/requirements.md` | "Continue to Design" |
+| Design → Tasks | ❌ Skip step 3 | `.kiro/specs/{name}/design.md` | "Continue to Tasks" |
+| Tasks → Implement | ❌ Skip step 3 | `.kiro/specs/{name}/tasks.md` | Start task execution |
+| Resume mid-implementation | ❌ Skip step 3 | `.kiro/specs/{name}/tasks.md` | Continue from uncompleted task |
 
 ### Supplementary files by spec domain (for Step 3)
 
@@ -240,17 +242,24 @@ Also read these for design context:
 ### Full example (ASCH — design phase for DB migrations spec)
 
 ```
-# Step 2: Load context
+# Step 1: Open a new Kiro session (new chat)
+#   - If a bad design.md was generated via chat previously, delete it first
+
+# Step 2: Paste context load prompt, wait for Kiro to finish loading
 Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
 
-# Step 3: Load supplementary design context
+# Step 3: Paste supplementary design context, wait for Kiro to finish loading
 Also read these for design context:
 - projects/asch/documentation/asch-engineering-standards.md
 - projects/asch/knowledge-base/01-architecture-patterns-note.md
 - projects/asch/knowledge-base/02-calc-rule-code-convention.md
 
-# Step 4: Generate design
-Read .kiro/specs/asch-database-migrations/requirements.md in ls-database-migrations and generate the design.md for this spec
+# Step 4: Open requirements.md in editor, then use the spec UI
+#   - Open: ls-database-migrations/.kiro/specs/asch-database-migrations/requirements.md
+#   - Click "Continue to Design" button in Kiro's spec panel
+#   - Kiro generates design.md in the same spec folder
+#
+#   ⚠️ Do NOT type "generate design.md" in chat — use the spec panel button only
 ```
 
 ### Why new sessions for each phase?
