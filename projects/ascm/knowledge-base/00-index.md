@@ -8,7 +8,7 @@ This knowledge base documents real engineering problems encountered during the B
 
 | Document | What It Covers |
 |----------|---------------|
-| [Design Context](00_Design_Context.md) | How the legacy architecture created the conditions for these problems. Read first for the "why." |
+| [Design Context](00-design-context.md) | How the legacy architecture created the conditions for these problems. Read first for the "why." |
 
 ---
 
@@ -18,7 +18,7 @@ The ASC project's goal was to add a monthly rate report (revenue by lesson consu
 
 | # | Topic | JIRA | TL;DR |
 |---|-------|------|-------|
-| 01 | [Uniform ticket validity window](01_Uniform_Ticket_Validity_Window.md) | ASC-254, 258, 264, 266, 267 | Tickets carry a generic 60-day expiry instead of business-rule expiry. The CTE must recompute what upstream should have stored. |
+| 01 | [Uniform ticket validity window](01-uniform-ticket-validity-window.md) | ASC-254, 258, 264, 266, 267 | Tickets carry a generic 60-day expiry instead of business-rule expiry. The CTE must recompute what upstream should have stored. |
 
 ---
 
@@ -28,19 +28,19 @@ Bugs discovered while building the monthly commands — ordered roughly by when 
 
 | # | Topic | JIRA | TL;DR |
 |---|-------|------|-------|
-| 02 | [Fan-out join doubling values](02_Fan_Out_Join_Doubling.md) | ASC-236 | 1:N join inflated SUM(paid_price) by ticket count. ¥12,980 became ¥389,400. |
-| 03 | [Wrong identity on derived rows](03_Wrong_Identity_On_Derived_Rows.md) | ASC-244 | Refund rows carried the original charge's ID instead of their own. |
-| 04 | [DateTime range boundary](04_DateTime_Range_Boundary.md) | ASC-277 | BETWEEN with DATE excludes records after midnight on the last day. |
-| 05 | [Invisible records — no log entry](05_Invisible_Records_No_Log_Entry.md) | ASC-269 | Charges with deleted tickets never enter the pipeline. |
-| 06 | [Complex CTE boundary logic](06_Complex_CTE_Boundary_Logic.md) | ASC-211, 254, 258, 260, 261, 205, 234, 232 | Recursive CTE fails at edges: first/last charge, period transitions, lookahead, regressions. |
-| 07 | [Data leaking across periods](07_Data_Leaking_Across_Periods.md) | ASC-267 | Expired charges produce ghost rows in next month's output. |
-| 08 | [Computation at report time vs storage time](08_Refund_Logic_Placement.md) | ASC-269, 276 | Late refunds invisible because computed at CSV time, not stored in log. |
-| 09 | [Orphaned records — missing dependencies](09_Orphaned_Records.md) | ASC-280 | Hard-deleted tickets orphan their parent charges from reports. |
-| 10 | [Source table mismatch (Pre/Final)](10_Pre_Final_Table_Mismatch.md) | ASC-274 | Pre command read from Final table — empty reports looked like "no data." |
-| 11 | [Rounding loss accumulation](11_Rounding_Loss_Accumulation.md) | ASC-239 | floor(14107/15) × 15 = ¥14,100. Missing ¥7 on full refunds. |
-| 12 | [Stale aggregation data](12_Stale_Aggregation_Data.md) | ASC-203 | Re-runs doubled summaries because old rows weren't cleaned up. |
-| 19 | [INTERVAL offset vs DATETIME boundary](19_Interval_Offset_Datetime_Boundary.md) | ASC-296 | `INTERVAL 1 DAY` resolves to midnight — excludes DATETIME records with time past 00:00:00. Need INTERVAL 2 DAY. |
-| 20 | [Lookahead premature expiry](20_Lookahead_Premature_Expiry.md) | ASC-301 | 2-day lookahead fires one month too early for charges with next-month rows in the CTE. Gate on `rn = total_rows`. |
+| 02 | [Fan-out join doubling values](02-fan-out-join-doubling.md) | ASC-236 | 1:N join inflated SUM(paid_price) by ticket count. ¥12,980 became ¥389,400. |
+| 03 | [Wrong identity on derived rows](03-wrong-identity-on-derived-rows.md) | ASC-244 | Refund rows carried the original charge's ID instead of their own. |
+| 04 | [DateTime range boundary](04-datetime-range-boundary.md) | ASC-277 | BETWEEN with DATE excludes records after midnight on the last day. |
+| 05 | [Invisible records — no log entry](05-invisible-records-no-log-entry.md) | ASC-269 | Charges with deleted tickets never enter the pipeline. |
+| 06 | [Complex CTE boundary logic](06-complex-cte-boundary-logic.md) | ASC-211, 254, 258, 260, 261, 205, 234, 232 | Recursive CTE fails at edges: first/last charge, period transitions, lookahead, regressions. |
+| 07 | [Data leaking across periods](07-data-leaking-across-periods.md) | ASC-267 | Expired charges produce ghost rows in next month's output. |
+| 08 | [Computation at report time vs storage time](08-refund-logic-placement.md) | ASC-269, 276 | Late refunds invisible because computed at CSV time, not stored in log. |
+| 09 | [Orphaned records — missing dependencies](09-orphaned-records.md) | ASC-280 | Hard-deleted tickets orphan their parent charges from reports. |
+| 10 | [Source table mismatch (Pre/Final)](10-pre-final-table-mismatch.md) | ASC-274 | Pre command read from Final table — empty reports looked like "no data." |
+| 11 | [Rounding loss accumulation](11-rounding-loss-accumulation.md) | ASC-239 | floor(14107/15) × 15 = ¥14,100. Missing ¥7 on full refunds. |
+| 12 | [Stale aggregation data](12-stale-aggregation-data.md) | ASC-203 | Re-runs doubled summaries because old rows weren't cleaned up. |
+| 19 | [INTERVAL offset vs DATETIME boundary](19-interval-offset-datetime-boundary.md) | ASC-296 | `INTERVAL 1 DAY` resolves to midnight — excludes DATETIME records with time past 00:00:00. Need INTERVAL 2 DAY. |
+| 20 | [Lookahead premature expiry](20-lookahead-premature-expiry.md) | ASC-301 | 2-day lookahead fires one month too early for charges with next-month rows in the CTE. Gate on `rn = total_rows`. |
 
 ---
 
@@ -50,12 +50,12 @@ Design debt documented during the project. These are structural problems that re
 
 | # | Topic | Status | TL;DR |
 |---|-------|--------|-------|
-| 13 | [Tenant code duplication](13_Tenant_Code_Duplication.md) | Mitigated (review process) | Every fix applied to Bizmates must be manually repeated for Zipan. |
-| 14 | [Pre/Final logic duplication](14_Pre_Final_Logic_Duplication.md) | Mitigated (review checklist) | 2,500 lines duplicated between Pre and Final — every fix applied twice. |
-| 15 | [Unsafe delete scope for re-runs](15_Unsafe_Delete_Scope.md) | Mitigated (process discipline) | Re-running March's batch can wipe April's data. |
-| 16 | [Global mutable state](16_Global_Mutable_State.md) | Low risk (single-month ops) | Dates leak between processing iterations via mutable class properties. |
-| 17 | [No concurrency protection](17_No_Concurrency_Protection.md) | Low risk (cron spacing) | Concurrent batch runs corrupt shared log tables. |
-| 18 | [Batch sequencing dependency](18_Batch_Sequencing_Dependency.md) | Mitigated (scheduling discipline) | Skipping a month permanently loses those charges from reports. |
+| 13 | [Tenant code duplication](13-tenant-code-duplication.md) | Mitigated (review process) | Every fix applied to Bizmates must be manually repeated for Zipan. |
+| 14 | [Pre/Final logic duplication](14-pre-final-logic-duplication.md) | Mitigated (review checklist) | 2,500 lines duplicated between Pre and Final — every fix applied twice. |
+| 15 | [Unsafe delete scope for re-runs](15-unsafe-delete-scope.md) | Mitigated (process discipline) | Re-running March's batch can wipe April's data. |
+| 16 | [Global mutable state](16-global-mutable-state.md) | Low risk (single-month ops) | Dates leak between processing iterations via mutable class properties. |
+| 17 | [No concurrency protection](17-no-concurrency-protection.md) | Low risk (cron spacing) | Concurrent batch runs corrupt shared log tables. |
+| 18 | [Batch sequencing dependency](18-batch-sequencing-dependency.md) | Mitigated (scheduling discipline) | Skipping a month permanently loses those charges from reports. |
 
 ---
 
