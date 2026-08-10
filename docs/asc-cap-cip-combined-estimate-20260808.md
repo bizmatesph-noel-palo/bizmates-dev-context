@@ -28,7 +28,7 @@ With ASCH cancelled, the shared infrastructure that CAP and CIP were going to in
 | **Combined Timeline (dev + QA)** | 10–13 weeks end-to-end | Low |
 | **Deadline** | 2026/12/17 | Fixed |
 | **Latest start to fit deadline** | ~Mid-September | Medium |
-| **Execution model** | Sequential: CIP first (builds foundation), CAP second (reuses it) | Confirmed |
+| **Execution model** | Sequential: CIP first (builds foundation), CAP second (reuses it) | Confirmed (Kuroda-san 2026-08-08) |
 | **Feasible?** | ✅ Yes — if requirements confirmed and started by mid-Sept | |
 
 ### What's Blocking Finalization
@@ -93,16 +93,16 @@ CIP (configuration):
 
 ### Phase Breakdown
 
-| # | Phase | Scope | Duration | Team |
-|---|---|---|---|---|
-| 1 | **Shared Foundation** | DB tables (~6 generic `asc_alloc_*` tables), run lifecycle service, command skeleton, 3-transaction model, models, enums | 2 weeks | Lead + 2 devs |
-| 2 | **Allocation Engine** | Generic formula implementation, rounding (floor), invariant validation (App + Coaching = N), configurable reference prices | 1.5 weeks | Lead + 2 devs |
-| 3 | **CAP Integration** | CAP plan_id detection, CAP reference prices, CAP-specific eligibility rules, N source reading | 1 week | Lead + 1 dev |
-| 4 | **CIP Integration** | CIP plan_id detection, CIP reference prices, CIP-specific eligibility rules (B2B from day 1) | 1 week | Lead + 1 dev |
-| 5 | **Scenarios (both)** | Refund, plan change, contract-type change, cooling-off, suspension, post-release correction | 2 weeks | Lead + 2 devs |
-| 6 | **Freee + CSV + Email** | Journal factory (T1), Freee API, detail CSV, summary CSV, unified email orchestrator | 1.5 weeks | Lead + 2 devs |
-| 7 | **Buffer** | PR reviews, gate rejections, environment issues, bugs, holidays | 1–2 weeks | — |
-| | **Total Dev** | | **10–12 weeks** | Lead + 2 devs |
+| # | Phase | Scope | Duration | Team | CAP side | CIP side |
+|---|---|---|---|---|---|---|
+| 1 | **Shared Foundation** | DB tables (~6 generic `asc_alloc_*` tables), run lifecycle service, command skeleton, 3-transaction model, models, enums | 2 weeks | Lead + 2 devs | ⚪︎ | × |
+| 2 | **Allocation Engine** | Generic formula implementation, rounding (floor), invariant validation (App + Coaching = N), configurable reference prices | 1.5 weeks | Lead + 2 devs | ⚪︎ | × |
+| 3 | **CAP Integration** | CAP plan_id detection, CAP reference prices, CAP-specific eligibility rules, N source reading | 1 week | Lead + 1 dev | ⚪︎ | × |
+| 4 | **CIP Integration** | CIP plan_id detection, CIP reference prices, CIP-specific eligibility rules (B2B from day 1) | 1 week | Lead + 1 dev | × | ⚪︎ |
+| 5 | **Scenarios (both)** | Refund, plan change, contract-type change, cooling-off, suspension, post-release correction | 2 weeks | Lead + 2 devs | ⚪︎ | × |
+| 6 | **Freee + CSV + Email** | Journal factory (T1), Freee API, detail CSV, summary CSV, unified email orchestrator | 1.5 weeks | Lead + 2 devs | ⚪︎ | × |
+| 7 | **Buffer** | PR reviews, gate rejections, environment issues, bugs, holidays | 1–2 weeks | — | ⚪︎ | ⚪︎ |
+| | **Total Dev** | | **10–12 weeks** | Lead + 2 devs | — | — |
 
 ### Optimistic vs Conservative
 
@@ -247,17 +247,16 @@ Week 8-9:   [QA] Regression + sign-off
 
 ### Gantt View — QA
 
-| Category | Owner | Task / Phase | Week | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| QA | QA Team | Test Planning + Strategy | W2 | | ■ | | | | | | | | |
-| QA | QA Team | Test Case Creation + Data Prep (CAP + CIP) | W3–W5 | | | ■ | ■ | ■ | | | | | |
-| QA | QA Team | Test Execution: Foundation (schema, commands) | W3 | | | ■ | | | | | | | |
-| QA | QA (CAP) | Test Execution: CAP scenarios | W5–W7 | | | | | ■ | ■ | ■ | | | |
-| QA | QA (CIP) | Test Execution: CIP scenarios | W7–W9 | | | | | | | ■ | ■ | ■ | |
-| QA | QA Team | Test Execution: Freee + CSV + Unified Email | W9–W10 | | | | | | | | | ■ | ■ |
-| QA | QA Team | Integration Testing (cross-project isolation) | W10+ | | | | | | | | | | ■ |
-| QA | Dev + QA | Bug Fix / Retest (ongoing) | W3–W10 | | | ■ | ■ | ■ | ■ | ■ | ■ | ■ | ■ |
-| QA | QA Team | Regression + Release Sign-off | W11–W12 | | | | | | | | | | |
+| Category | Owner | Task / Phase | Week | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| QA | QA Team | Test Planning + Strategy | W2 | | ■ | | | | | | | | | |
+| QA | QA Team | Test Case Creation + Data Prep (CAP + CIP) | W3–W5 | | | ■ | ■ | ■ | | | | | | |
+| QA | QA (CAP) | Test Execution: CAP scenarios | W5–W7 | | | | | ■ | ■ | ■ | | | | |
+| QA | QA (CIP) | Test Execution: CIP scenarios | W7–W9 | | | | | | | ■ | ■ | ■ | | |
+| QA | QA Team | Integration Testing (cross-project isolation) | W10 | | | | | | | | | | ■ | |
+| QA | QA Team | Regression Testing | W10–W11 | | | | | | | | | | ■ | ■ |
+| QA | Dev + QA | Bug Fix / Retest (ongoing) | W3–W10 | | | ■ | ■ | ■ | ■ | ■ | ■ | ■ | ■ | |
+| QA | QA Team | Release Sign-off | W11–W12 | | | | | | | | | | | ■ |
 
 **Key rules:**
 1. QA tests a phase the week AFTER dev delivers it
@@ -273,14 +272,16 @@ Week 8-9:   [QA] Regression + sign-off
 | Phase | Weeks | CIP Team (Noel + Throy) | CAP Team (Orlino + Cristoff) |
 |---|---|---|---|
 | Shared Foundation | W1–W2 | Building DB migrations, models, run lifecycle, command | — (can observe/learn) |
-| CIP Allocation Engine | W3–W4 | Formula, plan detection, eligibility, reference prices | — |
-| CIP Scenarios | W5–W6 | Refund, plan change, contract-type, cooling-off, B2B | — |
+| Allocation Engine | W3–W4 | Formula, rounding, invariants, configurable prices | — |
+| CIP Integration + Scenarios | W5–W6 | Plan detection, eligibility, CIP scenarios | — |
 | CIP Freee + CSV | W7 | Journal factory, Freee API, CSV, unified email | — |
 | CIP Dev Testing | W8 | DEV04 validation | CAP starts: plan detection, reference prices |
-| CAP Integration | W8–W9 | Support / PR review | Allocation logic (reuses engine), CAP scenarios |
+| CAP Integration + Scenarios | W8–W9 | Support / PR review | Allocation logic (reuses engine), CAP scenarios |
 | CAP Freee + CSV | W10 | Support | Plug into existing Freee + CSV + email |
 | CAP Dev Testing | W11 | Oversee | DEV04 validation |
 | Buffer | W12 | QA support | QA support |
+
+**QA assignment:** Miko (CIP testing from W5), Glenn (CAP testing from W9)
 
 ---
 
@@ -288,15 +289,15 @@ Week 8-9:   [QA] Regression + sign-off
 
 | Dimension | Scenario A (Separate, sequential) | Scenario B (Separate, parallel) | Scenario C (Combined framework, sequential) ✅ |
 |---|---|---|---|
-| Total dev effort | 13–15 weeks | 8–10 weeks (needs 4 devs) | 9–12 weeks (2 devs sequential) |
+| Total dev effort | 13–15 weeks | 8–10 weeks (needs 4 devs) | 9–12 weeks (sequential: CIP then CAP) |
 | Total QA effort | 5–7 weeks | 5–7 weeks | 5–7 weeks |
-| Team needed | Lead + 2 devs | Lead + 4 devs | Lead + 1 dev (CIP), then sub-lead + 1 dev (CAP) |
+| Team needed | Lead + 2 devs | Lead + 4 devs | CIP: Lead + 1 dev. CAP: sub-lead + 1 dev (Lead oversees) |
 | Code duplication | High (2 separate projects) | High | Low (shared framework) |
 | Maintenance cost | 2× (separate codebases) | 2× | 1× (single framework) |
-| Fits Dec 17? | ⚠️ Tight | ✅ Yes (if 4 devs available) | ✅ Yes |
+| Fits Dec 17? | ⚠️ Tight | ✅ Yes (if 4 devs available) | ✅ Yes (if started by mid-Sept) |
 | Risk | Low (proven pattern) | Medium (coordination) | Low–Medium (first build) |
 
-**Decided (Kuroda-san 2026-08-08):** Scenario C, sequential execution. CIP first (Noel + Throy), then CAP (Orlino + Cristoff). Not parallel — simpler coordination, second project benefits from first.
+**Decided (Kuroda-san 2026-08-08):** Scenario C, sequential execution. CIP first (Noel + Throy, builds foundation), then CAP (Orlino + Cristoff, reuses foundation). Not parallel — simpler coordination, second project benefits from first.
 
 ---
 
@@ -307,7 +308,7 @@ Week 8-9:   [QA] Regression + sign-off
 | No ASCH reference implementation | Slightly longer foundation phase | Certain | ASCH design docs still usable as architectural reference |
 | Reference prices not yet confirmed (CIP) | Cannot finalize constants | Medium | Design is price-agnostic; constants change last |
 | Combined framework over-abstraction | Design takes longer than needed | Low | Keep it simple — config-driven, not plugin architecture |
-| Dec holiday season | Reduced availability | Medium | Start Aug 11, finish dev by mid-Oct |
+| Dec holiday season | Reduced availability | Medium | Start by mid-Sept, finish dev before holidays |
 | QA bottleneck | Testing blocks release | Medium | Start QA planning in Week 2 (overlap with dev) |
 
 ---
@@ -344,15 +345,16 @@ Week 8-9:   [QA] Regression + sign-off
 
 ## Recommendation
 
-1. **Start immediately (Aug 11)** — combined framework approach, Lead + 2 devs
-2. **QA starts test planning in Week 2** — overlapping with dev
-3. **Target dev complete by mid-Oct** — gives 2 months buffer before Dec 17
-4. **Use ASCH design docs as architectural reference** — not wasted, just renamed/generalized
-5. **Decision needed from Kuroda-san:** Freee sender approach (option a vs b from REF-ASCH-08) — same question applies to CAP/CIP
+1. **Start once requirements are confirmed** — combined framework approach, sequential (CIP first, CAP second)
+2. **CIP team (Noel + Throy)** builds shared foundation + CIP allocation — 6–8 weeks
+3. **CAP team (Orlino + Cristoff, Noel oversees)** plugs CAP into existing framework — 3–4 weeks
+4. **QA starts test planning in Week 2** — overlapping with dev (Miko for CIP, Glenn for CAP)
+5. **Target: dev complete ~10 weeks after start** — gives buffer before Dec 17
+6. **Use ASCH design docs as architectural reference** — not wasted, just renamed/generalized
+7. **Decision needed from Kuroda-san:** Updated requirements + Freee sender approach (option a vs b from REF-ASCH-08)
 
----
-
-*This is a rough/tentative estimate produced under time pressure. Numbers will be refined once:*
+*This is a rough/tentative estimate. Numbers will be refined once:*
 - *Full requirements for CAP/CIP without ASCH are confirmed*
 - *Reference prices are provided*
 - *Team allocation is finalized*
+- *Start date is decided*
