@@ -21,11 +21,14 @@ With ASCH cancelled, the shared infrastructure that CAP and CIP were going to in
 
 | Metric | Value | Confidence |
 |---|---|---|
-| **Total Dev Effort** | 8–11 weeks (Lead + 2 devs) | Low — pending requirements |
+| **CIP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Low — pending requirements |
+| **CAP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Low — pending requirements |
+| **Total Dev Effort (sequential)** | 9–12 weeks | Low |
 | **Total QA Effort** | 5–7 weeks (overlaps with dev) | Low — scenarios not confirmed |
 | **Combined Timeline (dev + QA)** | 10–13 weeks end-to-end | Low |
 | **Deadline** | 2026/12/17 | Fixed |
 | **Latest start to fit deadline** | ~Mid-September | Medium |
+| **Execution model** | Sequential: CIP first (builds foundation), CAP second (reuses it) | Confirmed |
 | **Feasible?** | ✅ Yes — if requirements confirmed and started by mid-Sept | |
 
 ### What's Blocking Finalization
@@ -265,28 +268,35 @@ Week 8-9:   [QA] Regression + sign-off
 
 ### Developer Track Detail
 
-| Track | Developer 1 | Developer 2 |
-|---|---|---|
-| Weeks 1–2 | Foundation: DB migrations + structure tests | Foundation: models, enums, run lifecycle, command |
-| Weeks 3–4 | Allocation Engine (formula, rounding, invariants) | CAP Integration (plan detection, eligibility) |
-| Weeks 5–6 | CIP Integration (plan detection, B2B) | Scenarios: CAP (refund, plan change, contract-type) |
-| Weeks 7–8 | Scenarios: CIP (cooling-off, suspension, correction) | Freee + CSV + unified email orchestrator |
-| Week 9 | Dev testing + bug fixes | Dev testing + bug fixes |
-| Week 10 | Buffer / QA support | Buffer / QA support |
+**Sequential: CIP first (builds foundation), then CAP (reuses it)**
+
+| Phase | Weeks | CIP Team (Noel + Throy) | CAP Team (Orlino + Cristoff) |
+|---|---|---|---|
+| Shared Foundation | W1–W2 | Building DB migrations, models, run lifecycle, command | — (can observe/learn) |
+| CIP Allocation Engine | W3–W4 | Formula, plan detection, eligibility, reference prices | — |
+| CIP Scenarios | W5–W6 | Refund, plan change, contract-type, cooling-off, B2B | — |
+| CIP Freee + CSV | W7 | Journal factory, Freee API, CSV, unified email | — |
+| CIP Dev Testing | W8 | DEV04 validation | CAP starts: plan detection, reference prices |
+| CAP Integration | W8–W9 | Support / PR review | Allocation logic (reuses engine), CAP scenarios |
+| CAP Freee + CSV | W10 | Support | Plug into existing Freee + CSV + email |
+| CAP Dev Testing | W11 | Oversee | DEV04 validation |
+| Buffer | W12 | QA support | QA support |
 
 ---
 
 ## Comparison of Approaches
 
-| Dimension | Scenario A (Sequential) | Scenario B (Parallel) | Scenario C (Combined) ✅ |
+| Dimension | Scenario A (Separate, sequential) | Scenario B (Separate, parallel) | Scenario C (Combined framework, sequential) ✅ |
 |---|---|---|---|
-| Total dev effort | 13–15 weeks | 8–10 weeks (needs 4 devs) | 8–11 weeks (2 devs) |
+| Total dev effort | 13–15 weeks | 8–10 weeks (needs 4 devs) | 9–12 weeks (2 devs sequential) |
 | Total QA effort | 5–7 weeks | 5–7 weeks | 5–7 weeks |
-| Team needed | Lead + 2 devs | Lead + 4 devs | Lead + 2 devs |
+| Team needed | Lead + 2 devs | Lead + 4 devs | Lead + 1 dev (CIP), then sub-lead + 1 dev (CAP) |
 | Code duplication | High (2 separate projects) | High | Low (shared framework) |
 | Maintenance cost | 2× (separate codebases) | 2× | 1× (single framework) |
 | Fits Dec 17? | ⚠️ Tight | ✅ Yes (if 4 devs available) | ✅ Yes |
 | Risk | Low (proven pattern) | Medium (coordination) | Low–Medium (first build) |
+
+**Decided (Kuroda-san 2026-08-08):** Scenario C, sequential execution. CIP first (Noel + Throy), then CAP (Orlino + Cristoff). Not parallel — simpler coordination, second project benefits from first.
 
 ---
 
