@@ -26,13 +26,16 @@ ASC for CAP + CIP:    TBD (pending requirements) ══════════�
 
 | Metric | Value | Confidence |
 |---|---|---|
-| Dev Effort | 8–11 weeks (Lead + 2 devs) | Low — requirements not confirmed |
-| QA Effort | 5–7 weeks (overlapping with dev) | Low — scenarios not confirmed |
-| End-to-end | 10–13 weeks | Low |
-| Latest start to fit Dec 17 | ~Mid-September | Medium |
-| Recommended approach | Combined ASC Allocation Framework | Medium — pending scope confirmation |
+| **CIP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Low — pending requirements |
+| **CAP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Low — pending requirements |
+| **Total Dev Effort (sequential)** | 9–12 weeks | Low |
+| **QA Effort** | 5–7 weeks (overlapping with dev) | Low — scenarios not confirmed |
+| **End-to-end** | 10–13 weeks | Low |
+| **Deadline** | 2026/12/17 | Fixed |
+| **Latest start to fit deadline** | ~Mid-September | Medium |
+| **Execution model** | Sequential: CIP first, CAP second | Confirmed (Kuroda-san 2026-08-08) |
 
-**⚠️ These numbers are rough.** They're based on previous CAP/CIP research (July 2026) which assumed ASCH exists as a prerequisite. With ASCH cancelled, scope may change.
+**⚠️ These numbers are rough.** They're based on previous CAP/CIP research (July 2026) which assumed ASCH exists. With ASCH gone, the scope may change once Kuroda-san provides updated requirements and design.
 
 ---
 
@@ -50,10 +53,15 @@ ASC for CAP + CIP:    TBD (pending requirements) ══════════�
 
 ## Team Assignments (Tentative)
 
-| Project | Lead | Developer(s) | QA | UAT |
-|---|---|---|---|---|
-| ~~**ASCH**~~ | ~~Noel Palo~~ | ~~Throy, Cristoff~~ | ~~Alvin, Jaymiriz~~ | ~~—~~ |
-| **ASC Allocation Framework + CAP + CIP** | Noel Palo | Throy Embudo, Cristoff Danganan | TBD | Business / Miyachi-san |
+| Project | Lead | Sub-Lead | Developer | QA | UAT |
+|---|---|---|---|---|---|
+| ~~**ASCH**~~ | ~~Noel Palo~~ | ~~—~~ | ~~Throy, Cristoff~~ | ~~Alvin, Jaymiriz~~ | ~~—~~ |
+| **CIP** (first — builds shared foundation) | Noel Palo | — | Throy Embudo | Miko | Business / Miyachi-san |
+| **CAP** (second — reuses foundation) | Noel Palo (oversees) | Orlino | Cristoff Danganan | Glenn | Business / Miyachi-san |
+
+**Sequential execution:** CIP first (includes building the shared allocation framework), then CAP (reuses it). Not parallel — reduces coordination overhead and lets CAP team learn from CIP's implementation.
+
+**Note:** Orlino already onboarded on spec-driven workflow.
 
 ---
 
