@@ -1,12 +1,19 @@
 # asch — Project Context
 
-> ⚠️ **CANCELLED (2026-08-07):** The ASCH (Honki Set proration) project was cancelled. The team has pivoted to the **ASC Allocation Framework (CAP + CIP)** — a combined framework using shared `asc_alloc_*` tables with `project_code` column. See:
+> ⚠️ **CANCELLED (2026-08-07):** The ASCH (Honki Set proration) project was cancelled. The team has pivoted to the **ASC Allocation Framework (ASC-CAP + ASC-CIP)** — a combined framework using shared `asc_alloc_*` tables with `project_code` column. See:
 > - `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` — current implementation plan (Scenario D)
 > - `docs/asc-projects-master-timeline.md` — master timeline
 > - `technical-notes/research/CAP/REF-CAP-05-Upstream-Pricing-Discussion-20260812.md` — confirmed pricing & product_id
+> - `technical-notes/research/CAP/REF-CAP-06-Upstream-Price-Mechanism-Draft-20260812.md` — CAP plan_ids 1016–1027
+> - `technical-notes/research/CIP/REF-CIP-02-Coaching-Campaigns-Reference-20260812.md` — CIP plan_ids
 >
-> Execution order: **CAP first** (builds foundation), **CIP second** (reuses it).  
-> App product_id for both CAP and CIP: **10021** (confirmed 2026-08-12).
+> **Terminology:**
+> - **CAP** (Coaching and App Plan) = upstream project in MBTI_backend creating new plans 1016–1027
+> - **CIP** (Coaching Intensive Plan) = upstream project in MBTI_backend adding App to existing plans 71, 94, 1005–1014
+> - **ASC-CAP / ASC-CIP** = our accounting-side projects that allocate revenue for those charges
+>
+> Execution order: **ASC-CAP first** (builds foundation), **ASC-CIP second** (reuses it).  
+> App product_id for both: **10021** (confirmed 2026-08-12).
 
 ---
 
