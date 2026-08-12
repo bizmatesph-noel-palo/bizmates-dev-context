@@ -15,27 +15,31 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | Project Code | Code Repo(s) | Artifacts Directory | Status | Deadline |
 |---|---|---|---|---|
 | ASCM | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
-| ASCH | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | Active — development starting Aug 3 | 2026/10/01 |
-| ASC for CAP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CAP/` | Estimation complete — pending team confirmation | 2026/12/17 |
-| ASC for CIP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CIP/` | Estimation complete — pending team confirmation | 2026/12/17 |
+| ASCH | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | ❌ Cancelled (2026-08-07) — pivoted to ASC-CAP/CIP | — |
+| ASC for CAP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CAP/` | Active — Scenario D proposed | 2026/12/17 |
+| ASC for CIP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CIP/` | Active — reuses ASC-CAP foundation | 2026/12/17 |
 | CDB | `MBTI_backend` | `projects/asch/technical-notes/research/CDB/` | Active (separate team) | Before ASCH 10/1 |
 
-## Cross-Project Resource Plan (from meeting 2026-07-28, unconfirmed)
+## Cross-Project Resource Plan (from meeting 2026-07-28, updated 2026-08-12)
 
-> ⚠️ Team assignments below are Patrick-san's proposed plan. Not yet confirmed by Kuroda-san. Do not treat as final.
+**Management Partners (JP ↔ PH):**
+- Kuroda-san (PM) ↔ Patrick-san (SDM) — handles ASC / Accounting projects
+- Soli-san (PM) ↔ Jasser-san (SDM) — handles CAP / CIP upstream projects
 
-| Project | Overall Lead | Sub-Lead | Developer(s) | Status |
+| Project | Lead | Sub-Lead | Developer(s) | Status |
 |---|---|---|---|---|
-| ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ✅ Confirmed |
-| ASC for CAP | Noel Palo (overall) | Paolo (sub-lead) | Raymark | Proposed — pending confirmation |
-| ASC for CIP | Noel Palo (overall) | Bricx or Orlino (sub-lead) | TBD | Proposed — pending confirmation |
-| CDB | Paolo | — | Efren | ✅ Active (separate project) |
+| ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ❌ Cancelled (2026-08-07) |
+| ASC for CAP | Noel Palo | — | Throy Embudo | ✅ Active (builds foundation) |
+| ASC for CIP | Noel Palo (overall) | Orlino Monares | Cristoff Danganan | Active (reuses CAP foundation) |
+| CDB (upstream) | Paolo | — | Efren | ✅ Active — originally needed by ASCH; continues independently |
+| CAP (upstream) | Keith Manuntag | — | Terry Balahadia | Active (Jasser-san's team) |
+| CIP (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Active (Jasser-san's team) |
 
 **Planned timeline:**
-- ASCH: starts Aug 3, deadline Oct 1
-- ASC for CAP: starts ~September, deadline Dec 17
-- ASC for CIP: starts ~September, deadline Dec 17
-- All 3 run in parallel from September (each with own sub-lead + dev)
+- ASCH: ❌ Cancelled (2026-08-07)
+- ASC for CAP: starts ~September, deadline Dec 17 (builds shared foundation)
+- ASC for CIP: starts after ASC-CAP, deadline Dec 17 (reuses foundation)
+- CAP/CIP upstream (Jasser-san's teams): production late Nov / early Dec
 
 ## Routing Rules
 
