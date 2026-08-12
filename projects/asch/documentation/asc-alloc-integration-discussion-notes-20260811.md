@@ -3,8 +3,14 @@
 **Date:** 2026-08-11  
 **Participants:** Noel Palo (Lead Dev)  
 **Assisted by:** Kiro (AI-assisted code analysis and document generation)  
-**Context:** Post-ASCH cancellation. Exploring injection approach for CAP/CIP into existing commands.  
+**Context:** Post-ASCH cancellation. Exploring injection approach for ASC-CAP/ASC-CIP into existing commands.  
 **Status:** Internal design session — pending review with Patrick-san and Kuroda-san
+
+### Terminology
+
+- **CAP** (Coaching and App Plan) — upstream project creating new plans 1016–1027 in MBTI_backend
+- **CIP** (Coaching Intensive Plan) — upstream project adding App to existing coaching plans in MBTI_backend
+- **ASC-CAP / ASC-CIP** — our accounting-side projects that allocate revenue from those charges
 
 ---
 
