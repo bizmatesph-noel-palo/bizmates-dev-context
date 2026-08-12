@@ -13,8 +13,43 @@ Two ASC projects built on a shared allocation framework (Scenario C — confirme
 
 ```
 ASCH (Honki Set):     Jul 30 ═══ Aug 7 ╳ CANCELLED
-ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════════════ Dec 17
+ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ══════════════════ Dec 17
 ```
+
+### Terminology
+
+| Term | Full Name | What it is | Owner |
+|---|---|---|---|
+| **CAP** | Coaching and App Plan | Upstream project — creates new plans (1016–1027) bundling Coaching + App in MBTI_backend | CAP team (Terry, Keith, Soli) |
+| **CIP** | Coaching Intensive Plan | Upstream project — adds App companion to existing coaching plans (71, 94, 1005–1014) in MBTI_backend | CIP team (Jefferson) |
+| **ASC-CAP** | ASC for CAP | Our project — allocates CAP coaching charge revenue between Coaching + App in the accounting system | Noel's team |
+| **ASC-CIP** | ASC for CIP | Our project — allocates CIP coaching charge revenue between Coaching + App in the accounting system | Noel's team |
+
+**The upstream projects (CAP/CIP) create the charges. Our projects (ASC-CAP/ASC-CIP) allocate the revenue.**
+
+### People & Roles
+
+**Management Partners (JP ↔ PH pairing):**
+
+| Japan (JP) | Philippines (PH) | Scope |
+|---|---|---|
+| Hayato Kuroda (Project Manager) | Roi Patrick Florentino (Software Delivery Manager) | ASC / Accounting projects |
+| Soli Sahukar (Project Manager) | Jasser Balido (Software Delivery Manager) | CAP / CIP upstream projects |
+
+- Kuroda-san & Patrick-san are partners — Patrick-san handles the actual ASC dev team in PH
+- Soli-san & Jasser-san are partners — Jasser-san handles the actual CAP/CIP dev teams in PH
+
+**Development Teams:**
+
+| Project | Lead | Sub-Lead | Developer(s) | SDM |
+|---|---|---|---|---|
+| **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia | Jasser-san |
+| **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Jasser-san |
+| **ASCM** (completed) | Noel Palo | — | Haggai Rei Cacacho, Throy Embudo, Raymark Reyes, Cristoff Danganan | Patrick-san |
+| **ASCH** (cancelled) | Noel Palo | — | Throy Embudo | Patrick-san |
+| **ASC-CAP** | Noel Palo | — | Throy Embudo | Patrick-san |
+| **ASC-CIP** | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
+| **CDB** (upstream) | Paolo | — | Efren | Patrick-san |
 
 **Architecture:** Single `asc_alloc_*` table set shared by both CAP and CIP. 10 tables + 1 view. Projects distinguished by `project_code` column. Sequential execution: CAP first (builds foundation), CIP second (reuses it).
 
@@ -59,10 +94,10 @@ ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════�
 
 | Project | Lead | Sub-Lead | Developer | QA | UAT |
 |---|---|---|---|---|---|
-| **CAP** (first — builds shared foundation) | Noel Palo | — | Throy Embudo | Miko | Business / Miyachi-san |
-| **CIP** (second — reuses foundation) | Noel Palo (oversees) | Orlino | Cristoff Danganan | Glenn | Business / Miyachi-san |
+| **ASC-CAP** (first — builds shared foundation) | Noel Palo | — | Throy Embudo | Miko | Business / Miyachi-san |
+| **ASC-CIP** (second — reuses foundation) | Noel Palo (oversees) | Orlino Monares | Cristoff Danganan | Glenn | Business / Miyachi-san |
 
-**Sequential execution:** CAP builds the shared framework + CAP-specific logic. CIP plugs in after.
+**Sequential execution:** ASC-CAP builds the shared framework + CAP-specific logic. ASC-CIP plugs in after.
 
 ---
 
