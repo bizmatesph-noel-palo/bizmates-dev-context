@@ -16,7 +16,7 @@ ASCH (Honki Set):     Jul 30 ═══ Aug 7 ╳ CANCELLED
 ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════════════ Dec 17
 ```
 
-**Architecture:** Single `asc_alloc_*` table set shared by both CAP and CIP. 10 tables + 1 view. Projects distinguished by `project_code` column. Sequential execution: CIP first (builds foundation), CAP second (reuses it).
+**Architecture:** Single `asc_alloc_*` table set shared by both CAP and CIP. 10 tables + 1 view. Projects distinguished by `project_code` column. Sequential execution: CAP first (builds foundation), CIP second (reuses it).
 
 **Design source:** `REF-CAP-04-ASC-Alloc-Framework-DB-Design-20260810.md` (Kuroda-san, Confluence)
 
@@ -26,15 +26,15 @@ ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════�
 
 | Metric | Value | Confidence |
 |---|---|---|
-| **CIP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Medium — design received, steps 1–5 unblocked |
-| **CAP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Medium |
+| **CAP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Medium — design received, steps 1–5 unblocked |
+| **CIP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Medium |
 | **Total Dev Effort (sequential)** | 9–12 weeks | Medium |
 | **QA Effort** | 5–7 weeks (overlapping with dev) | Low — scenarios pending |
 | **End-to-end** | 10–13 weeks | Medium |
 | **Deadline** | 2026/12/17 | Fixed |
 | **Latest start to fit deadline** | ~Mid-September | Medium |
 | **First production run** | 2027/01/01 | Fixed |
-| **Execution model** | Sequential: CIP first (builds foundation), CAP second | Confirmed |
+| **Execution model** | Sequential: CAP first (builds foundation), CIP second | Confirmed |
 
 ---
 
@@ -59,10 +59,10 @@ ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════�
 
 | Project | Lead | Sub-Lead | Developer | QA | UAT |
 |---|---|---|---|---|---|
-| **CIP** (first — builds shared foundation) | Noel Palo | — | Throy Embudo | Miko | Business / Miyachi-san |
-| **CAP** (second — reuses foundation) | Noel Palo (oversees) | Orlino | Cristoff Danganan | Glenn | Business / Miyachi-san |
+| **CAP** (first — builds shared foundation) | Noel Palo | — | Throy Embudo | Miko | Business / Miyachi-san |
+| **CIP** (second — reuses foundation) | Noel Palo (oversees) | Orlino | Cristoff Danganan | Glenn | Business / Miyachi-san |
 
-**Sequential execution:** CIP builds the shared framework + CIP-specific logic. CAP plugs in after.
+**Sequential execution:** CAP builds the shared framework + CAP-specific logic. CIP plugs in after.
 
 ---
 

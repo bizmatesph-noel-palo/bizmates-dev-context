@@ -21,14 +21,14 @@ With ASCH cancelled, the shared infrastructure that CAP and CIP were going to in
 
 | Metric | Value | Confidence |
 |---|---|---|
-| **CIP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Low — pending requirements |
-| **CAP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Low — pending requirements |
+| **CAP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Low — pending requirements |
+| **CIP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Low — pending requirements |
 | **Total Dev Effort (sequential)** | 9–12 weeks | Low |
 | **Total QA Effort** | 5–7 weeks (overlaps with dev) | Low — scenarios not confirmed |
 | **Combined Timeline (dev + QA)** | 10–13 weeks end-to-end | Low |
 | **Deadline** | 2026/12/17 | Fixed |
 | **Latest start to fit deadline** | ~Mid-September | Medium |
-| **Execution model** | Sequential: CIP first (builds foundation), CAP second (reuses it) | Confirmed (Kuroda-san 2026-08-08) |
+| **Execution model** | Sequential: CAP first (builds foundation), CIP second (reuses it) | Confirmed (Kuroda-san 2026-08-08) |
 | **Feasible?** | ✅ Yes — if requirements confirmed and started by mid-Sept | |
 
 ### What's Blocking Finalization
@@ -267,9 +267,9 @@ Week 8-9:   [QA] Regression + sign-off
 
 ### Developer Track Detail
 
-**Sequential: CIP first (builds foundation), then CAP (reuses it)**
+**Sequential: CAP first (builds foundation), then CIP (reuses it)**
 
-| Phase | Weeks | CIP Team (Noel + Throy) | CAP Team (Orlino + Cristoff) |
+| Phase | Weeks | CAP Team (Noel + Throy) | CIP Team (Orlino + Cristoff) |
 |---|---|---|---|
 | Shared Foundation | W1–W2 | Building DB migrations, models, run lifecycle, command | — (can observe/learn) |
 | Allocation Engine | W3–W4 | Formula, rounding, invariants, configurable prices | — |
@@ -289,15 +289,15 @@ Week 8-9:   [QA] Regression + sign-off
 
 | Dimension | Scenario A (Separate, sequential) | Scenario B (Separate, parallel) | Scenario C (Combined framework, sequential) ✅ |
 |---|---|---|---|
-| Total dev effort | 13–15 weeks | 8–10 weeks (needs 4 devs) | 9–12 weeks (sequential: CIP then CAP) |
+| Total dev effort | 13–15 weeks | 8–10 weeks (needs 4 devs) | 9–12 weeks (sequential: CAP then CIP) |
 | Total QA effort | 5–7 weeks | 5–7 weeks | 5–7 weeks |
-| Team needed | Lead + 2 devs | Lead + 4 devs | CIP: Lead + 1 dev. CAP: sub-lead + 1 dev (Lead oversees) |
+| Team needed | Lead + 2 devs | Lead + 4 devs | CAP: Lead + 1 dev. CIP: sub-lead + 1 dev (Lead oversees) |
 | Code duplication | High (2 separate projects) | High | Low (shared framework) |
 | Maintenance cost | 2× (separate codebases) | 2× | 1× (single framework) |
 | Fits Dec 17? | ⚠️ Tight | ✅ Yes (if 4 devs available) | ✅ Yes (if started by mid-Sept) |
 | Risk | Low (proven pattern) | Medium (coordination) | Low–Medium (first build) |
 
-**Decided (Kuroda-san 2026-08-08):** Scenario C, sequential execution. CIP first (Noel + Throy, builds foundation), then CAP (Orlino + Cristoff, reuses foundation). Not parallel — simpler coordination, second project benefits from first.
+**Decided (Kuroda-san 2026-08-08):** Scenario C, sequential execution. CAP first (Noel + Throy, builds foundation), then CIP (Orlino + Cristoff, reuses foundation). Not parallel — simpler coordination, second project benefits from first.
 
 ---
 
@@ -345,10 +345,10 @@ Week 8-9:   [QA] Regression + sign-off
 
 ## Recommendation
 
-1. **Start once requirements are confirmed** — combined framework approach, sequential (CIP first, CAP second)
-2. **CIP team (Noel + Throy)** builds shared foundation + CIP allocation — 6–8 weeks
-3. **CAP team (Orlino + Cristoff, Noel oversees)** plugs CAP into existing framework — 3–4 weeks
-4. **QA starts test planning in Week 2** — overlapping with dev (Miko for CIP, Glenn for CAP)
+1. **Start once requirements are confirmed** — combined framework approach, sequential (CAP first, CIP second)
+2. **CAP team (Noel + Throy)** builds shared foundation + CAP allocation — 6–8 weeks
+3. **CIP team (Orlino + Cristoff, Noel oversees)** plugs CIP into existing framework — 3–4 weeks
+4. **QA starts test planning in Week 2** — overlapping with dev (Miko for CAP, Glenn for CIP)
 5. **Target: dev complete ~10 weeks after start** — gives buffer before Dec 17
 6. **Use ASCH design docs as architectural reference** — not wasted, just renamed/generalized
 7. **Decision needed from Kuroda-san:** Updated requirements + Freee sender approach (option a vs b from REF-ASCH-08)

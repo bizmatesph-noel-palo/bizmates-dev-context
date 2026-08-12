@@ -115,7 +115,7 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 
 **Execution order rationale:** With ASCH cancelled, there is no pre-existing base structure to inherit. The shared allocation framework (migrations, models, enums, run lifecycle, allocation engine, Freee sender, CSV/email delivery) must be built from scratch as part of the first project. CAP is chosen as first because its requirements are more concrete (reference prices partially known, App product_id being decided). CIP follows and only needs its own detection strategy + reference prices plugged into the already-working framework.
 
-**What ASCH cancellation means for scope:** The original estimate (in `asc-cap-cip-combined-estimate-20260808.md`) assumed CIP first based on an earlier discussion. However, the practical reality is that whichever project goes first carries the full infrastructure cost (~12.5 days). The second project is a configuration exercise (~3–5 days). The total remains the same regardless of order — the question is which project's requirements are ready first.
+**What ASCH cancellation means for scope:** The shared allocation framework (migrations, models, enums, run lifecycle, allocation engine, Freee sender, CSV/email delivery) must be built from scratch as part of CAP (first project). Whichever project goes first carries the full infrastructure cost (~12.5 days). The second project (CIP) is a configuration exercise (~3–5 days). The total remains the same regardless of order — the question is which project's requirements are ready first. CAP's are more concrete today.
 
 
 ---

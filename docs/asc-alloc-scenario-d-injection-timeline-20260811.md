@@ -32,7 +32,7 @@
 
 | Dimension | Scenario C (Current Plan) | Scenario D (This Proposal) |
 |---|---|---|
-| Execution order | CIP first → CAP second (earlier assumption — see correction below) | **CAP first** → CIP second |
+| Execution order | CAP first → CIP second | **CAP first** → CIP second (same) |
 | Commands | New standalone commands | Inject into existing DailyRateCalcPre + SendJournals |
 | Email delivery | Unified email orchestrator (new, Step 8) | Same existing email, allocation CSVs added to zip |
 | Freee sending | Dedicated thin sender (new, Step 7) | 2nd API call within existing SendJournalsDataLogic |
@@ -43,16 +43,16 @@
 
 ---
 
-## Why CAP First (Not CIP)
+## Why CAP First
 
-> **Note:** The master timeline (`asc-projects-master-timeline.md`) and combined estimate (`asc-cap-cip-combined-estimate-20260808.md`) currently say "CIP first." This was based on an early discussion (Kuroda-san, 2026-08-08) before requirements clarity emerged. The correct order should be **CAP first** regardless of which scenario (C or D) is chosen. The reasoning below applies to both.
+Both Scenario C and Scenario D agree: **CAP goes first**. The reasoning:
 
-| Factor | CIP First (incorrect) | CAP First (correct) |
-|---|---|---|
-| Requirements readiness | O-5 (reference prices) still open | Reference prices partially known, App product_id being decided (O-1) |
-| Blocking items for detection | None | O-1 blocks detection only — Steps 1–3 proceed regardless |
-| Team familiarity | Coaching-only bundle (newer concept) | Coaching+App bundle (better understood from ASCH research) |
-| Business urgency | Equal | Equal |
+| Factor | Why CAP first |
+|---|---|
+| Requirements readiness | Reference prices partially known, App product_id being decided (O-1) |
+| CIP blocker | O-5 (CIP reference prices) still open — blocks CIP finalize |
+| Team familiarity | Coaching+App bundle better understood from ASCH research |
+| Business urgency | Equal — but CAP is more concrete today |
 
 **Practical reality:** Whichever goes first carries the full infrastructure cost. The order doesn't change the total. But CAP's requirements are more concrete today, which reduces the risk of building foundation on assumptions that later change.
 
@@ -418,7 +418,7 @@ As lead developer who built and maintained the ASCM monthly rate commands throug
 | # | Question for Patrick-san / Kuroda-san | Options |
 |---|---|---|
 | 1 | Which approach? | Scenario C (standalone — master timeline) or **Scenario D (injection — this proposal)** |
-| 2 | Execution order? | **CAP first** (correcting earlier "CIP first" assumption in master timeline) |
+| 2 | Execution order? | **CAP first** → CIP second (agreed across all scenarios) |
 | 3 | O-3 table prefix? | `asc_alloc_*` (recommended — same in both scenarios) |
 | 4 | Start date? | Earliest: once O-3 decided |
 
@@ -447,7 +447,7 @@ If started **mid-September** → even more buffer. Scenario D gives scheduling f
 
 | Document | What it is |
 |---|---|
-| `asc-projects-master-timeline.md` | Scenario C: current plan (standalone). Note: says "CIP first" — should be corrected to CAP first. |
+| `asc-projects-master-timeline.md` | Scenario C: current plan (standalone, CAP first) |
 | `asc-cap-cip-combined-estimate-20260808.md` | Effort estimate for Scenario C |
 | `asc-alloc-integration-discussion-notes-20260811.md` | Technical design session notes for Scenario D |
 | `diagrams/asc-alloc-injection-process-flow.md` | Process + data flow diagram for Scenario D |
