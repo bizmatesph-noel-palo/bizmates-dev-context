@@ -6,6 +6,17 @@
 **Status:** PROPOSAL — alternative integration strategy. For review with Patrick-san and Kuroda-san.  
 **Context:** Based on ASCM experience and code analysis of existing accounting commands.
 
+### Terminology
+
+| Term | Full Name | What it is |
+|---|---|---|
+| **CAP** | Coaching and App Plan | Upstream project (MBTI_backend) — creates new bundled plans 1016–1027 |
+| **CIP** | Coaching Intensive Plan | Upstream project (MBTI_backend) — adds App to existing coaching plans 71, 94, 1005–1014 |
+| **ASC-CAP** | ASC for CAP | Our accounting project — allocates CAP coaching revenue between Coaching + App |
+| **ASC-CIP** | ASC for CIP | Our accounting project — allocates CIP coaching revenue between Coaching + App |
+
+The upstream projects (CAP/CIP) create the charges and go to production late Nov / early Dec. Our projects (ASC-CAP/ASC-CIP) allocate the revenue and target Dec 17 production readiness, with first real batch run Jan 1, 2027.
+
 ---
 
 ## How This Relates to Existing Plans
