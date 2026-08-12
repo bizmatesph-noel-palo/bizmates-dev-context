@@ -187,6 +187,7 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 | 3 | Second Freee API call | OK to send allocation journals as a separate API call? (Same issue_date, same period) |
 | 4 | Start date | When can we begin? Steps 1–5 are unblocked once O-3 decided |
 | 5 | Delivery service extraction | 1–2 day investment before injection — acceptable? |
+| 6 | ~~App product_id (O-1)~~ | ✅ **RESOLVED (2026-08-12):** product_id 10021 for both CAP and CIP. See REF-CAP-05. |
 
 ---
 
@@ -197,6 +198,27 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 3. Decide O-3 (table prefix) → unblocks migrations
 4. Begin Step 1: migrations + structure tests
 5. Extract BatchReportDeliveryService (parallel with Step 1)
+
+---
+
+## Updates (2026-08-12)
+
+From `REF-CAP-05-Upstream-Pricing-Discussion-20260812.md` (CAP Slack thread, confirmed by Kuroda-san):
+
+| Item | Confirmed Value |
+|---|---|
+| App product_id (O-1) | **10021** — applies to both CAP and CIP |
+| App reference price | **¥3,980** (tax-inclusive) / ¥3,618 (tax-exclusive) |
+| Coaching 15min reference price | **¥19,800** (tax-inclusive) = ¥18,000 × 1.1 |
+| Coaching 30min reference price | **¥39,600** (tax-inclusive) = ¥36,000 × 1.1 |
+| Allocation method | **Option (C) proportional:** `P_app = floor(N × 3980 / (L_coaching + 3980))` |
+| App charge in trn_charge | **¥0** (companion approach — pending final Monday confirmation, "likely") |
+| ASC allocation batch | **IS needed** (confirmed — consequence of ¥0 companion approach) |
+| Coaching product_ids | **Existing 10005 (15min) / 10015 (30min)** — no new product_id needed |
+| ASCH status | **Cancelled (2026-08-07)** — "ASCH provides the foundation" assumption no longer valid |
+| Execution order | **CAP first** (builds foundation), **CIP second** (reuses it) |
+
+**Impact on this design:** Step 4 (CAP Detection) is now unblocked — product_id 10021 confirmed. Reference prices can be seeded immediately (Step 3). The injection approach remains valid.
 
 ---
 

@@ -1,5 +1,15 @@
 # asch — Project Context
 
+> ⚠️ **CANCELLED (2026-08-07):** The ASCH (Honki Set proration) project was cancelled. The team has pivoted to the **ASC Allocation Framework (CAP + CIP)** — a combined framework using shared `asc_alloc_*` tables with `project_code` column. See:
+> - `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` — current implementation plan (Scenario D)
+> - `docs/asc-projects-master-timeline.md` — master timeline
+> - `technical-notes/research/CAP/REF-CAP-05-Upstream-Pricing-Discussion-20260812.md` — confirmed pricing & product_id
+>
+> Execution order: **CAP first** (builds foundation), **CIP second** (reuses it).  
+> App product_id for both CAP and CIP: **10021** (confirmed 2026-08-12).
+
+---
+
 > Load this at the start of each ASCH session.
 > Also load `projects/ascm/project-context.md` for base ASC system context.
 > If context gets compacted, re-read both files before continuing.
@@ -170,6 +180,7 @@ Constraint: whichever option, sending must remain independent per project.
 
 | # | Item | Owner | Status |
 |---|------|-------|--------|
+| O-1 (ASC-Alloc) | CAP/CIP dedicated App product_id | CAP app team | ✅ **RESOLVED (product_id 10021, confirmed 2026-08-12)** — applies to both CAP and CIP. See REF-CAP-05. |
 | 1 | Run management model — Option A (run_id) | Dev / Kuroda-san | ✅ Decided (written 2026-07-22) |
 | 2 | N source for preview/final | Dev | ✅ Decided (2026-07-24): preview→_pre, final→confirmed. Persist asc_source_table + asc_source_id per row. |
 | 3 | Freee mapping for App | Dev | ✅ Partially confirmed (2026-07-31): code=100, mst_rule_for_journals has 4 rows. 3 narrower sub-items remain (see REF-06 §5). |

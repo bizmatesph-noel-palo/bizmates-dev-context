@@ -1,7 +1,7 @@
 # ASC Projects — Master Timeline
 
-**Last updated:** 2026-08-10  
-**Status:** ACTIVE — DB design received from Kuroda-san. Steps 1–5 unblocked. Pending O-3 (prefix) decision before migrations start.  
+**Last updated:** 2026-08-12  
+**Status:** ACTIVE — DB design received from Kuroda-san. O-1 RESOLVED (product_id 10021). Steps 1–5 unblocked. Pending O-3 (prefix) decision before migrations start.  
 **Overall Lead:** Noel Palo  
 **Deadline:** CAP + CIP = 12/17
 
@@ -48,7 +48,7 @@ ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════�
 | 4 | ~~Design updates~~ | ~~Kuroda-san~~ | ✅ **Received** (full DB design, 10 tables) | Unblocked |
 | 5 | **O-3: Table prefix decision** | Engineering team | ⚠️ **OPEN** — blocks Step 1 (migrations) | Blocks start |
 | 6 | Start date decision | Patrick-san / Kuroda-san | ⚠️ **Pending** | Blocks timeline |
-| 7 | O-1: CAP dedicated App product_id | CAP app team | ⚠️ Open — blocks CAP detection only (Step 4) | Does not block start |
+| 7 | ~~O-1: CAP dedicated App product_id~~ | ~~CAP app team~~ | ✅ **RESOLVED (product_id 10021, confirmed 2026-08-12)** | ~~Does not block start~~ Unblocked |
 | 8 | O-5: CIP reference prices | Business + Accounting | ⚠️ Open — blocks CIP finalize + QA only | Does not block start |
 
 **Key insight from Kuroda-san:** Steps 1–5 (migrations, models, run lifecycle, reference prices, allocation engine) do NOT depend on any open item. Work can start once O-3 (prefix) is decided.
@@ -73,7 +73,7 @@ ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════�
 | 1 | Naming decision + 10 migrations + structure tests | O-3 (prefix) | 2 wk |
 | 2 | Models, resources, enums, run lifecycle service | None | 1 wk |
 | 3 | Reference-price master + price resolution service | None | 0.5 wk |
-| 4 | Detection Strategy + bundle generation | O-1 (CAP only) | 1 wk |
+| 4 | Detection Strategy + bundle generation | ~~O-1 (CAP only)~~ (O-1 RESOLVED: 10021) | 1 wk |
 | 5 | Allocation engine + validations V-1 to V-5 | None | 1.5 wk |
 | 6 | Refund allocation (record_kind = 1) | None | 1 wk |
 | 7 | Summary aggregation + Freee thin sender + deliveries | CIP RA-05 | 1.5 wk |
@@ -121,11 +121,11 @@ ASC Allocation Framework (CAP + CIP):  Aug 2026 ══════════�
 
 | ID | Item | Owner | Blocks |
 |---|---|---|---|
-| O-1 | CAP dedicated App product_id | CAP app team | CAP detection (Step 4) only |
+| O-1 | ~~CAP dedicated App product_id~~ | ~~CAP app team~~ | ✅ **Resolved (product_id 10021, confirmed 2026-08-12)** — applies to both CAP and CIP |
 | O-2 | Asymmetric discount assumption (CIP RA-04) | Accounting | If rejected, proration_basis comes back |
 | O-3 | `asc_alloc_*` prefix naming convention | Engineering team | **Step 1 (migrations)** |
 | O-4 | B2B App reversal logic (CAP F-15) | Accounting + CAP app | Step 9 (post-release OK) |
-| O-5 | CIP reference prices | Business + Accounting | CIP finalize + QA only |
+| O-5 | CIP reference prices | Business + Accounting | CIP finalize + QA only. Note: CIP uses same product 10021; CIP coaching reference prices still pending. |
 | O-6 | Unified email subject/body format | Accounting | Step 8 |
 
 ---

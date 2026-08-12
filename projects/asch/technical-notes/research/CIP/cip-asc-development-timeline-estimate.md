@@ -1,5 +1,9 @@
 # ASC for CIP — Development Estimation
 
+> ⚠️ **SUPERSEDED:** ASCH was cancelled 2026-08-07. This estimate assumed ASCH as prerequisite. See `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` for current plan (Scenario D). The "Assumes ASCH is completed first" assumption below is **NO LONGER VALID**.
+>
+> **Update (2026-08-12):** CIP uses same App product_id 10021 as CAP (confirmed by Kuroda-san). See REF-CAP-05.
+
 ## Document Info
 
 | | |

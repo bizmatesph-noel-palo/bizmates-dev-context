@@ -318,7 +318,7 @@ Week 8-9:   [QA] Regression + sign-off
 | ID | Dependency | Required by | Status |
 |---|---|---|---|
 | D-1 | CIP reference prices (Coaching + App list prices) | Phase 4 | **OPEN** |
-| D-2 | CAP dedicated App product_id | Phase 3 | **OPEN** (from previous estimate) |
+| D-2 | CAP dedicated App product_id | Phase 3 | ✅ **RESOLVED — product_id 10021 (confirmed 2026-08-12).** Reference prices now known: App ¥3,980 (tax-incl), Coaching 15min ¥19,800, 30min ¥39,600. See REF-CAP-05. |
 | D-3 | Freee sender approach decision (REF-ASCH-08) | Phase 6 | **OPEN** — recommend dedicated thin sender |
 | D-4 | Unified email approval (subject/body format) | Phase 6 | **OPEN** |
 | D-5 | QA test environment (dev04 with sample data) | QA Phase Q2 | TBD |

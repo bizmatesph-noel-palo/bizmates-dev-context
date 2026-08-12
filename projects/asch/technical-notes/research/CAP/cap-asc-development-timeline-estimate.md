@@ -1,5 +1,9 @@
 # ASC for CAP — Development Estimation
 
+> ⚠️ **SUPERSEDED:** ASCH was cancelled 2026-08-07. This estimate assumed ASCH as prerequisite. See `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` for current plan (Scenario D). The "Assumes ASCH is implemented first" assumption below is **NO LONGER VALID**.
+>
+> **O-1 RESOLVED (2026-08-12):** App product_id = 10021 (for both CAP and CIP). See REF-CAP-05.
+
 ## Document Info
 
 | | |
@@ -167,7 +171,7 @@ If 8L/10L/15L plans create a combined Lesson+Coaching+App charge, CAP must handl
 | D-1 | 15L/8L/10L CAP plan structure | — | ✅ **RESOLVED** (2026-07-28): always separate charges. Option B eliminated. |
 | D-2 | CAP Freee sender approach (reuse ASCH pattern or new adapter) | Phase 5 (Freee) | Recommend: same pattern as ASCH (dedicated command) |
 | D-3 | Production App Freee mapping dimensions | Phase 5 (Freee) | Resolved (freee_code=236270504, same as ASCH) |
-| D-4 | New CAP-dedicated App product_id value | Phase 2 (Eligibility) | **OPEN** — application-side team to create |
+| D-4 | New CAP-dedicated App product_id value | Phase 2 (Eligibility) | ✅ **RESOLVED (product_id 10021, confirmed 2026-08-12)** |
 | D-4 | ASCH implementation (architectural reference) | Design phase | In progress (ASCH Spec 01 starting) |
 
 ---

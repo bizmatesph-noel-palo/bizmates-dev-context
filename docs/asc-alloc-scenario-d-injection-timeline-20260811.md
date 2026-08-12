@@ -49,7 +49,7 @@ Both Scenario C and Scenario D agree: **CAP goes first**. The reasoning:
 
 | Factor | Why CAP first |
 |---|---|
-| Requirements readiness | Reference prices partially known, App product_id being decided (O-1) |
+| Requirements readiness | Reference prices confirmed (¥3,980 App, ¥19,800/¥39,600 Coaching), App product_id 10021 confirmed (O-1 RESOLVED 2026-08-12) |
 | CIP blocker | O-5 (CIP reference prices) still open — blocks CIP finalize |
 | Team familiarity | Coaching+App bundle better understood from ASCH research |
 | Business urgency | Equal — but CAP is more concrete today |
@@ -95,7 +95,7 @@ Both Scenario C and Scenario D agree: **CAP goes first**. The reasoning:
 | 1 | O-3 decision + 10 migrations + structure tests | O-3 (prefix) | 1 week | Same as Scenario C Step 1 |
 | 2 | Models, enums, run lifecycle service | None | 3–4 days | Same as Scenario C Step 2 |
 | 3 | Reference-price master + price resolution | None | 2–3 days | Same as Scenario C Step 3 |
-| 4 | CAP Detection Strategy + bundle generation | O-1 (CAP App product_id) | 3–4 days | Same as Scenario C Step 4 |
+| 4 | CAP Detection Strategy + bundle generation | ~~O-1 (CAP App product_id)~~ (O-1 RESOLVED: product_id 10021) | 3–4 days | Same as Scenario C Step 4 |
 | 5 | Allocation engine + validations V-1 to V-5 | None | 4–5 days | Same as Scenario C Step 5 |
 | 6 | Injection: DailyRateCalcPre + SendJournals | Steps 1–5 | 2 days | **REPLACES** Scenario C Steps 7–8 (Freee sender + email orchestrator) |
 | 7 | 2nd Freee API call + delivery tracking | Step 6 | 3–4 days | Simpler than Scenario C Step 7 — reuses existing API util |
@@ -367,7 +367,7 @@ See QA Gantt above. Summary:
 | Freee journals fail independently | N/A — separate process | LOW — 2nd API call, tracked in deliveries table |
 | ASCH patterns don't translate | MEDIUM — never tested at runtime | LOW — we only borrow design concepts, not code |
 | CIP reference prices arrive late (O-5) | Blocks CIP finalize | Same — but CIP is last anyway |
-| CAP App product_id not decided (O-1) | Blocks CAP detection | Same — but only Step 4 |
+| CAP App product_id not decided (O-1) | Blocks CAP detection | ✅ **RESOLVED** (product_id 10021, confirmed 2026-08-12) |
 
 ---
 
