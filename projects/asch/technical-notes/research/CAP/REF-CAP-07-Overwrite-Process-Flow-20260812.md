@@ -42,7 +42,7 @@ This is the genesis of Option 1. The Confluence doc formalizes this insight.
 
 ### Patrick-san's Recommendations (08-12)
 
-1. Use a centralized check (e.g., `CapCipPlanEnum::isCapCip()`) — mirroring `BizmatesMonthlyPlanEnum::exists()` pattern at line 401.
+1. Use a centralized check (e.g., `CoachingAndAppPlanEnum::exists()` / `CoachingIntensivePlanEnum::exists()`) — mirroring `BizmatesMonthlyPlanEnum::exists()` pattern at line 401.
 2. Reuse `CommonUtil::getContractDateInfoList()` directly for the allocation N calculation — safest for 12/17 deadline, eliminates calculation drift risk. Decouple later.
 3. Quick query check to confirm Zipan has no CAP/CIP plan overlap (low risk).
 
@@ -464,8 +464,8 @@ App product_type = 100 is NOT in this list. The App charge goes through the norm
 **Proposed implementation (mirrors existing pattern):**
 
 ```php
-// New enum: app/Enums/AscAlloc/CapPlanEnum.php
-enum CapPlanEnum: int
+// New enum: app/Enums/AscAlloc/CoachingAndAppPlanEnum.php
+enum CoachingAndAppPlanEnum: int
 {
     use HasEnumHelperTrait;  // gives us exists() and toArray()
 
@@ -486,14 +486,14 @@ enum CapPlanEnum: int
 // Usage in AscAllocationService::allocate():
 // After step [a] writes all charges, identify which ones need allocation:
 $capChargeIds = collect($writtenRows)
-    ->filter(fn ($row) => CapPlanEnum::exists($row->plan_id))
+    ->filter(fn ($row) => CoachingAndAppPlanEnum::exists($row->plan_id))
     ->pluck('charge_id');
 ```
 
 **For CIP (later):**
 
 ```php
-enum CipPlanEnum: int
+enum CoachingIntensivePlanEnum: int
 {
     use HasEnumHelperTrait;
 
@@ -506,7 +506,7 @@ enum CipPlanEnum: int
 
 // CIP also needs a date guard (historical charges must not be allocated):
 $cipChargeIds = collect($writtenRows)
-    ->filter(fn ($row) => CipPlanEnum::exists($row->plan_id)
+    ->filter(fn ($row) => CoachingIntensivePlanEnum::exists($row->plan_id)
         && $row->start_date >= config('asc_alloc.cip_launch_date'))
     ->pluck('charge_id');
 ```
