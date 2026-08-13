@@ -199,7 +199,89 @@ AUDIT TABLES (new — allocation detail)
 
 ---
 
-## 6. Injection Point — Where New Code Goes
+## 6. Reference Prices
+
+### Confirmed Values
+
+| Project | Product | product_id | L (reference price, tax-incl) | Source |
+|---|---|---|---|---|
+| CAP + CIP | App Premium | 10021 | ¥3,980 | REF-CAP-05 (Kuroda-san confirmed) |
+| CAP + CIP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
+| CAP + CIP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
+
+### How Reference Prices Are Stored
+
+Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change without code changes):
+
+```php
+// Seeder data
+[
+    ['project_code' => 'cap', 'product_id' => 10021, 'reference_price' => 3980,
+     'effective_from' => '2026-01-01', 'effective_to' => null],
+    ['project_code' => 'cap', 'product_id' => 10005, 'reference_price' => 19800,
+     'effective_from' => '2026-01-01', 'effective_to' => null],
+    ['project_code' => 'cap', 'product_id' => 10015, 'reference_price' => 39600,
+     'effective_from' => '2026-01-01', 'effective_to' => null],
+    // CIP uses same prices (pending O-5 confirmation for coaching)
+    ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
+     'effective_from' => '2026-01-01', 'effective_to' => null],
+]
+```
+
+---
+
+## 7. Plan Detection
+
+### CAP Plans (1016–1027) — New Plans, No Historical Data
+
+| plan_id | Plan Name | Coaching Product |
+|---|---|---|
+| 1016 | Solo C15 + App | 10005 |
+| 1017 | Solo C30 + App | 10015 |
+| 1018 | L25 + C15 + App | 10005 |
+| 1019 | L50 + C15 + App | 10005 |
+| 1020 | L75 + C15 + App | 10005 |
+| 1021 | L100 + C15 + App | 10005 |
+| 1022 | L25 + C30 + App | 10015 |
+| 1023 | L50 + C30 + App | 10015 |
+| 1024 | L75 + C30 + App | 10015 |
+| 1025 | L100 + C30 + App | 10015 |
+| 1026 | L15/mo + C15 + App | 10005 |
+| 1027 | L15/mo + C30 + App | 10015 |
+
+**Detection:** `CoachingAndAppPlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are new).
+
+### CIP Plans (71, 94, 1005–1014) — Existing Plans, Historical Data Exists
+
+| plan_id | Plan Name | Coaching Product |
+|---|---|---|
+| 71 | Standalone Coaching 15min | 10005 |
+| 94 | Standalone Coaching 30min | 10015 |
+| 1005 | L25 + FVP + C15 | 10005 |
+| 1006 | L50 + FVP + C15 | 10005 |
+| 1007 | L75 + FVP + C15 | 10005 |
+| 1008 | L100 + FVP + C15 | 10005 |
+| 1009 | Beginner + FVP + C15 | 10005 |
+| 1010 | L25 + FVP + C30 | 10015 |
+| 1011 | L50 + FVP + C30 | 10015 |
+| 1012 | L75 + FVP + C30 | 10015 |
+| 1013 | L100 + FVP + C30 | 10015 |
+| 1014 | Beginner + FVP + C30 | 10015 |
+
+**Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id) && $trnCharge->start_date >= CIP_LAUNCH_DATE`
+
+⚠️ **CIP requires a date filter.** These plan_ids have years of historical charges. Only charges created AFTER the upstream CIP project adds the App companion should be allocated. Without the date filter, historical coaching revenue would be retroactively split — a financial error.
+
+### How plan_id Is Available
+
+Verified from `ls-database-migrations`:
+- `trn_charge` has `plan_id` column (nullable bigint)
+- `getTrnChargeList()` uses `SELECT trn_charge.*` — includes plan_id
+- `log_daily_rate_calculation` does NOT have plan_id — detection must use `trn_charge` join
+
+---
+
+## 8. Injection Point and Failure Isolation
 
 ### The Single Injection Point
 
@@ -289,9 +371,27 @@ public static function createDailyRateCalculation(
 
 **One injection covers all three.** No separate handling needed per command.
 
+### Failure Isolation
+
+```
+CommonUtil::createDailyRateCalculation()
+│
+├── Step [a]: Write N to log table             ← ALWAYS succeeds (existing code)
+│
+├── Step [b]: try { allocate() } catch {       ← If fails:
+│       Log error                                  - log table still has N
+│       Mark run as failed                         - system behaves as today
+│       Continue to step [c]                       - no revenue lost
+│   }                                              - visible in asc_alloc_calculation_runs
+│
+└── Step [c]: Build sum from log table         ← Works with N or P (either way valid)
+```
+
+**Guarantee:** If allocation fails, the batch produces exactly what it produces today — unallocated figures. The accounting team sees "allocation failed" in the run table and knows to investigate. No manual intervention needed to keep the batch running.
+
 ---
 
-## 7. The Allocation Service — Internal Design
+## 9. The Allocation Service — Internal Design
 
 ### AscAllocationService::allocate()
 
@@ -388,91 +488,11 @@ private function overwriteLogTable(string $table, Collection $allocations): void
 
 ---
 
-## 8. Reference Prices
+## 10. Downstream Impact Assessment
 
-### Confirmed Values
+### What Happens to ¥0 App Charges
 
-| Project | Product | product_id | L (reference price, tax-incl) | Source |
-|---|---|---|---|---|
-| CAP + CIP | App Premium | 10021 | ¥3,980 | REF-CAP-05 (Kuroda-san confirmed) |
-| CAP + CIP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
-| CAP + CIP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
-
-### How Reference Prices Are Stored
-
-Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change without code changes):
-
-```php
-// Seeder data
-[
-    ['project_code' => 'cap', 'product_id' => 10021, 'reference_price' => 3980,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cap', 'product_id' => 10005, 'reference_price' => 19800,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cap', 'product_id' => 10015, 'reference_price' => 39600,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    // CIP uses same prices (pending O-5 confirmation for coaching)
-    ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-]
-```
-
----
-
-## 9. Plan Detection
-
-### CAP Plans (1016–1027) — New Plans, No Historical Data
-
-| plan_id | Plan Name | Coaching Product |
-|---|---|---|
-| 1016 | Solo C15 + App | 10005 |
-| 1017 | Solo C30 + App | 10015 |
-| 1018 | L25 + C15 + App | 10005 |
-| 1019 | L50 + C15 + App | 10005 |
-| 1020 | L75 + C15 + App | 10005 |
-| 1021 | L100 + C15 + App | 10005 |
-| 1022 | L25 + C30 + App | 10015 |
-| 1023 | L50 + C30 + App | 10015 |
-| 1024 | L75 + C30 + App | 10015 |
-| 1025 | L100 + C30 + App | 10015 |
-| 1026 | L15/mo + C15 + App | 10005 |
-| 1027 | L15/mo + C30 + App | 10015 |
-
-**Detection:** `CoachingAndAppPlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are new).
-
-### CIP Plans (71, 94, 1005–1014) — Existing Plans, Historical Data Exists
-
-| plan_id | Plan Name | Coaching Product |
-|---|---|---|
-| 71 | Standalone Coaching 15min | 10005 |
-| 94 | Standalone Coaching 30min | 10015 |
-| 1005 | L25 + FVP + C15 | 10005 |
-| 1006 | L50 + FVP + C15 | 10005 |
-| 1007 | L75 + FVP + C15 | 10005 |
-| 1008 | L100 + FVP + C15 | 10005 |
-| 1009 | Beginner + FVP + C15 | 10005 |
-| 1010 | L25 + FVP + C30 | 10015 |
-| 1011 | L50 + FVP + C30 | 10015 |
-| 1012 | L75 + FVP + C30 | 10015 |
-| 1013 | L100 + FVP + C30 | 10015 |
-| 1014 | Beginner + FVP + C30 | 10015 |
-
-**Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id) && $trnCharge->start_date >= CIP_LAUNCH_DATE`
-
-⚠️ **CIP requires a date filter.** These plan_ids have years of historical charges. Only charges created AFTER the upstream CIP project adds the App companion should be allocated. Without the date filter, historical coaching revenue would be retroactively split — a financial error.
-
-### How plan_id Is Available
-
-Verified from `ls-database-migrations`:
-- `trn_charge` has `plan_id` column (nullable bigint)
-- `getTrnChargeList()` uses `SELECT trn_charge.*` — includes plan_id
-- `log_daily_rate_calculation` does NOT have plan_id — detection must use `trn_charge` join
-
----
-
-## 10. What Happens to ¥0 App Charges (Verified)
-
-### Current Behavior (Before Allocation)
+#### Current Behavior (Before Allocation)
 
 ```
 trn_charge (product_id=10021, paid_price=0, plan_id=1018)
@@ -487,7 +507,7 @@ trn_charge (product_id=10021, paid_price=0, plan_id=1018)
 
 **Result:** App row exists in all log tables but is invisible to Freee (¥0 is skipped).
 
-### After Allocation (Option 1 Overwrite)
+#### After Allocation (Option 1 Overwrite)
 
 ```
 Step [a]: LogDailyRateCalculation::create(paid_price=0)  ← same as today
@@ -499,7 +519,7 @@ Step [c]: getPaidPriceSumList() → sum row with paid_price=3,774
 
 **Result:** App revenue automatically flows to Freee. No new code in the Freee sending path.
 
-### Key Verifications
+#### Key Verifications
 
 | Check | Result |
 |---|---|
@@ -509,32 +529,262 @@ Step [c]: getPaidPriceSumList() → sum row with paid_price=3,774
 | Does sendFreeeJournals2 have a price gate? | ✅ Yes — `if ($sumList->paid_price != 0)` skips ¥0 rows |
 | Does PayPal reconciliation read log tables? | ✅ Yes — `uriage1–6` subqueries read `log_daily_rate_calculation`. But totals balance because App row absorbs the shift. |
 
----
+### CSV Report
 
-## 11. Existing Files Changed
+#### Current State: No Allocation CSV Header Defined
 
-| File | Change | Lines Added | Risk |
-|---|---|---|---|
-| `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
-| `config/const.php` | Add CSV header definitions (if allocation detail CSV needed) | ~20 | ZERO — config only |
-| `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
+Checked `config/const.php` — no CSV definition exists for allocation detail or allocation summary. All existing CSV keys:
 
-**Everything else is new code** — no modifications to existing logic.
+```
+trnChargeFile, ticketFile, dailyRateCalculationFile,
+dailyRateCalculationSumFile, monthlyRateCalculationFile,
+sendJournalsHistoryFile, maeukeUrikakebalanceTransitionFile,
+balanceTransitionFile, balanceTransitionV2File,
+maeukeUrikakebalanceTransitionWithOrderNumberFile,
+balanceTransitionWithOrderNumberFile, paypalPaymentFile,
+paypalPaymentSumFile, errorInfoFile
+```
 
-### Files NOT Changed
+**No `allocationDetailFile` or similar exists.** This needs to be added IF Accounting confirms they want a dedicated allocation CSV (pending Nemoto-san, item O-6).
 
-| File | Why Not |
+#### What Needs to Be Added (if CSV is required)
+
+##### 1. Config entry in `config/const.php`
+
+```php
+// ASC配分計算結果ファイル (Allocation Detail)
+'allocationDetailFile' => [
+    'fileName' => '{YYYYMM}_10_AllocationDetail({execDate}).csv',
+    'name' => 'ASC配分計算結果ファイル',
+    'headerItem' => [
+        'コンテンツ',         // Service name (Bizmates)
+        '対象年月',           // target_ym
+        'プロジェクト',       // project_code (cap/cip)
+        '生徒ID',            // student_id
+        '部署ID',            // department_id
+        '発注番号',          // order_no
+        'プランID',          // plan_id
+        'プロダクトID',      // product_id (coaching or app)
+        'プロダクトタイプ',  // product_type
+        '契約種類',          // contract_type
+        '参照価格',          // reference_price (L)
+        '配分比率',          // ratio
+        '元金額(N)',         // original_amount (before allocation)
+        '配分後金額(P)',     // allocated_amount (after allocation)
+        'ステータス',        // run status
+    ],
+],
+```
+
+##### 2. New function to generate the CSV
+
+Following the existing pattern (`createMonthlyRateCalculationFile`), create a new function:
+
+```php
+// In a new service class (or CommonUtil if following existing pattern)
+public static function createAllocationDetailFile(string $targetYm, bool $preFlg = false): array
+{
+    [$fileName, $name, $headerTitle] = CommonUtil::getCsvFileInfo('allocationDetailFile');
+
+    // Read from asc_alloc_prorations for the target month
+    $rows = AscAllocProration::getForTargetYm($targetYm, $preFlg);
+
+    $detailDataLists = [];
+    foreach ($rows as $row) {
+        $detailDataLists[] = [
+            ServiceNameEnum::Bizmates->value,
+            $row->target_ym,
+            $row->project_code,
+            $row->student_id,
+            $row->department_id,
+            $row->order_no,
+            $row->plan_id,
+            $row->product_id,
+            $row->product_type,
+            $row->contract_type,
+            $row->reference_price,
+            $row->ratio,
+            $row->original_amount,
+            $row->allocated_amount,
+            $row->status,
+        ];
+    }
+
+    CommonUtil::createCsvFile($fileName, $headerTitle, $detailDataLists);
+    return [$fileName, $name];
+}
+```
+
+##### 3. Add to createSendMailAttacheFile() in SendJournalsDataLogic
+
+```php
+// In createSendMailAttacheFile(), after existing CSVs:
+
+// ASC Allocation Detail CSV (only if allocation ran successfully)
+if (AscAllocCalculationRun::hasCompletedRun($targetYm)) {
+    [$fileName, $name] = AscAllocationCsvService::createAllocationDetailFile($targetYm, false);
+    $fileNameList[$fileName] = $name;
+}
+```
+
+Same for `DailyRateCalculationPreLogic::createSendMailAttacheFile()` with `$preFlg = true`.
+
+#### Important: Under Option 1, Existing CSVs Already Show Allocated Amounts
+
+With Option 1 (Overwrite), the EXISTING CSVs automatically contain allocated figures:
+- `03_DailyRateCalculation` — shows P values (coaching reduced, app has value)
+- `04_CalculationSummary` — shows allocated sums
+
+**The dedicated allocation CSV is optional** — it would only provide the RATIO and ORIGINAL N for audit. The actual allocated amounts are already in the existing CSVs.
+
+### Freee Journal Sending
+
+#### Does It Need Changes Under Option 1?
+
+**No.** Here's why:
+
+The journal building flow reads from `log_sum_calculation`:
+
+```php
+$sumLists = LogSumCalculation::getLogSumCalculationForTargetYm($targetYm);
+
+foreach ($sumLists as $sumList) {
+    // 1. Get freee product type from product_type
+    $freeeProductType = MstCodeChange::getChangeCodeToFreeeCode(
+        config('code.masterDataType.productType'),
+        $sumList->product_type  // ← product_type 100 for App
+    );
+
+    // 2. Get contract type info (segment2_id)
+    [$freeeContractType, $contractTypeName] = CommonUtil::getContractTypeInfo(
+        $freeeProductType,
+        $sumList->department_id,
+        $sumList->contract_type
+    );
+
+    // 3. Get journal rules
+    $mstRuleForJournals = MstRuleForJournals::getMstRuleForJournals(
+        $freeeContractType,
+        $freeeProductType
+    );
+
+    // 4. Skip if paid_price = 0
+    if ($sumList->paid_price != 0) {
+        // Build journal entry...
+    }
+}
+```
+
+**Under Option 1:**
+- App sum row now has `paid_price = P_app` (e.g., 3,774) instead of 0
+- It passes the `!= 0` check → journal is built
+- `product_type = 100` flows through `MstCodeChange` to get `freeeProductType`
+- `freeeProductType` flows through `getContractTypeInfo()` to get segment mapping
+- `MstRuleForJournals` resolves the journal rules
+
+#### Potential Issue: Does product_type 100 Have Freee Mappings?
+
+The flow requires:
+1. `mst_code_change` row: `master_data_type = 1` (productType), `code = 100` → `freee_code = ?`
+2. `mst_rule_for_journals` row: `segment2_id = ?`, `product_type = {freee_code}` → journal rules
+
+**From project context (REF-ASCH-06 §5):** Kuroda-san confirmed that `mst_rule_for_journals` has 4 rows for code=100 (App). This was confirmed for the original ASCH design and applies here.
+
+**What we need to verify before go-live:**
+- Does `mst_code_change` have a row mapping `code=100` → `freee_code` for `master_data_type=1`?
+- Do the 4 `mst_rule_for_journals` rows exist for all contract type variants (B2C, B2B, B2E, Partner)?
+
+If these rows exist → **zero code changes needed in sendFreeeJournals2()**.
+If they don't exist → **seeder needed in ls-database-migrations** (data change, not code change).
+
+#### getContractTypeInfo() — How App Routes
+
+```php
+// Product type 100 (App) → freeeProductType via mst_code_change
+$freeeProductType = MstCodeChange::getChangeCodeToFreeeCode(1, 100);
+
+// freeeProductType is checked against known types:
+if (in_array($freeeProductType, config('code.freeeZipanCodes'))) {
+    // Zipan → won't match (App is Bizmates only)
+} elseif ($freeeProductType == config('code.freeeProductType.bizmatesCoaching')) {
+    // Coaching → won't match (App is not coaching)
+} else {
+    // Falls to "Bizmates" path (masterDataType = contractTypeBizmates)
+    $masterDataType = config('code.masterDataType.contractTypeBizmates');
+}
+```
+
+**App will route through the Bizmates contract type path** (same as Online Lesson products). This means it uses segment2_id values like `B_B2C (261926)`, `B_B2B (261928)`, etc. — which is correct for a Bizmates product.
+
+**Alternatively**, if Kuroda-san defined App-specific segment2_id values (like `C_B2C (261934)` for Coaching), the App's freee_code might need to be registered separately. This depends on what the 4 mst_rule_for_journals rows use.
+
+#### Conclusion for sendFreeeJournals2
+
+| Question | Answer |
 |---|---|
-| `SendJournalsDataLogic.php` | Sum already has P → journals are correct. No 2nd API call. |
-| `DailyRateCalculationPreLogic.php` | Calls CommonUtil which handles everything. |
-| `DataCorrectionLogic.php` | Same — calls CommonUtil. |
-| `ZipanUtil.php` | CAP/CIP is Bizmates-only. Zipan path untouched. |
-| `sendFreeeJournals2()` | `paid_price != 0` check naturally includes P_app (was 0, now has value). |
-| `createSendMailAttacheFile()` | Reads from log_sum_calculation which already has allocated amounts. |
+| Code changes needed? | **No** — the function reads from log_sum_calculation which already has P values |
+| Will App journals be created? | **Yes** — once paid_price > 0 (from overwrite), the `!= 0` check passes |
+| Will correct Freee dimensions be used? | **Likely yes** — IF mst_code_change + mst_rule_for_journals rows exist for product_type 100 |
+| What to verify before go-live? | Query mst_code_change and mst_rule_for_journals for code=100 / product_type 100 |
+
+### Balance Transition
+
+#### Does It Need Changes Under Option 1?
+
+**No.** Here's why:
+
+`createBalanceTransition()` calculates:
+```
+月末残高 = 月初残高 − 入金金額 + 当月売上
+```
+
+Where:
+- **月初残高** (opening balance): from previous month's `log_balance_transition`
+- **入金金額** (deposit): from `trn_charge` (unaffected by allocation)
+- **当月売上** (monthly sales): from `LogSendJournalsHistory` (debit - credit amounts from sent journals)
+
+The sales amount is read from **`log_send_journals_history`** — which is written AFTER journals are sent to Freee. Under Option 1, the journals sent to Freee already have the allocated amounts (P_coaching, P_app). So `log_send_journals_history` will contain the correct allocated figures.
+
+#### What Changes Naturally
+
+Before allocation:
+```
+Balance for Coaching partner: sales = ¥22,550 (full N)
+Balance for App partner: ¥0 (no journals sent for App)
+```
+
+After allocation (Option 1):
+```
+Balance for Coaching partner: sales = ¥18,776 (P_coaching)
+Balance for App partner: sales = ¥3,774 (P_app)
+```
+
+The **total across both** remains ¥22,550 — just split between two partner/product_type entries.
+
+#### Potential Consideration
+
+The balance transition groups by `partner_id + partner_name`. If the App journal uses the same partner_id as Coaching (which it will — same student, same payment method), the balance entries would be merged. This is actually correct behavior — the balance transition tracks cash flow per partner, and the total cash from the student hasn't changed.
+
+**Conclusion:** No code changes needed. Balance transitions inherit the allocated amounts naturally through `log_send_journals_history`.
+
+### Balance Transition With Order Number
+
+#### Does It Need Changes?
+
+**No.** Same reasoning as above. It reads from:
+- `LogSendJournalsHistory::getAmountForUriagedakaWithOrderNumber()` — which will have allocated amounts
+- `TrnCharge::getTrnChargeForNyukin()` — reads from trn_charge (unaffected)
+- `LogFreeeInvoices` — invoice amounts (unaffected)
+
+The order_no-level breakdown will show:
+- Coaching product journals at P_coaching
+- App product journals at P_app (if App has its own order_no, which it likely shares with coaching)
+
+**No code changes needed.**
 
 ---
 
-## 12. New Code Structure
+## 11. New Code Structure
 
 ```
 accounting_related_system_for_freee/
@@ -592,288 +842,30 @@ ls-database-migrations/
 
 ---
 
-## 13. Failure Isolation
+## 12. Existing Files Changed
 
-```
-CommonUtil::createDailyRateCalculation()
-│
-├── Step [a]: Write N to log table             ← ALWAYS succeeds (existing code)
-│
-├── Step [b]: try { allocate() } catch {       ← If fails:
-│       Log error                                  - log table still has N
-│       Mark run as failed                         - system behaves as today
-│       Continue to step [c]                       - no revenue lost
-│   }                                              - visible in asc_alloc_calculation_runs
-│
-└── Step [c]: Build sum from log table         ← Works with N or P (either way valid)
-```
+| File | Change | Lines Added | Risk |
+|---|---|---|---|
+| `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
+| `config/const.php` | Add CSV header definitions (if allocation detail CSV needed) | ~20 | ZERO — config only |
+| `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
 
-**Guarantee:** If allocation fails, the batch produces exactly what it produces today — unallocated figures. The accounting team sees "allocation failed" in the run table and knows to investigate. No manual intervention needed to keep the batch running.
+**Everything else is new code** — no modifications to existing logic.
 
----
+### Files NOT Changed
 
-## 14. CSV Report Assessment
-
-### Current State: No Allocation CSV Header Defined
-
-Checked `config/const.php` — no CSV definition exists for allocation detail or allocation summary. All existing CSV keys:
-
-```
-trnChargeFile, ticketFile, dailyRateCalculationFile,
-dailyRateCalculationSumFile, monthlyRateCalculationFile,
-sendJournalsHistoryFile, maeukeUrikakebalanceTransitionFile,
-balanceTransitionFile, balanceTransitionV2File,
-maeukeUrikakebalanceTransitionWithOrderNumberFile,
-balanceTransitionWithOrderNumberFile, paypalPaymentFile,
-paypalPaymentSumFile, errorInfoFile
-```
-
-**No `allocationDetailFile` or similar exists.** This needs to be added IF Accounting confirms they want a dedicated allocation CSV (pending Nemoto-san, item O-6).
-
-### What Needs to Be Added (if CSV is required)
-
-#### 1. Config entry in `config/const.php`
-
-```php
-// ASC配分計算結果ファイル (Allocation Detail)
-'allocationDetailFile' => [
-    'fileName' => '{YYYYMM}_10_AllocationDetail({execDate}).csv',
-    'name' => 'ASC配分計算結果ファイル',
-    'headerItem' => [
-        'コンテンツ',         // Service name (Bizmates)
-        '対象年月',           // target_ym
-        'プロジェクト',       // project_code (cap/cip)
-        '生徒ID',            // student_id
-        '部署ID',            // department_id
-        '発注番号',          // order_no
-        'プランID',          // plan_id
-        'プロダクトID',      // product_id (coaching or app)
-        'プロダクトタイプ',  // product_type
-        '契約種類',          // contract_type
-        '参照価格',          // reference_price (L)
-        '配分比率',          // ratio
-        '元金額(N)',         // original_amount (before allocation)
-        '配分後金額(P)',     // allocated_amount (after allocation)
-        'ステータス',        // run status
-    ],
-],
-```
-
-#### 2. New function to generate the CSV
-
-Following the existing pattern (`createMonthlyRateCalculationFile`), create a new function:
-
-```php
-// In a new service class (or CommonUtil if following existing pattern)
-public static function createAllocationDetailFile(string $targetYm, bool $preFlg = false): array
-{
-    [$fileName, $name, $headerTitle] = CommonUtil::getCsvFileInfo('allocationDetailFile');
-
-    // Read from asc_alloc_prorations for the target month
-    $rows = AscAllocProration::getForTargetYm($targetYm, $preFlg);
-
-    $detailDataLists = [];
-    foreach ($rows as $row) {
-        $detailDataLists[] = [
-            ServiceNameEnum::Bizmates->value,
-            $row->target_ym,
-            $row->project_code,
-            $row->student_id,
-            $row->department_id,
-            $row->order_no,
-            $row->plan_id,
-            $row->product_id,
-            $row->product_type,
-            $row->contract_type,
-            $row->reference_price,
-            $row->ratio,
-            $row->original_amount,
-            $row->allocated_amount,
-            $row->status,
-        ];
-    }
-
-    CommonUtil::createCsvFile($fileName, $headerTitle, $detailDataLists);
-    return [$fileName, $name];
-}
-```
-
-#### 3. Add to createSendMailAttacheFile() in SendJournalsDataLogic
-
-```php
-// In createSendMailAttacheFile(), after existing CSVs:
-
-// ASC Allocation Detail CSV (only if allocation ran successfully)
-if (AscAllocCalculationRun::hasCompletedRun($targetYm)) {
-    [$fileName, $name] = AscAllocationCsvService::createAllocationDetailFile($targetYm, false);
-    $fileNameList[$fileName] = $name;
-}
-```
-
-Same for `DailyRateCalculationPreLogic::createSendMailAttacheFile()` with `$preFlg = true`.
-
-### Important: Under Option 1, Existing CSVs Already Show Allocated Amounts
-
-With Option 1 (Overwrite), the EXISTING CSVs automatically contain allocated figures:
-- `03_DailyRateCalculation` — shows P values (coaching reduced, app has value)
-- `04_CalculationSummary` — shows allocated sums
-
-**The dedicated allocation CSV is optional** — it would only provide the RATIO and ORIGINAL N for audit. The actual allocated amounts are already in the existing CSVs.
-
----
-
-## 15. Freee Journal Sending (sendFreeeJournals2) — Assessment
-
-### Does It Need Changes Under Option 1?
-
-**No.** Here's why:
-
-The journal building flow reads from `log_sum_calculation`:
-
-```php
-$sumLists = LogSumCalculation::getLogSumCalculationForTargetYm($targetYm);
-
-foreach ($sumLists as $sumList) {
-    // 1. Get freee product type from product_type
-    $freeeProductType = MstCodeChange::getChangeCodeToFreeeCode(
-        config('code.masterDataType.productType'),
-        $sumList->product_type  // ← product_type 100 for App
-    );
-
-    // 2. Get contract type info (segment2_id)
-    [$freeeContractType, $contractTypeName] = CommonUtil::getContractTypeInfo(
-        $freeeProductType,
-        $sumList->department_id,
-        $sumList->contract_type
-    );
-
-    // 3. Get journal rules
-    $mstRuleForJournals = MstRuleForJournals::getMstRuleForJournals(
-        $freeeContractType,
-        $freeeProductType
-    );
-
-    // 4. Skip if paid_price = 0
-    if ($sumList->paid_price != 0) {
-        // Build journal entry...
-    }
-}
-```
-
-**Under Option 1:**
-- App sum row now has `paid_price = P_app` (e.g., 3,774) instead of 0
-- It passes the `!= 0` check → journal is built
-- `product_type = 100` flows through `MstCodeChange` to get `freeeProductType`
-- `freeeProductType` flows through `getContractTypeInfo()` to get segment mapping
-- `MstRuleForJournals` resolves the journal rules
-
-### Potential Issue: Does product_type 100 Have Freee Mappings?
-
-The flow requires:
-1. `mst_code_change` row: `master_data_type = 1` (productType), `code = 100` → `freee_code = ?`
-2. `mst_rule_for_journals` row: `segment2_id = ?`, `product_type = {freee_code}` → journal rules
-
-**From project context (REF-ASCH-06 §5):** Kuroda-san confirmed that `mst_rule_for_journals` has 4 rows for code=100 (App). This was confirmed for the original ASCH design and applies here.
-
-**What we need to verify before go-live:**
-- Does `mst_code_change` have a row mapping `code=100` → `freee_code` for `master_data_type=1`?
-- Do the 4 `mst_rule_for_journals` rows exist for all contract type variants (B2C, B2B, B2E, Partner)?
-
-If these rows exist → **zero code changes needed in sendFreeeJournals2()**.
-If they don't exist → **seeder needed in ls-database-migrations** (data change, not code change).
-
-### getContractTypeInfo() — How App Routes
-
-```php
-// Product type 100 (App) → freeeProductType via mst_code_change
-$freeeProductType = MstCodeChange::getChangeCodeToFreeeCode(1, 100);
-
-// freeeProductType is checked against known types:
-if (in_array($freeeProductType, config('code.freeeZipanCodes'))) {
-    // Zipan → won't match (App is Bizmates only)
-} elseif ($freeeProductType == config('code.freeeProductType.bizmatesCoaching')) {
-    // Coaching → won't match (App is not coaching)
-} else {
-    // Falls to "Bizmates" path (masterDataType = contractTypeBizmates)
-    $masterDataType = config('code.masterDataType.contractTypeBizmates');
-}
-```
-
-**App will route through the Bizmates contract type path** (same as Online Lesson products). This means it uses segment2_id values like `B_B2C (261926)`, `B_B2B (261928)`, etc. — which is correct for a Bizmates product.
-
-**Alternatively**, if Kuroda-san defined App-specific segment2_id values (like `C_B2C (261934)` for Coaching), the App's freee_code might need to be registered separately. This depends on what the 4 mst_rule_for_journals rows use.
-
-### Conclusion for sendFreeeJournals2
-
-| Question | Answer |
+| File | Why Not |
 |---|---|
-| Code changes needed? | **No** — the function reads from log_sum_calculation which already has P values |
-| Will App journals be created? | **Yes** — once paid_price > 0 (from overwrite), the `!= 0` check passes |
-| Will correct Freee dimensions be used? | **Likely yes** — IF mst_code_change + mst_rule_for_journals rows exist for product_type 100 |
-| What to verify before go-live? | Query mst_code_change and mst_rule_for_journals for code=100 / product_type 100 |
+| `SendJournalsDataLogic.php` | Sum already has P → journals are correct. No 2nd API call. |
+| `DailyRateCalculationPreLogic.php` | Calls CommonUtil which handles everything. |
+| `DataCorrectionLogic.php` | Same — calls CommonUtil. |
+| `ZipanUtil.php` | CAP/CIP is Bizmates-only. Zipan path untouched. |
+| `sendFreeeJournals2()` | `paid_price != 0` check naturally includes P_app (was 0, now has value). |
+| `createSendMailAttacheFile()` | Reads from log_sum_calculation which already has allocated amounts. |
 
 ---
 
-## 16. Balance Transition (createBalanceTransition) — Assessment
-
-### Does It Need Changes Under Option 1?
-
-**No.** Here's why:
-
-`createBalanceTransition()` calculates:
-```
-月末残高 = 月初残高 − 入金金額 + 当月売上
-```
-
-Where:
-- **月初残高** (opening balance): from previous month's `log_balance_transition`
-- **入金金額** (deposit): from `trn_charge` (unaffected by allocation)
-- **当月売上** (monthly sales): from `LogSendJournalsHistory` (debit - credit amounts from sent journals)
-
-The sales amount is read from **`log_send_journals_history`** — which is written AFTER journals are sent to Freee. Under Option 1, the journals sent to Freee already have the allocated amounts (P_coaching, P_app). So `log_send_journals_history` will contain the correct allocated figures.
-
-### What Changes Naturally
-
-Before allocation:
-```
-Balance for Coaching partner: sales = ¥22,550 (full N)
-Balance for App partner: ¥0 (no journals sent for App)
-```
-
-After allocation (Option 1):
-```
-Balance for Coaching partner: sales = ¥18,776 (P_coaching)
-Balance for App partner: sales = ¥3,774 (P_app)
-```
-
-The **total across both** remains ¥22,550 — just split between two partner/product_type entries.
-
-### Potential Consideration
-
-The balance transition groups by `partner_id + partner_name`. If the App journal uses the same partner_id as Coaching (which it will — same student, same payment method), the balance entries would be merged. This is actually correct behavior — the balance transition tracks cash flow per partner, and the total cash from the student hasn't changed.
-
-**Conclusion:** No code changes needed. Balance transitions inherit the allocated amounts naturally through `log_send_journals_history`.
-
----
-
-## 17. createBalanceTransitionWithOrderNumber — Assessment
-
-### Does It Need Changes?
-
-**No.** Same reasoning as above. It reads from:
-- `LogSendJournalsHistory::getAmountForUriagedakaWithOrderNumber()` — which will have allocated amounts
-- `TrnCharge::getTrnChargeForNyukin()` — reads from trn_charge (unaffected)
-- `LogFreeeInvoices` — invoice amounts (unaffected)
-
-The order_no-level breakdown will show:
-- Coaching product journals at P_coaching
-- App product journals at P_app (if App has its own order_no, which it likely shares with coaching)
-
-**No code changes needed.**
-
----
-
-## 18. Summary: What Needs Changes vs What Doesn't
+## 13. Summary: What Needs Changes vs What Doesn't
 
 ### NEEDS CODE CHANGES
 
@@ -916,7 +908,7 @@ The order_no-level breakdown will show:
 
 ---
 
-## 19. Decisions Log
+## 14. Decisions Log
 
 | # | Decision | Option Chosen | Alternative | Rationale |
 |---|---|---|---|---|
@@ -933,7 +925,7 @@ The order_no-level breakdown will show:
 
 ---
 
-## 20. Open Items
+## 15. Open Items
 
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
@@ -946,7 +938,7 @@ The order_no-level breakdown will show:
 
 ---
 
-## 21. Reference Documents
+## 16. Reference Documents
 
 | Document | Location | What it covers |
 |---|---|---|
