@@ -8,6 +8,75 @@
 
 ---
 
+## Prior Discussion (Slack thread, 2026-08-10 to 2026-08-12)
+
+Before the Confluence document was released, Kuroda-san, Patrick-san and Noel discussed the approach in chat. Key points from that discussion that **led to** the Confluence doc:
+
+### Evolution of the Approach
+
+1. **Kuroda-san (08-10):** Identified that THREE batches produce CSVs (Pre, Final, DataCorrection), not just SendJournalsDataLogic. All three call the same `CommonUtil` functions. Exclusion must cover all three.
+
+2. **Noel (08-10):** Agreed. Pointed to `CommonUtil::createDailyRateCalculation()` as the right injection point. Noted Zipan doesn't need changes (CAP/CIP is Bizmates-only).
+
+3. **Kuroda-san (08-12):** Realized that excluding at `createDailyRateCalculation()` also removes CAP/CIP from Freee journals (since `log_sum_calculation` feeds journals). This means we can send **allocated amounts as actual values** instead of adjustment journals — which became **Option 1 (Overwrite)**. Dropped `adjustment_amount` column and one validation rule from the design.
+
+### Critical Insight (from Kuroda-san, 08-12)
+
+> "Since excluding there also removes CAP/CIP from the Freee journals, we send the allocated amounts as actual values (replacement) instead of sending difference journals to correct them afterwards."
+
+This is the genesis of Option 1. The Confluence doc formalizes this insight.
+
+### Open Questions from Chat (Not in Confluence Doc)
+
+| # | Question | From | Status |
+|---|---|---|---|
+| K-1 | Three batches affected (Pre, Final, DataCorrection) — all call same function | Kuroda-san | ✅ Confirmed — single injection point covers all |
+| K-2 | Can exclusion go in CommonUtil::create*File() or in the log query? | Kuroda-san | ✅ Answered: goes in `createDailyRateCalculation()` before log write |
+| K-3 | ZipanUtil::addZipanData() — does exclusion need duplication? | Kuroda-san | ✅ Not needed — Zipan never has CAP/CIP plans |
+| N-1 | Filtering logic "might need to be different" — different how? | Kuroda-san asking Noel | ✅ **Answered** — use `plan_id` enum, not `product_id`. See Lead Dev Assessment. |
+| N-2 | addZipanData() "needs further investigation" | Kuroda-san asking Noel | ✅ **Answered** — no change needed. Zipan is separate path, no CAP/CIP overlap. |
+| N-3 | Should allocation call `getContractDateInfoList()` directly or decouple? | Kuroda-san asking Noel | ✅ **Answered** — reuse directly for Dec 17. Decouple later if needed. |
+| P-1 | Is CAP/CIP identification deterministic across Pre/Final? (mid-month changes?) | Patrick-san | ✅ Yes — plan_id is immutable on the charge |
+| P-2 | Does Accounting need a raw log footprint for excluded charges? | Patrick-san | ⚠️ **OPEN** — `asc_alloc_source_documents` may suffice, but needs Accounting confirmation |
+| P-3 | Can CAP/CIP share plan codes with non-CAP products? | Patrick-san | ✅ No — CAP plans (1016–1027) are unique |
+
+### Patrick-san's Recommendations (08-12)
+
+1. Use a centralized check (e.g., `CapCipPlanEnum::isCapCip()`) — mirroring `BizmatesMonthlyPlanEnum::exists()` pattern at line 401.
+2. Reuse `CommonUtil::getContractDateInfoList()` directly for the allocation N calculation — safest for 12/17 deadline, eliminates calculation drift risk. Decouple later.
+3. Quick query check to confirm Zipan has no CAP/CIP plan overlap (low risk).
+
+---
+
+### What the Confluence Doc Adds Beyond the Chat
+
+The Confluence document (below) formalizes Option 1 with:
+- Complete process flow diagrams
+- Data examples with actual numbers
+- Side-by-side comparison (Option 1 vs Option 2)
+- Naming clarification (architecture axis vs timing axis)
+- Explicit questions for us to answer
+
+**Where the Confluence doc differs from chat discussion:**
+
+| Topic | Chat (08-10/08-12) | Confluence Doc |
+|---|---|---|
+| Mechanism | "Exclude from log_daily_rate_calculation" | "Write N then UPDATE to P" |
+| Phrasing | "Exclusion" | "Overwrite" |
+
+These are the same thing expressed differently:
+- Chat said "exclude CAP/CIP from the existing log rows" (don't write N for CAP/CIP)
+- Confluence says "write N first, then overwrite with P"
+
+**The Confluence doc is authoritative.** It proposes writing N first (step [a]), then updating to P (step [b]). This is better than pure exclusion because:
+- The ¥0 App row needs to become P_app (not just excluded)
+- The Coaching row needs its N reduced to P_coaching (not excluded entirely)
+- `asc_alloc_source_documents` preserves the original N for audit
+
+We follow the Confluence doc's "write then overwrite" approach, not the chat's "exclude" phrasing.
+
+---
+
 ## Summary
 
 Kuroda-san proposes **Option 1 (Overwrite)** as an alternative allocation timing within Scenario D (injection). Instead of sending a 2nd Freee API call with adjustment journals, the allocation **overwrites** the N values in `log_daily_rate_calculation` before `log_sum_calculation` is built — so everything downstream (Freee journals, CSVs, balance transitions) is already correct on the first pass.
@@ -305,16 +374,35 @@ Downstream: sendFreeeJournals2()
 
 **No rows added or removed. Only the amount changes. Everything downstream inherits it automatically.**
 
-### Verified: PayPal Reconciliation Is Unaffected
+### Verified: PayPal Reconciliation Is Unaffected (Corrected per Kuroda-san)
 
-`getB2CPaypalPayment()` and `getB2CPaypalPaymentSum()` both read directly from **`trn_charge`** — NOT from `log_daily_rate_calculation`. The allocation never modifies `trn_charge`. PayPal totals are unchanged.
+**Original assessment was partially wrong.** Kuroda-san pointed out that `getB2CPaypalPayment()` does NOT only read `trn_charge.paid_price`. It also injects `selectRaw` subqueries (`uriage1`–`uriage6`) that read from `log_daily_rate_calculation`:
 
-Additionally, the PayPal query filters by `charge_type <> 1` and `contract_type IN (0, 2)`. It sums `trn_charge.paid_price`. Since:
-- Coaching `trn_charge.paid_price` = 22,550 (unchanged)
-- App `trn_charge.paid_price` = 0 (unchanged)
-- Total from trn_charge = 22,550 (unchanged)
+```php
+// In createPaypalPaymentFile() — builds selectItem subqueries:
+$selectItem[] = '(select case when 1={$isFuture} then 0 else 
+    coalesce((select sum(paid_price) from log_daily_rate_calculation 
+        where target_ym = {$ym} and charge_id = trn_charge.id), 0) 
+    + coalesce((select sum(paid_price) from log_monthly_rate_calculation 
+        where target_ym = {$ym} and charge_id = trn_charge.id), 0) 
+    end) AS uriage{$i}';
+```
 
-The PayPal reconciliation CSV (`B2CPaypalPayment`) will show the same figures regardless of allocation.
+These `uriage` columns ARE affected by the overwrite:
+- **Before:** Coaching uriage = N (e.g., 22,550), App uriage = 0
+- **After:** Coaching uriage = P_coaching (e.g., 18,776), App uriage = P_app (e.g., 3,774)
+
+**Why the total still balances:**
+
+The PayPal CSV shows per charge: `paid_price | sum(uriage) | diff = paid_price - sum(uriage)`
+
+- Coaching charge: paid_price=22,550, uriage=18,776, diff=3,774
+- App charge: paid_price=0, uriage=3,774, diff=-3,774
+- **Student total: paid_price=22,550, uriage=22,550, diff=0** ✅
+
+The ¥0 App charge stays in the result set (it passes the query filters: `paid=1`, `status=1`, `contract_type IN (0,2)`). Its uriage absorbs the amount moved from coaching. The per-student total is unchanged.
+
+**Conclusion (corrected):** PayPal reconciliation stays balanced, but the REASON is that the App row with paid_price=0 remains in the result set and its uriage subquery now returns P_app instead of 0. The coaching row's uriage decreases by the same amount. Net effect per student = zero.
 
 ### Verified: NotDailyCalculationProductType Does Not Exclude App
 
@@ -339,7 +427,7 @@ App product_type = 100 is NOT in this list. The App charge goes through the norm
 |---|---|---|
 | 1 | Any objection to Option 1? | **No objection.** Code confirms the ¥0 App row already exists in `log_daily_rate_calculation`. Overwriting it with P_app before the sum step is clean. All downstream code (sum, Freee, CSV, balance) inherits automatically. |
 | 2 | Does Option 1 move the 5.5–6.5 week estimate? | **Reduces by ~2–3 days.** Removes: 2nd API call logic, `adjustment_amount` column, JournalEntryBuilder for adjustment journals, one validation rule (Σadj=0). Adds: UPDATE queries in allocation service (trivial). Net positive. |
-| 3 | Confirm ¥0 App charge appears in PayPal reconciliation? | **PayPal reconciliation is completely unaffected.** `getB2CPaypalPayment()` reads from `trn_charge` directly, never from `log_daily_rate_calculation`. We never modify `trn_charge`. The sum from `trn_charge` (coaching 22,550 + app 0 = 22,550) is unchanged regardless of what we do to the log table. |
+| 3 | Confirm ¥0 App charge appears in PayPal reconciliation? | **Confirmed — balances correctly.** `getB2CPaypalPayment()` uses `selectRaw` subqueries (`uriage1–6`) that read from `log_daily_rate_calculation`. After overwrite: Coaching uriage decreases, App uriage increases by same amount. Per-student total unchanged. The ¥0 App charge stays in the result set (passes all filters) and absorbs the shifted revenue. |
 | 4 | Allocation basis CSV needed? | Waiting on Nemoto-san. Regardless, `asc_alloc_prorations` stores N (original), P (allocated), reference prices, and ratio for full audit trail. |
 
 ### Additional Observations
@@ -358,6 +446,110 @@ App product_type = 100 is NOT in this list. The App charge goes through the norm
 - More elegant (everything downstream is correct automatically)
 - Lower risk (no window where Freee state differs from our DB)
 - Verified working with actual code paths
+
+---
+
+## Answers to Kuroda-san's Open Questions (N-1, N-2, N-3)
+
+### N-1: "Filtering might need to be different" — Clarification
+
+**What I meant:** The existing `BizmatesMonthlyPlanEnum` filters by `product_id`. For CAP/CIP, we need to filter by `plan_id` instead — because the same `product_id` (10005, 10015) is used by both CAP plans AND non-CAP standalone coaching plans.
+
+**Verified in code:**
+- `trn_charge` has a `plan_id` column (nullable bigint) — confirmed from migration
+- `getTrnChargeList()` uses `SELECT trn_charge.*` — so `$trnCharge->plan_id` is available in the loop
+- CAP plan_ids (1016–1027) are unique — no overlap with non-CAP plans
+- CIP plan_ids (71, 94, 1005–1014) exist historically — needs date filter
+
+**Proposed implementation (mirrors existing pattern):**
+
+```php
+// New enum: app/Enums/AscAlloc/CapPlanEnum.php
+enum CapPlanEnum: int
+{
+    use HasEnumHelperTrait;  // gives us exists() and toArray()
+
+    case SOLO_C15_APP       = 1016;
+    case SOLO_C30_APP       = 1017;
+    case L25_C15_APP        = 1018;
+    case L50_C15_APP        = 1019;
+    case L75_C15_APP        = 1020;
+    case L100_C15_APP       = 1021;
+    case L25_C30_APP        = 1022;
+    case L50_C30_APP        = 1023;
+    case L75_C30_APP        = 1024;
+    case L100_C30_APP       = 1025;
+    case L15MO_C15_APP      = 1026;
+    case L15MO_C30_APP      = 1027;
+}
+
+// Usage in AscAllocationService::allocate():
+// After step [a] writes all charges, identify which ones need allocation:
+$capChargeIds = collect($writtenRows)
+    ->filter(fn ($row) => CapPlanEnum::exists($row->plan_id))
+    ->pluck('charge_id');
+```
+
+**For CIP (later):**
+
+```php
+enum CipPlanEnum: int
+{
+    use HasEnumHelperTrait;
+
+    case STANDALONE_C15  = 71;
+    case STANDALONE_C30  = 94;
+    case L25_C15         = 1005;
+    case L50_C15         = 1006;
+    // ... etc
+}
+
+// CIP also needs a date guard (historical charges must not be allocated):
+$cipChargeIds = collect($writtenRows)
+    ->filter(fn ($row) => CipPlanEnum::exists($row->plan_id)
+        && $row->start_date >= config('asc_alloc.cip_launch_date'))
+    ->pluck('charge_id');
+```
+
+**Why plan_id and not product_id:**
+- `product_id = 10005` (Coaching 15min) appears in BOTH CAP plans AND non-CAP standalone plans
+- Only `plan_id` distinguishes "this coaching charge is part of a CAP bundle" vs "this is standalone coaching"
+- The ¥0 App charge (product_id = 10021) also appears in both CAP and CIP — `plan_id` tells us which project it belongs to
+
+### N-2: "addZipanData() needs further investigation" — Resolved
+
+**Verified: No change needed. No investigation needed.**
+
+Reasoning (confirmed via code review):
+
+1. `addZipanData()` reads from Zipan log tables (`log_daily_rate_calculation_zipan`, etc.) via `ZipanUtil::createDailyRateCalculationFile()`
+2. Those Zipan log tables are populated ONLY by `ZipanUtil::createDailyRateCalculation()` — a completely separate function from `CommonUtil::createDailyRateCalculation()`
+3. `ZipanUtil::createDailyRateCalculation()` reads from the `zipan` DB connection
+4. The Zipan database does NOT contain CAP/CIP plans (product 10021 doesn't exist on Zipan, plans 1016–1027 don't exist on Zipan)
+5. Even if it did, the allocation service only runs inside `CommonUtil` (Bizmates path) — the Zipan path is never touched
+
+**Conclusion:** `addZipanData()` will never encounter CAP/CIP data because:
+- It reads from a separate DB connection (zipan)
+- It's populated by a separate function (ZipanUtil)
+- CAP/CIP products don't exist in that database
+
+No filter, no guard, no multi-tenancy refactor needed for Dec 17.
+
+**Long-term (post-deadline):** A `TenantFeatureService` or multi-tenancy refactor is the correct architectural direction (per KB #13 lessons). But it's a 2–3 week effort with high regression risk on the 1060-line `ZipanUtil`. Not justified for a scope where Zipan is completely unaffected.
+
+### N-3: "Should allocation call getContractDateInfoList() directly?"
+
+**Answer: Yes, reuse it directly.**
+
+Reasons:
+1. `getContractDateInfoList()` is the authoritative daily proration formula (`ceil(paidPrice / totalDays * contractDays)`)
+2. The allocation needs the SAME N value that was written to `log_daily_rate_calculation` — calling the same function guarantees no calculation drift
+3. Patrick-san's recommendation aligns: "safest choice for the 12/17 deadline"
+4. Decoupling later is trivial (extract interface, inject) — but premature now
+
+**How it's used in Option 1:** The allocation service doesn't actually need to call `getContractDateInfoList()` separately. Under Option 1, step [a] already called it and wrote N to the log table. Step [b] reads N back from the log (or from the in-memory result of step [a]) and computes P. The formula source is already guaranteed identical because the same function produced N.
+
+If we ever need to recalculate N independently (e.g., for the debug command), we call `getContractDateInfoList()` directly — same function, same result.
 
 ---
 
