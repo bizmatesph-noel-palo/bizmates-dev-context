@@ -363,13 +363,48 @@ public static function createDailyRateCalculation(
 
 ### What Commands Call This Function
 
-| Command | Logic Class | Result |
-|---|---|---|
-| `DailyRateCalculationPreCommand` | `DailyRateCalculationPreLogic` | Writes `_pre` tables, sends preliminary email |
-| `SendJournalsDataCommand` | `SendJournalsDataLogic` | Writes final tables, sends Freee journals + final email |
-| `DataCorrectionCommand` | `DataCorrectionLogic` | Re-runs calculation for corrected data |
+| Command | Logic Class | Injection Point | Result |
+|---|---|---|---|
+| `DailyRateCalculationPreCommand` | `DailyRateCalculationPreLogic` | `CommonUtil::createDailyRateCalculation()` | Writes `_pre` tables, sends preliminary email |
+| `SendJournalsDataCommand` | `SendJournalsDataLogic` | `CommonUtil::createDailyRateCalculation()` | Writes final tables, sends Freee journals + final email |
+| `DataCorrectionCommand` | `DataCorrectionLogic` | Private `createDailyRateCalculation()` at line 346 | Creates new log rows from correction CSV |
 
-**One injection covers all three.** No separate handling needed per command.
+**Two injection points cover all three commands:**
+1. `CommonUtil::createDailyRateCalculation()` — covers Pre + Final
+2. `DataCorrectionLogic::createDailyRateCalculation()` — covers "addDaily" correction
+
+Note: DataCorrectionLogic also has `correctDailyRateCalculation()` ("daily" operation) which reads from `log_daily_rate_calculation` directly — this is SAFE (data already allocated by the normal batch run). Only the "addDaily" path needs allocation because it reads from `trn_charge` (raw N).
+
+### DataCorrectionLogic — Second Injection Point
+
+```php
+// DataCorrectionLogic.php line ~346 — private createDailyRateCalculation()
+// This method reads from trn_charge and writes raw N to the log table.
+// It does NOT call CommonUtil::createDailyRateCalculation().
+
+private function createDailyRateCalculation($data)
+{
+    // ... existing: fetch from trn_charge, prorate, INSERT to log ...
+
+    foreach ($ContractDateLists as $key => $value) {
+        LogDailyRateCalculation::create($condition);  // writes N
+    }
+
+    // ═══════════════════════════════════════════════════════════════
+    // ★ NEW — Same allocation call as CommonUtil ★
+    // ═══════════════════════════════════════════════════════════════
+    try {
+        $targetYm = CommonUtil::getTargetYm();
+        app(AscAllocationService::class)->allocate($targetYm, preFlg: false);
+    } catch (\Throwable $e) {
+        Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+    }
+}
+```
+
+**Why this is needed:** DataCorrectionLogic has its own private copy of the daily rate creation logic (not a call to CommonUtil). It reads `trn_charge.paid_price` directly and writes unallocated N to the log. Without the allocation call, correction-added charges would bypass allocation entirely.
+
+**Known drift (from Kuroda-san):** This private method also lacks the `BizmatesMonthlyPlanEnum::exists()` skip that CommonUtil has. The two implementations have already diverged. For Dec 17 deadline, we add allocation to both places independently (option a). Refactoring DataCorrectionLogic to call CommonUtil is deferred as post-release tech debt.
 
 ### Failure Isolation
 
@@ -847,6 +882,7 @@ ls-database-migrations/
 | File | Change | Lines Added | Risk |
 |---|---|---|---|
 | `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
+| `app/Libs/DataCorrectionLogic.php` | Add `AscAllocationService::allocate()` call after "addDaily" creates new log rows | ~8 | LOW — only affects "addDaily" path |
 | `config/const.php` | Add CSV header definitions (if allocation detail CSV needed) | ~20 | ZERO — config only |
 | `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
 
@@ -856,9 +892,9 @@ ls-database-migrations/
 
 | File | Why Not |
 |---|---|
+| `DailyRateCalculationPreLogic.php` | Unchanged — calls CommonUtil. |
 | `SendJournalsDataLogic.php` | Sum already has P → journals are correct. No 2nd API call. |
-| `DailyRateCalculationPreLogic.php` | Calls CommonUtil which handles everything. |
-| `DataCorrectionLogic.php` | Same — calls CommonUtil. |
+| `DataCorrectionLogic.php` | "addDaily" path needs allocation. "daily" path (correctDailyRateCalculation) is safe — reads already-allocated data from log. |
 | `ZipanUtil.php` | CAP/CIP is Bizmates-only. Zipan path untouched. |
 | `sendFreeeJournals2()` | `paid_price != 0` check naturally includes P_app (was 0, now has value). |
 | `createSendMailAttacheFile()` | Reads from log_sum_calculation which already has allocated amounts. |
@@ -872,6 +908,7 @@ ls-database-migrations/
 | Item | What | Effort |
 |---|---|---|
 | `CommonUtil::createDailyRateCalculation()` | Add allocation service call between [a] and [c] | ~8 lines |
+| `DataCorrectionLogic::createDailyRateCalculation()` | Add allocation service call after "addDaily" INSERT loop | ~8 lines |
 | `AscAllocationService` (NEW) | Main orchestrator — detect, compute, overwrite, persist | 1 new class |
 | `CoachingAndAppPlanEnum` / `CoachingIntensivePlanEnum` (NEW) | Plan ID enums for detection | 2 new files |
 | `AscAlloc*` models (NEW) | Eloquent models for audit tables | 8–10 new files |
