@@ -1,6 +1,6 @@
 # Plans & Products — System Reference
 
-**Last updated:** 2026-08-13  
+**Last updated:** 2026-08-14  
 **Source:** Database queries (dev04), confirmed against ls-database-migrations schema  
 **Scope:** All plan and product data relevant to the accounting system (ASC)
 
