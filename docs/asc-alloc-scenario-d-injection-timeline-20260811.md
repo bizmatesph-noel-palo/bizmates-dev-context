@@ -207,21 +207,25 @@ Work that should happen BEFORE the allocation project starts. Can begin immediat
 | Category | Owner | Task / Phase | Week | Pre-W0 | W0 |
 |---|---|---|---|---|---|
 | **ASCM Refactor** | Lead | Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | Pre-W0 | ■ | |
-| **ASCM Refactor** | Lead | Unit test the extracted service (zip creation, email dispatch) | Pre-W0 | ■ | |
-| **ASCM Verify** | Lead | Smoke test: run existing Pre + Final commands on DEV04 (baseline before changes) | Pre-W0 | ■ | |
+| **ASCM Refactor** | Lead | Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip + missing fields (tax_free, country_id, gross_amount) | Pre-W0 | ■ | |
+| **ASCM Refactor** | Lead | Unit test the extracted service + corrected DataCorrectionLogic | Pre-W0 | ■ | |
+| **ASCM Verify** | Lead | Smoke test: run existing Pre + Final + Correction commands on DEV04 (baseline before changes) | Pre-W0 | ■ | |
 | **ASCM Verify** | Lead | Document baseline CSV file list (what's in the zip today) | Pre-W0 | ■ | |
 | **ASCM Prep** | Dev 1 | Review Kuroda-san DB design, prepare migration plan, confirm O-3 | Pre-W0 | ■ | |
 | **ASCM Prep** | Lead | Create test data seeder for CAP/CIP charges (mock upstream data for dev04) | W0 | | ■ |
 
-**Duration:** 3–5 days (can overlap with O-3 decision waiting period).  
+**Duration:** 5–7 days (can overlap with O-3 decision waiting period).  
 **Blocker:** None — this is purely internal preparation on existing code.  
-**Deliverable:** Working `BatchReportDeliveryService` + baseline verification + test data ready.
+**Deliverable:** Working `BatchReportDeliveryService` + DataCorrectionLogic drift fixed + baseline verification + test data ready.
 
-**Why do this first:**
-- Proves the extraction works before we inject anything new
-- Creates a clean "before" snapshot for comparison
-- Test data seeder means we don't wait for upstream teams to populate dev04
-- O-3 decision can happen in parallel
+**What ASCM Prep fixes (before allocation work starts):**
+- DataCorrectionLogic's `createDailyRateCalculation()` is missing `BizmatesMonthlyPlanEnum` skip (latent bug — monthly plans shouldn't enter daily log via correction)
+- DataCorrectionLogic's `$condition` array is missing `tax_free`, `country_id`, `gross_amount` fields (schema drift from CommonUtil)
+- These are ASCM-era fixes that should have been applied when the monthly plan logic was introduced but were missed because the correction batch has its own private copy (KB #14 pattern)
+
+**What remains for ASC-CAP phase (not ASCM Prep):**
+- Adding `allocateForCharge()` call to DataCorrectionLogic (requires the allocation service to exist first)
+- This is a ~5-line addition at the end of the "addDaily" INSERT loop, done as part of the ASC-CAP injection work
 
 ---
 
@@ -281,7 +285,7 @@ Work that should happen BEFORE the allocation project starts. Can begin immediat
 
 | Phase | Weeks | Team Activity | Dependency on Upstream |
 |---|---|---|---|
-| ASCM Prep | Pre-W0 (3–5 days) | Extract delivery service, baseline verify, test data seeder | None |
+| ASCM Prep | Pre-W0 (5–7 days) | Extract delivery service, fix DataCorrectionLogic drift (monthly plan skip + missing fields), baseline verify, test data seeder | None |
 | Shared Foundation | W0–W3 | DB, models, engine, injection points, run lifecycle | plan_ids from upstream (W1 latest) |
 | ASC-CAP Integration | W3–W5 | Detection, Freee send, CSV, refunds | None (uses seeded data) |
 | ASC-CAP Dev Testing | W6 | Full DEV04 run (Pre + Final pipeline) | None (seeded data) |

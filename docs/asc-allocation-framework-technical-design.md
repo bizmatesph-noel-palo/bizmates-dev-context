@@ -404,7 +404,53 @@ private function createDailyRateCalculation($data)
 
 **Why this is needed:** DataCorrectionLogic has its own private copy of the daily rate creation logic (not a call to CommonUtil). It reads `trn_charge.paid_price` directly and writes unallocated N to the log. Without the allocation call, correction-added charges would bypass allocation entirely.
 
-**Known drift (from Kuroda-san):** This private method also lacks the `BizmatesMonthlyPlanEnum::exists()` skip that CommonUtil has. The two implementations have already diverged. For Dec 17 deadline, we add allocation to both places independently (option a). Refactoring DataCorrectionLogic to call CommonUtil is deferred as post-release tech debt.
+**Confirmed drift (identified by Kuroda-san, 2026-08-12):** This private method lacks the `BizmatesMonthlyPlanEnum::exists()` skip that CommonUtil has (added during ASCM project). It also lacks `tax_free`, `country_id`, and `gross_amount` in the `$condition` array. These are bugs from the ASCM era — the correction batch was never updated when the monthly plan logic was introduced. Fixed in ASCM Prep phase (see below).
+
+**Resolution — Two phases:**
+
+**Phase 1 (ASCM Prep):** Fix the drift in DataCorrectionLogic to align with what ASCM should have delivered:
+- Add `BizmatesMonthlyPlanEnum::exists()` skip (fix latent bug — monthly plans shouldn't be written to daily log via correction)
+- Add missing `$condition` fields: `tax_free`, `country_id`, `gross_amount` (schema drift — CommonUtil has these, DataCorrection doesn't)
+- Unit test the correction batch with these fixes
+- Effort: 0.5–1 day
+
+**Phase 2 (ASC-CAP):** Add allocation call to DataCorrectionLogic:
+- Add `AscAllocationService::allocateForCharge($chargeId, $targetYm)` method to the service (targeted single-charge allocation, not full-month rebuild)
+- Call it from DataCorrectionLogic after the INSERT loop
+- Effort: included in allocation service design (~5 lines at call site)
+
+**Why NOT refactor DataCorrectionLogic to call CommonUtil (revised from earlier claim):**
+
+The two functions have fundamentally different semantics:
+
+| | CommonUtil | DataCorrectionLogic |
+|---|---|---|
+| Scope | ALL charges for a month | ONE specific charge |
+| Sum rebuild | Yes (getPaidPriceSumList → log_sum_calculation) | No — additive only |
+| Delete-then-rebuild | Yes (deleteTargetYMData wipes the month first) | No — incremental fix |
+| Pre/Final | Supports both via preFlg | Always final |
+| Zipan | Separate ZipanUtil function | Inline if/else branching |
+
+The correction batch is designed for incremental fixes to a completed month. Calling the full CommonUtil pipeline would wipe and rebuild the entire month — which is not the intent of a correction. The previous devs separated them for this reason.
+
+**Implementation in DataCorrectionLogic (Phase 2):**
+
+```php
+// After the INSERT loop (~line 430):
+foreach ($ContractDateLists as $key => $value) {
+    LogDailyRateCalculation::create($condition);  // writes N
+}
+
+// ★ Phase 2 (ASC-CAP): Allocate this specific charge ★
+try {
+    $targetYm = array_key_first($ContractDateLists);  // target_ym from the first period
+    app(AscAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
+} catch (\Throwable $e) {
+    Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+}
+```
+
+The `allocateForCharge()` method detects if this charge is part of a CAP/CIP bundle (by product_id 10021), finds its coaching pair in the log, computes P, and updates — same logic as the full `allocate()` but scoped to one charge.
 
 ### Failure Isolation
 
@@ -882,7 +928,7 @@ ls-database-migrations/
 | File | Change | Lines Added | Risk |
 |---|---|---|---|
 | `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
-| `app/Libs/DataCorrectionLogic.php` | Add `AscAllocationService::allocate()` call after "addDaily" creates new log rows | ~8 | LOW — only affects "addDaily" path |
+| `app/Libs/DataCorrectionLogic.php` | ASCM Prep: add monthly plan skip + missing fields (fix drift). ASC-CAP: add `allocateForCharge()` call after "addDaily" INSERT | ~20 | LOW-MED — tested via correction batch smoke test |
 | `config/const.php` | Add CSV header definitions (if allocation detail CSV needed) | ~20 | ZERO — config only |
 | `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
 
@@ -894,7 +940,6 @@ ls-database-migrations/
 |---|---|
 | `DailyRateCalculationPreLogic.php` | Unchanged — calls CommonUtil. |
 | `SendJournalsDataLogic.php` | Sum already has P → journals are correct. No 2nd API call. |
-| `DataCorrectionLogic.php` | "addDaily" path needs allocation. "daily" path (correctDailyRateCalculation) is safe — reads already-allocated data from log. |
 | `ZipanUtil.php` | CAP/CIP is Bizmates-only. Zipan path untouched. |
 | `sendFreeeJournals2()` | `paid_price != 0` check naturally includes P_app (was 0, now has value). |
 | `createSendMailAttacheFile()` | Reads from log_sum_calculation which already has allocated amounts. |
@@ -908,7 +953,7 @@ ls-database-migrations/
 | Item | What | Effort |
 |---|---|---|
 | `CommonUtil::createDailyRateCalculation()` | Add allocation service call between [a] and [c] | ~8 lines |
-| `DataCorrectionLogic::createDailyRateCalculation()` | Add allocation service call after "addDaily" INSERT loop | ~8 lines |
+| `DataCorrectionLogic::createDailyRateCalculation()` | ASCM Prep: fix drift (add skip + missing fields). ASC-CAP: add `allocateForCharge()` call | ~20 lines |
 | `AscAllocationService` (NEW) | Main orchestrator — detect, compute, overwrite, persist | 1 new class |
 | `CoachingAndAppPlanEnum` / `CoachingIntensivePlanEnum` (NEW) | Plan ID enums for detection | 2 new files |
 | `AscAlloc*` models (NEW) | Eloquent models for audit tables | 8–10 new files |
