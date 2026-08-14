@@ -33,7 +33,7 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 | Project | What it allocates | Plan IDs | When upstream goes live |
 |---|---|---|---|
 | **ASC-CAP** | CAP (Coaching and App Plan) bundles | 1016–1027 | Late Nov / early Dec 2026 |
-| **ASC-CIP** | CIP (Coaching Intensive Plan) bundles | 71, 94, 1005–1014 | Late Nov / early Dec 2026 |
+| **ASC-CIP** | CIP (Coaching Intensive Plan) bundles | 1028–1032 | Late Nov / early Dec 2026 |
 
 ### Terminology
 
@@ -205,9 +205,11 @@ AUDIT TABLES (new — allocation detail)
 
 | Project | Product | product_id | L (reference price, tax-incl) | Source |
 |---|---|---|---|---|
-| CAP + CIP | App Premium | 10021 | ¥3,980 | REF-CAP-05 (Kuroda-san confirmed) |
-| CAP + CIP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
-| CAP + CIP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
+| CAP | App Premium | 10021 | ¥3,980 | REF-CAP-05 (Kuroda-san confirmed) |
+| CAP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
+| CAP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
+| CIP | App Premium | 10021 | ¥3,980 | Same product as CAP |
+| CIP | Coaching Intensive | 10022 | ¥96,800 | ¥88,000 × 1.1 (from CIP spec, pending Accounting confirmation) |
 
 ### How Reference Prices Are Stored
 
@@ -216,14 +218,17 @@ Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change wi
 ```php
 // Seeder data
 [
+    // CAP
     ['project_code' => 'cap', 'product_id' => 10021, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
     ['project_code' => 'cap', 'product_id' => 10005, 'reference_price' => 19800,
      'effective_from' => '2026-01-01', 'effective_to' => null],
     ['project_code' => 'cap', 'product_id' => 10015, 'reference_price' => 39600,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    // CIP uses same prices (pending O-5 confirmation for coaching)
+    // CIP
     ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
+     'effective_from' => '2026-01-01', 'effective_to' => null],
+    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 96800,
      'effective_from' => '2026-01-01', 'effective_to' => null],
 ]
 ```
@@ -251,26 +256,19 @@ Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change wi
 
 **Detection:** `CoachingAndAppPlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are new).
 
-### CIP Plans (71, 94, 1005–1014) — Existing Plans, Historical Data Exists
+### CIP Plans (1028–1032) — New Plans, No Historical Data
 
 | plan_id | Plan Name | Coaching Product |
 |---|---|---|
-| 71 | Standalone Coaching 15min | 10005 |
-| 94 | Standalone Coaching 30min | 10015 |
-| 1005 | L25 + FVP + C15 | 10005 |
-| 1006 | L50 + FVP + C15 | 10005 |
-| 1007 | L75 + FVP + C15 | 10005 |
-| 1008 | L100 + FVP + C15 | 10005 |
-| 1009 | Beginner + FVP + C15 | 10005 |
-| 1010 | L25 + FVP + C30 | 10015 |
-| 1011 | L50 + FVP + C30 | 10015 |
-| 1012 | L75 + FVP + C30 | 10015 |
-| 1013 | L100 + FVP + C30 | 10015 |
-| 1014 | Beginner + FVP + C30 | 10015 |
+| 1028 | Solo Coaching Intensive | 10022 |
+| 1029 | L25 + FVP + Coaching Intensive + App | 10022 |
+| 1030 | L50 + FVP + Coaching Intensive + App | 10022 |
+| 1031 | L75 + FVP + Coaching Intensive + App | 10022 |
+| 1032 | L100 + FVP + Coaching Intensive + App | 10022 |
 
-**Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id) && $trnCharge->start_date >= CIP_LAUNCH_DATE`
+**Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are brand new, same as CAP).
 
-⚠️ **CIP requires a date filter.** These plan_ids have years of historical charges. Only charges created AFTER the upstream CIP project adds the App companion should be allocated. Without the date filter, historical coaching revenue would be retroactively split — a financial error.
+**Note (corrected 2026-08-13):** CIP is a brand new product (10022) with brand new plan_ids — NOT a modification of existing coaching plans (71, 94, 1005–1014). No date filter is required because these plan_ids have zero historical charges.
 
 ### How plan_id Is Available
 
@@ -872,7 +870,7 @@ accounting_related_system_for_freee/
 ├── app/
 │   ├── Enums/AscAlloc/
 │   │   ├── CoachingAndAppPlanEnum.php   # CAP plan_ids 1016–1027
-│   │   ├── CoachingIntensivePlanEnum.php # CIP plan_ids 71, 94, 1005–1014
+│   │   ├── CoachingIntensivePlanEnum.php # CIP plan_ids 1028–1032
 │   │   ├── ProjectCode.php          # 'cap', 'cip'
 │   │   ├── RunType.php              # Preview, Final
 │   │   └── RunStatus.php            # Creating, Completed, Failed
@@ -998,7 +996,7 @@ ls-database-migrations/
 | 2 | Timing | Option 1 (overwrite N→P) | Option 2 (send adjustment journals) | 1 API call. Zero downstream changes. Simpler. |
 | 3 | Injection point | `CommonUtil::createDailyRateCalculation()` | SendJournalsDataLogic | Covers all 3 batches (Pre, Final, Correction) with one change. |
 | 4 | Detection | plan_id enum | product_id check | product_id 10005/10015 is shared with non-CAP plans. plan_id is unique. |
-| 5 | CIP guard | Date filter (start_date >= launch) | App charge existence check | Explicit. Historical charges can never be accidentally allocated. |
+| 5 | CIP guard | ~~Date filter~~ → Not needed (new plan_ids) | Date filter (historical charges) | CIP has brand new plan_ids (1028–1032) with zero history. Same detection as CAP. |
 | 6 | Rounding | floor() on App, remainder to Coaching | Round both | Guarantees P_coaching + P_app = N exactly. No ¥1 gaps. |
 | 7 | N preservation | asc_alloc_source_documents | Keep N in log table | Option 1 overwrites log. Source_documents provides audit trail. |
 | 8 | Tenant scope | Bizmates only | Both tenants | Coaching/App don't exist on Zipan. ZipanUtil untouched. |
@@ -1012,9 +1010,9 @@ ls-database-migrations/
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
 | O-3 | Table prefix (`asc_alloc_*`) | Engineering team | ⚠️ Open | Step 1 (migrations) |
-| O-5 | CIP coaching reference prices | Business + Accounting | ⚠️ Open | CIP finalize only |
+| O-5 | CIP coaching reference price | Business + Accounting | ⚠️ Partially resolved — ¥96,800 (= ¥88,000 × 1.1) from CIP spec. Needs Accounting confirmation. | CIP finalize only |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ⚠️ Open | CSV config |
-| — | CIP launch date | CIP upstream team | ⚠️ Open | CIP date filter value |
+| — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
 | — | Option 1 vs 2 final confirmation | Kuroda-san | ⚠️ Pending our response sent | — |
 | — | Scenario C vs D final decision | Patrick-san / Kuroda-san | ⚠️ Pending | — |
 
