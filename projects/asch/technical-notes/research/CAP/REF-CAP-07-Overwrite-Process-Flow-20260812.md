@@ -432,11 +432,69 @@ App product_type = 100 is NOT in this list. The App charge goes through the norm
 
 ### Additional Observations
 
-1. **DataCorrectionLogic inherits for free.** It calls the same `createDailyRateCalculation()` function. If a correction triggers recalculation, allocation runs again automatically — correct behavior (idempotent).
+1. **DataCorrectionLogic — TWO different methods, different risk levels (verified per Kuroda-san feedback):**
 
-2. **The `paid_price != 0` check in sendFreeeJournals2 is our friend.** Today it silently skips the ¥0 App row. After Option 1, the App row has a real amount and passes the check — a Freee journal is automatically created. No code change needed in the Freee sending path.
+   Kuroda-san flagged that `DataCorrectionLogic.php` has its own private `createDailyRateCalculation()` at line 346. Verified:
 
-3. **Existing App Freee mapping should already exist.** Since the ¥0 App row flows into `log_sum_calculation` (even with amount=0), the `product_type=100` must already have a path through `MstCodeChange` and `MstRuleForJournals`. If it doesn't exist today, it will need to be seeded — but this is needed for both Option 1 and Option 2. (Kuroda-san already confirmed 4 rows exist in mst_rule_for_journals for code=100 in REF-ASCH-06.)
+   | Method | Operation | Reads from | Allocation needed? |
+   |---|---|---|---|
+   | `correctDailyRateCalculation()` | "daily" — update existing rows | `log_daily_rate_calculation` (already has P) | ❌ No — safe, works on allocated data |
+   | `createDailyRateCalculation()` | "addDaily" — create new rows | `trn_charge` (raw paid_price) | ⚠️ **Yes** — writes unallocated N, bypasses our allocation |
+
+   **Conclusion:** For the "addDaily" operation, we need an allocation call AFTER it writes to the log table. This means the allocation injection is needed in **two places**, not one:
+   - `CommonUtil::createDailyRateCalculation()` (covers Pre + Final batches)
+   - `DataCorrectionLogic::createDailyRateCalculation()` (covers correction batch's "addDaily" operation)
+
+   The "daily" operation (correctDailyRateCalculation) is safe — it reads from the log which already has P values from the normal batch run.
+
+   **Implementation (same pattern as CommonUtil):**
+
+   ```php
+   // DataCorrectionLogic::createDailyRateCalculation() — after the foreach INSERT loop (~line 430)
+
+   foreach ($ContractDateLists as $key => $value) {
+       // ... existing INSERT logic (writes N) ...
+       LogDailyRateCalculation::create($condition);
+   }
+
+   // ★ Same allocation call as CommonUtil ★
+   try {
+       app(AscAllocationService::class)->allocate($targetYm, preFlg: false);
+   } catch (\Throwable $e) {
+       Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+   }
+   ```
+
+   The service is idempotent — it won't re-allocate rows that already have P values from a prior normal batch run. It detects only the newly-written charge by `product_id = 10021`, pairs with coaching, computes P, updates.
+
+   **ASCM precedent (KB #14):** This is the same lesson — if the same logic exists in two places, the fix must be applied to both. Here we apply allocation to both injection points.
+
+   **ASCM Prep consideration:** This private method in DataCorrectionLogic duplicates logic from CommonUtil without the `BizmatesMonthlyPlanEnum` skip (already drifted). Before injecting allocation, we should document this drift and decide:
+   - (a) Add allocation to both places independently (minimal change, ships faster)
+   - (b) Refactor DataCorrectionLogic to call CommonUtil::createDailyRateCalculation() instead of its own copy (fixes drift, but touches correction batch — higher risk)
+
+   **Recommendation for Dec 17 deadline:** Option (a) — add allocation to both places. Refactor later.
+
+2. **On N-1 (detection approach) — Kuroda-san prefers product_id:**
+
+   Kuroda-san's feedback: "since CAP/CIP will have new product_id for the App, the product_id should be used."
+
+   This is valid. Product 10021 is NEW — it only exists when CAP/CIP upstream is live. So detecting by `product_id = 10021` inherently provides a date guard (no historical charges with this product exist). The detection simplifies to:
+
+   ```php
+   // Detect CAP/CIP bundles: find App charges (product 10021) in the log table
+   // then pair with the coaching charge for the same student + same period
+   $appRows = DB::table($table)
+       ->where('target_ym', $targetYm)
+       ->where('product_id', 10021)  // App product — only exists for CAP/CIP
+       ->get();
+   ```
+
+   **Revised detection strategy:** Use `product_id = 10021` as primary detection (Kuroda-san's preference). Plan_id enums (`CoachingAndAppPlanEnum` / `CoachingIntensivePlanEnum`) can be used as secondary validation or for distinguishing CAP vs CIP `project_code` in the audit tables.
+
+3. **The `paid_price != 0` check in sendFreeeJournals2 is our friend.** Today it silently skips the ¥0 App row. After Option 1, the App row has a real amount and passes the check — a Freee journal is automatically created. No code change needed in the Freee sending path.
+
+4. **Existing App Freee mapping should already exist.** Since the ¥0 App row flows into `log_sum_calculation` (even with amount=0), the `product_type=100` must already have a path through `MstCodeChange` and `MstRuleForJournals`. If it doesn't exist today, it will need to be seeded — but this is needed for both Option 1 and Option 2. (Kuroda-san already confirmed 4 rows exist in mst_rule_for_journals for code=100 in REF-ASCH-06.)
 
 ### Recommendation
 
