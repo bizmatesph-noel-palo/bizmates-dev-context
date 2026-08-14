@@ -57,7 +57,7 @@ This changes our ASC-CIP detection strategy entirely.
 | CIP plan_ids | 71, 94, 1005–1014 (existing) | **1028–1032** (brand new) |
 | Historical data risk | ⚠️ Yes — needed date filter | **None** — these plans don't exist yet |
 | Detection approach | plan_id + date filter | **plan_id only** (same as CAP — new plans, no history) |
-| Reference price (L_coaching) | ¥19,800/¥39,600 (pending O-5) | **¥96,800** (= ¥88,000 × 1.1 tax-incl) for product 10022 |
+| Reference price (L_coaching) | ¥19,800/¥39,600 (pending O-5) | **¥88,000** (tax-inclusive, confirmed by Kuroda-san 2026-08-14) for product 10022 |
 | App reference price | ¥3,980 | ¥3,980 (unchanged — same product 10021) |
 
 ### Revised Detection for ASC-CIP
@@ -87,11 +87,11 @@ enum CoachingIntensivePlanEnum: int
 ### Revised Formula for ASC-CIP
 
 ```
-N = daily-prorated amount from coaching intensive charge (product 10022)
+N = Σ(paid_price) across the bundle (coaching intensive + app rows)
 L_app = ¥3,980 (same as CAP)
-L_coaching_intensive = ¥96,800 (= ¥88,000 × 1.1, tax-inclusive)
+L_coaching_intensive = ¥88,000 (tax-inclusive, confirmed by Kuroda-san 2026-08-14)
 
-P_app      = floor(N × 3,980 / (96,800 + 3,980)) = floor(N × 3,980 / 100,780)
+P_app      = floor(N × 3,980 / (88,000 + 3,980)) = floor(N × 3,980 / 91,980)
 P_coaching = N − P_app
 ```
 

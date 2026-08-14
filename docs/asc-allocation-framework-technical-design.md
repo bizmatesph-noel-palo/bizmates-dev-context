@@ -72,9 +72,12 @@ Existing ASC calculates daily rate for the Coaching charge and books the full ¥
 
 ```
 Given:
-  N         = daily-prorated coaching charge amount (from log_daily_rate_calculation)
+  N         = Σ(paid_price) across the bundle (coaching row + app row)
+              This is the GROUP TOTAL, not the coaching row alone.
+              Makes the formula idempotent — ΣN is invariant across re-runs.
   L_app     = ¥3,980 (App standalone price, tax-inclusive)
-  L_coaching = ¥19,800 (Coaching 15min) or ¥39,600 (Coaching 30min), tax-inclusive
+  L_coaching = ¥19,800 (Coaching 15min) or ¥39,600 (Coaching 30min)
+               or ¥88,000 (Coaching Intensive), tax-inclusive
 
 Calculate:
   P_app      = floor(N × L_app / (L_coaching + L_app))
@@ -83,6 +86,10 @@ Calculate:
 Invariants:
   P_coaching + P_app = N  (always — remainder absorption guarantees this)
   Σ(adjustments) = 0     (Coaching decreases, App increases by same amount)
+
+Idempotency proof (why ΣN works):
+  1st run:  N = 22,550 + 0     = 22,550 → P_coaching=18,776, P_app=3,774
+  2nd run:  N = 18,776 + 3,774 = 22,550 → P_coaching=18,776, P_app=3,774  ✅ same
 ```
 
 ### Worked Example (Plan 1018, Coaching 15min, Full Month)
@@ -127,7 +134,7 @@ The formula works identically regardless of month or proration — it just split
 
 | Symbol | Full Name | Source | Stored In | Description |
 |---|---|---|---|---|
-| **N** | Daily-prorated amount | `CommonUtil::getContractDateInfoList()` | `log_daily_rate_calculation.paid_price` | The amount calculated by existing ASC for a charge in a given month. For coaching: includes App fee. For App: ¥0 (companion). |
+| **N** | Bundle group total | Σ(paid_price) of coaching + app rows | Computed at allocation time | The sum of all rows in the bundle for a given target_ym. Using the group total (not coaching row alone) makes allocation idempotent — N is invariant across re-runs. |
 | **P_coaching** | Allocated coaching amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten) | N minus App's share. What Freee should book as Coaching revenue. |
 | **P_app** | Allocated app amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten from 0) | App's proportional share. What Freee should book as App revenue. |
 | **L_app** | App reference price | `asc_alloc_reference_prices` | Config / DB | ¥3,980 tax-inclusive. Standalone selling price of App. |
@@ -209,7 +216,7 @@ AUDIT TABLES (new — allocation detail)
 | CAP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
 | CAP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
 | CIP | App Premium | 10021 | ¥3,980 | Same product as CAP |
-| CIP | Coaching Intensive | 10022 | ¥96,800 | ¥88,000 × 1.1 (from CIP spec, pending Accounting confirmation) |
+| CIP | Coaching Intensive | 10022 | ¥88,000 | ¥88,000 is already tax-inclusive (confirmed by Kuroda-san 2026-08-14) |
 
 ### How Reference Prices Are Stored
 
@@ -228,7 +235,7 @@ Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change wi
     // CIP
     ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 96800,
+    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 88000,
      'effective_from' => '2026-01-01', 'effective_to' => null],
 ]
 ```
@@ -526,23 +533,52 @@ class AscAllocationService
 ```php
 private function detectBundles(string $table, string $targetYm): Collection
 {
-    // Find coaching charges that belong to CAP/CIP plans
+    // Find coaching AND app charges that belong to CAP/CIP plans
     // by joining log_daily_rate_calculation with trn_charge for plan_id
     return DB::table($table . ' as log')
         ->join('trn_charge as c', 'log.charge_id', '=', 'c.id')
         ->where('log.target_ym', $targetYm)
         ->where(function ($q) {
             $q->whereIn('c.plan_id', CoachingAndAppPlanEnum::toArray())    // CAP plans
-              ->orWhere(function ($q2) {                         // CIP plans (with date guard)
-                  $q2->whereIn('c.plan_id', CoachingIntensivePlanEnum::toArray())
-                     ->where('c.start_date', '>=', config('asc_alloc.cip_launch_date'));
+              ->orWhere(function ($q2) {                         // CIP plans
+                  $q2->whereIn('c.plan_id', CoachingIntensivePlanEnum::toArray());
               });
         })
-        ->whereIn('c.product_id', [10005, 10015, 10021])  // Coaching or App products
+        ->whereIn('c.product_id', [10005, 10015, 10022, 10021])  // Coaching or App products
         ->select('log.id', 'log.charge_id', 'log.paid_price', 'c.product_id',
                  'c.plan_id', 'c.student_id', 'log.target_ym')
         ->get()
         ->groupBy('student_id');  // Group coaching + app pairs per student
+}
+```
+
+### Compute Allocations — Uses ΣN (Group Total)
+
+```php
+private function computeAllocations(Collection $bundles): Collection
+{
+    return $bundles->map(function ($studentRows) {
+        $coachingRow = $studentRows->firstWhere('product_id', '!=', 10021);
+        $appRow = $studentRows->firstWhere('product_id', 10021);
+
+        // N = GROUP TOTAL (coaching + app), NOT coaching row alone
+        // This makes allocation idempotent — ΣN is invariant across re-runs
+        $n = $coachingRow->paid_price + $appRow->paid_price;
+
+        $lApp = $this->getReferencePrice($appRow->product_id);
+        $lCoaching = $this->getReferencePrice($coachingRow->product_id);
+
+        $pApp = (int) floor($n * $lApp / ($lCoaching + $lApp));
+        $pCoaching = $n - $pApp;
+
+        return new AllocationResult(
+            coachingLogId: $coachingRow->id,
+            appLogId: $appRow->id,
+            pCoaching: $pCoaching,
+            pApp: $pApp,
+            originalN: $n,
+        );
+    });
 }
 ```
 
@@ -552,18 +588,69 @@ private function detectBundles(string $table, string $targetYm): Collection
 private function overwriteLogTable(string $table, Collection $allocations): void
 {
     foreach ($allocations as $alloc) {
-        // Update coaching row: N → P_coaching
+        // Update coaching row: current value → P_coaching
         DB::table($table)
             ->where('id', $alloc->coachingLogId)
             ->update(['paid_price' => $alloc->pCoaching]);
 
-        // Update app row: 0 → P_app
+        // Update app row: current value → P_app
         DB::table($table)
             ->where('id', $alloc->appLogId)
             ->update(['paid_price' => $alloc->pApp]);
     }
 }
 ```
+
+### Idempotency Design (from Kuroda-san, 2026-08-14)
+
+**Problem:** If N = coaching row alone, a second run would read the already-reduced coaching value and shrink revenue further on every pass.
+
+**Solution:** N = Σ(paid_price) across the bundle (coaching + app). This is invariant:
+- 1st run: N = 22,550 + 0 = 22,550 → P_coaching=18,776, P_app=3,774
+- 2nd run: N = 18,776 + 3,774 = 22,550 → P_coaching=18,776, P_app=3,774 ✅
+
+No guard needed. This aligns with DB design validation rule V-1 (ΣP = ΣN at bundle level).
+
+### Snapshot Handling on Re-Runs
+
+`snapshotSourceData()` (step 3) must **skip** when a proration row already exists for that (charge_id, target_ym). Otherwise it records allocated values as the "original N" — corrupting the audit trail even though the numbers stay correct.
+
+```php
+private function snapshotSourceData(int $runId, Collection $bundles, string $table): void
+{
+    foreach ($bundles->flatten() as $row) {
+        // Skip if already snapshotted (prevents audit corruption on re-run)
+        $exists = AscAllocSourceDocument::where('charge_id', $row->charge_id)
+            ->where('target_ym', $row->target_ym)
+            ->exists();
+
+        if (!$exists) {
+            AscAllocSourceDocument::create([
+                'run_id' => $runId,
+                'charge_id' => $row->charge_id,
+                'target_ym' => $row->target_ym,
+                'original_paid_price' => $row->paid_price,
+                // ...
+            ]);
+        }
+    }
+}
+```
+
+### DataCorrectionLogic — Scoped Allocation
+
+For `addDaily`, allocate ONLY the charge being added, not the entire target_ym:
+
+```php
+// After INSERT in DataCorrectionLogic::createDailyRateCalculation()
+try {
+    app(AscAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
+} catch (\Throwable $e) {
+    Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+}
+```
+
+`allocateForCharge()` detects only the specific bundle containing this charge_id, computes ΣN for that bundle, and overwrites. Other bundles in the same month are untouched.
 
 ---
 
@@ -1010,7 +1097,7 @@ ls-database-migrations/
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
 | O-3 | Table prefix (`asc_alloc_*`) | Engineering team | ⚠️ Open | Step 1 (migrations) |
-| O-5 | CIP coaching reference price | Business + Accounting | ⚠️ Partially resolved — ¥96,800 (= ¥88,000 × 1.1) from CIP spec. Needs Accounting confirmation. | CIP finalize only |
+| O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥88,000 tax-inclusive (confirmed by Kuroda-san 2026-08-14) | — |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ⚠️ Open | CSV config |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
 | — | Option 1 vs 2 final confirmation | Kuroda-san | ⚠️ Pending our response sent | — |
