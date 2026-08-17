@@ -9,7 +9,7 @@
 >
 > **Terminology:**
 > - **CAP** (Coaching and App Plan) = upstream project in MBTI_backend creating new plans 1016–1027
-> - **CIP** (Coaching Intensive Plan) = upstream project in MBTI_backend adding App to existing plans 71, 94, 1005–1014
+> - **CIP** (Coaching Intensive Plan) = upstream project in MBTI_backend creating new Coaching Intensive product (10022) with new plans 1028–1032
 > - **ASC-CAP / ASC-CIP** = our accounting-side projects that allocate revenue for those charges
 >
 > Execution order: **ASC-CAP first** (builds foundation), **ASC-CIP second** (reuses it).  
@@ -188,6 +188,7 @@ Constraint: whichever option, sending must remain independent per project.
 | # | Item | Owner | Status |
 |---|------|-------|--------|
 | O-1 (ASC-Alloc) | CAP/CIP dedicated App product_id | CAP app team | ✅ **RESOLVED (product_id 10021, confirmed 2026-08-12)** — applies to both CAP and CIP. See REF-CAP-05. |
+| O-5 (ASC-Alloc) | CIP reference prices | Business + Accounting | ✅ **Resolved — ¥88,000 tax-inclusive** (CIP Coaching Intensive product 10022, confirmed 2026-08-14). |
 | 1 | Run management model — Option A (run_id) | Dev / Kuroda-san | ✅ Decided (written 2026-07-22) |
 | 2 | N source for preview/final | Dev | ✅ Decided (2026-07-24): preview→_pre, final→confirmed. Persist asc_source_table + asc_source_id per row. |
 | 3 | Freee mapping for App | Dev | ✅ Partially confirmed (2026-07-31): code=100, mst_rule_for_journals has 4 rows. 3 narrower sub-items remain (see REF-06 §5). |
