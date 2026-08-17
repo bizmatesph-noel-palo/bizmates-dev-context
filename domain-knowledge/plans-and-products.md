@@ -222,7 +222,7 @@ For charges that go through ASC allocation (CAP/CIP plans only):
 | ASC-CAP | Coaching 15min | 10005 | ¥19,800 | Denominator component |
 | ASC-CAP | Coaching 30min | 10015 | ¥39,600 | Denominator component |
 | ASC-CIP | App Premium | 10021 | ¥3,980 | Numerator weight |
-| ASC-CIP | Coaching Intensive | 10022 | ¥88,000 | Denominator component |
+| ASC-CIP | Coaching Intensive | 10022 | ¥84,020 | Denominator component |
 
 Formula: `P_app = floor(N × L_app / (L_coaching + L_app))`
 
