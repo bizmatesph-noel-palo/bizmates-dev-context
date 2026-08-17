@@ -1,7 +1,7 @@
 # ASC Projects — Master Timeline
 
-**Last updated:** 2026-08-12  
-**Status:** ACTIVE — DB design received from Kuroda-san. O-1 RESOLVED (product_id 10021). Steps 1–5 unblocked. Pending O-3 (prefix) decision before migrations start.  
+**Last updated:** 2026-08-14  
+**Status:** ACTIVE — DB design received from Kuroda-san. O-1 RESOLVED (product_id 10021). O-5 RESOLVED (¥88,000 tax-inclusive). Steps 1–5 unblocked. Pending O-3 (prefix) decision before migrations start.  
 **Overall Lead:** Noel Palo  
 **Deadline:** CAP + CIP = 12/17
 
@@ -21,7 +21,7 @@ ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ════════
 | Term | Full Name | What it is | Owner |
 |---|---|---|---|
 | **CAP** | Coaching and App Plan | Upstream project — creates new plans (1016–1027) bundling Coaching + App in MBTI_backend | CAP team (Terry, Keith, Soli) |
-| **CIP** | Coaching Intensive Plan | Upstream project — adds App companion to existing coaching plans (71, 94, 1005–1014) in MBTI_backend | CIP team (Jefferson) |
+| **CIP** | Coaching Intensive Plan | Upstream project — creates new Coaching Intensive product (10022) with new plans (1028–1032) bundling Coaching + App in MBTI_backend | CIP team (Jefferson) |
 | **ASC-CAP** | ASC for CAP | Our project — allocates CAP coaching charge revenue between Coaching + App in the accounting system | Noel's team |
 | **ASC-CIP** | ASC for CIP | Our project — allocates CIP coaching charge revenue between Coaching + App in the accounting system | Noel's team |
 
@@ -84,7 +84,7 @@ ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ════════
 | 5 | **O-3: Table prefix decision** | Engineering team | ⚠️ **OPEN** — blocks Step 1 (migrations) | Blocks start |
 | 6 | Start date decision | Patrick-san / Kuroda-san | ⚠️ **Pending** | Blocks timeline |
 | 7 | ~~O-1: CAP dedicated App product_id~~ | ~~CAP app team~~ | ✅ **RESOLVED (product_id 10021, confirmed 2026-08-12)** | ~~Does not block start~~ Unblocked |
-| 8 | O-5: CIP reference prices | Business + Accounting | ⚠️ Open — blocks CIP finalize + QA only | Does not block start |
+| 8 | ~~O-5: CIP reference prices~~ | ~~Business + Accounting~~ | ✅ **Resolved — ¥88,000 tax-inclusive** (product 10022, confirmed 2026-08-14) | ~~Does not block start~~ Unblocked |
 
 **Key insight from Kuroda-san:** Steps 1–5 (migrations, models, run lifecycle, reference prices, allocation engine) do NOT depend on any open item. Work can start once O-3 (prefix) is decided.
 
@@ -160,7 +160,7 @@ ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ════════
 | O-2 | Asymmetric discount assumption (CIP RA-04) | Accounting | If rejected, proration_basis comes back |
 | O-3 | `asc_alloc_*` prefix naming convention | Engineering team | **Step 1 (migrations)** |
 | O-4 | B2B App reversal logic (CAP F-15) | Accounting + CAP app | Step 9 (post-release OK) |
-| O-5 | CIP reference prices | Business + Accounting | CIP finalize + QA only. Note: CIP uses same product 10021; CIP coaching reference prices still pending. |
+| O-5 | CIP reference prices | Business + Accounting | ✅ **Resolved — ¥88,000 tax-inclusive** (product 10022, confirmed 2026-08-14) |
 | O-6 | Unified email subject/body format | Accounting | Step 8 |
 
 ---
