@@ -216,7 +216,7 @@ AUDIT TABLES (new — allocation detail)
 | CAP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
 | CAP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
 | CIP | App Premium | 10021 | ¥3,980 | Same product as CAP |
-| CIP | Coaching Intensive | 10022 | ¥88,000 | ¥88,000 is already tax-inclusive (confirmed by Kuroda-san 2026-08-14) |
+| CIP | Coaching Intensive | 10022 | ¥84,020 | L_coaching = plan_price − L_app = 88,000 − 3,980. Confirmed by Kuroda-san + Accounting (2026-08-17). |
 
 ### How Reference Prices Are Stored
 
@@ -235,7 +235,7 @@ Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change wi
     // CIP
     ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 88000,
+    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 84020,
      'effective_from' => '2026-01-01', 'effective_to' => null],
 ]
 ```
@@ -534,7 +534,8 @@ class AscAllocationService
 private function detectBundles(string $table, string $targetYm): Collection
 {
     // Find coaching AND app charges that belong to CAP/CIP plans
-    // by joining log_daily_rate_calculation with trn_charge for plan_id
+    // Anchor detection on product_id 10021 (App) — guaranteed stable
+    // Coaching product_id may change (CAP team considering new product_id — see open item P-3)
     return DB::table($table . ' as log')
         ->join('trn_charge as c', 'log.charge_id', '=', 'c.id')
         ->where('log.target_ym', $targetYm)
@@ -544,29 +545,57 @@ private function detectBundles(string $table, string $targetYm): Collection
                   $q2->whereIn('c.plan_id', CoachingIntensivePlanEnum::toArray());
               });
         })
-        ->whereIn('c.product_id', [10005, 10015, 10022, 10021])  // Coaching or App products
+        ->whereIn('c.product_id', [10005, 10015, 10022, 10021])  // TODO: update if CAP gets new coaching product_id
         ->select('log.id', 'log.charge_id', 'log.paid_price', 'c.product_id',
-                 'c.plan_id', 'c.student_id', 'log.target_ym')
+                 'c.plan_id', 'c.student_id', 'c.order_no', 'log.target_ym')
         ->get()
-        ->groupBy('student_id');  // Group coaching + app pairs per student
+        ->groupBy(fn ($row) => $row->student_id . '|' . ($row->order_no ?? 'null'));
+        // Group by student_id + order_no to isolate each contract
+        // Handles: cancel+repurchase, CAP+CIP simultaneous, multiple billing cycles
 }
 ```
+
+**Grouping key: `student_id + order_no`** (not student_id alone)
+
+A student can have multiple active contracts in the same month:
+- Cancel and repurchase (two order_nos for same student)
+- CAP and CIP simultaneously (different plans, different order_nos)
+- B2B with multiple orders
+
+Each `order_no` represents one billing unit. Charges sharing the same `order_no` belong to the same bundle. This matches the DB design (validation V-1 is ΣP = ΣN at bundle level, keyed on order_no).
+
+**Open considerations (from Kuroda-san, 2026-08-17):**
+
+| # | Item | Status | Impact |
+|---|---|---|---|
+| P-3 | CAP team may create new coaching product_id (replacing 10005/10015 for CAP plans) | ⚠️ Confirm with CAP team | Detection `whereIn` needs updating if confirmed. Also affects Freee item mapping. |
+| — | Plan 1028 (Solo CIP) includes App (10021) per seeder | ✅ Verified in REF-CIP-03 §9 | $appRow will not be null for Solo plans |
+| — | CIP L_coaching is a dependent value (plan_price − L_app) | Noted | Must recalculate if plan_price changes |
 
 ### Compute Allocations — Uses ΣN (Group Total)
 
 ```php
 private function computeAllocations(Collection $bundles): Collection
 {
-    return $bundles->map(function ($studentRows) {
-        $coachingRow = $studentRows->firstWhere('product_id', '!=', 10021);
-        $appRow = $studentRows->firstWhere('product_id', 10021);
+    // Each $bundle is a group of rows sharing (student_id, order_no)
+    return $bundles->map(function ($bundleRows) {
+        $coachingRow = $bundleRows->firstWhere('product_id', '!=', 10021);
+        $appRow = $bundleRows->firstWhere('product_id', 10021);
+
+        if (!$coachingRow || !$appRow) {
+            Log::warning('[ASC_ALLOC] Incomplete bundle — skipping', [
+                'student_id' => $bundleRows->first()->student_id,
+                'order_no' => $bundleRows->first()->order_no,
+            ]);
+            return null;
+        }
 
         // N = GROUP TOTAL (coaching + app), NOT coaching row alone
         // This makes allocation idempotent — ΣN is invariant across re-runs
         $n = $coachingRow->paid_price + $appRow->paid_price;
 
-        $lApp = $this->getReferencePrice($appRow->product_id);
-        $lCoaching = $this->getReferencePrice($coachingRow->product_id);
+        $lApp = $this->getReferencePrice($appRow->product_id, 'cip_or_cap');
+        $lCoaching = $this->getReferencePrice($coachingRow->product_id, 'cip_or_cap');
 
         $pApp = (int) floor($n * $lApp / ($lCoaching + $lApp));
         $pCoaching = $n - $pApp;
@@ -578,7 +607,7 @@ private function computeAllocations(Collection $bundles): Collection
             pApp: $pApp,
             originalN: $n,
         );
-    });
+    })->filter();  // Remove nulls from incomplete bundles
 }
 ```
 
@@ -1089,6 +1118,8 @@ ls-database-migrations/
 | 8 | Tenant scope | Bizmates only | Both tenants | Coaching/App don't exist on Zipan. ZipanUtil untouched. |
 | 9 | Pre/Final | Single service with preFlg parameter | Separate classes | Avoids duplication (KB #14 lesson). |
 | 10 | CAP first | CAP builds foundation, CIP reuses | CIP first | CAP requirements more concrete. Same total effort either way. |
+| 11 | Bundle grouping key | student_id + order_no | student_id alone | Handles cancel+repurchase, simultaneous CAP+CIP, B2B multi-order. One order_no = one billing unit. (Kuroda-san, 2026-08-17) |
+| 12 | CIP L_coaching | ¥84,020 (plan − L_app) | ¥88,000 (plan price directly) | CIP has no standalone coaching price. Coaching = residual. ΣL = plan price. Full month → App gets exactly ¥3,980. (Kuroda-san + Accounting, 2026-08-17) |
 
 ---
 
@@ -1097,7 +1128,8 @@ ls-database-migrations/
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
 | O-3 | Table prefix (`asc_alloc_*`) | Engineering team | ⚠️ Open | Step 1 (migrations) |
-| O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥88,000 tax-inclusive (confirmed by Kuroda-san 2026-08-14) | — |
+| O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥84,020 (= plan ¥88,000 − L_app ¥3,980). Confirmed by Kuroda-san + Accounting 2026-08-17. | — |
+| P-3 | CAP new coaching product_id | CAP team | ⚠️ Open — CAP team may create replica coaching product under new ID. Affects detection whereIn + Freee mapping. | Detection logic |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ⚠️ Open | CSV config |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
 | — | Option 1 vs 2 final confirmation | Kuroda-san | ⚠️ Pending our response sent | — |
