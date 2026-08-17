@@ -5,11 +5,11 @@
 | | |
 |---|---|
 | **Document type** | Project Estimation (Revised) |
-| **Date** | 2026-08-08 |
+| **Date** | 2026-08-08 (Created) · 2026-08-17 (status and dependency corrections) |
 | **Author** | Noel Palo, Lead Developer |
 | **Audience** | Kuroda-san (PM), Patrick-san (SDM), QA Team |
-| **Status** | TENTATIVE — pending updated requirements from Kuroda-san |
-| **Context** | ASCH project cancelled (2026-08-07). CAP and CIP proceed without ASCH as prerequisite. Requirements not yet confirmed for this new context. |
+| **Status** | SUPERSEDED by Scenario D — see `docs/asc-allocation-framework-technical-design.md` and `docs/asc-alloc-scenario-d-injection-timeline-20260811.md`. Retained as historical reference. |
+| **Context** | ASCH project cancelled (2026-08-07). CAP and CIP proceed without ASCH as prerequisite. Requirements now confirmed (2026-08-14): CIP is new product 10022 with plans 1028–1032, reference price ¥88,000. |
 
 ---
 
@@ -317,7 +317,7 @@ Week 8-9:   [QA] Regression + sign-off
 
 | ID | Dependency | Required by | Status |
 |---|---|---|---|
-| D-1 | CIP reference prices (Coaching + App list prices) | Phase 4 | **OPEN** |
+| D-1 | CIP reference prices (Coaching + App list prices) | Phase 4 | ✅ **RESOLVED — ¥88,000 tax-inclusive** (CIP Coaching Intensive product 10022, confirmed 2026-08-14). App = ¥3,980 (same as CAP). |
 | D-2 | CAP dedicated App product_id | Phase 3 | ✅ **RESOLVED — product_id 10021 (confirmed 2026-08-12).** Reference prices now known: App ¥3,980 (tax-incl), Coaching 15min ¥19,800, 30min ¥39,600. See REF-CAP-05. |
 | D-3 | Freee sender approach decision (REF-ASCH-08) | Phase 6 | **OPEN** — recommend dedicated thin sender |
 | D-4 | Unified email approval (subject/body format) | Phase 6 | **OPEN** |
