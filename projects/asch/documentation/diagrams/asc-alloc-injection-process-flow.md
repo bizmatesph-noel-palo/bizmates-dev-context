@@ -1,5 +1,7 @@
 # ASC Allocation (CAP/CIP) — Process & Data Flow Diagram
 
+> **Correction (2026-08-14):** This document describes Option 2 (Adjust / 2nd Freee API call). The chosen approach is **Option 1 (Overwrite)** — allocation overwrites N→P in `log_daily_rate_calculation` before sum is built, eliminating the need for a 2nd Freee API call. See `docs/asc-allocation-framework-technical-design.md` for the current design.
+
 > **Pricing confirmed (2026-08-12):** App product_id = 10021, App reference price = ¥3,980 (tax-incl), Coaching 15min = ¥19,800, 30min = ¥39,600. Allocation method = Option (C) proportional. See `REF-CAP-05-Upstream-Pricing-Discussion-20260812.md` for full details.
 
 **Purpose:** Show how ASC-CAP and ASC-CIP inject into the existing accounting batch pipeline  

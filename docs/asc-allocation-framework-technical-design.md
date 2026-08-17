@@ -95,7 +95,7 @@ Idempotency proof (why ΣN works):
 ### Worked Example (Plan 1018, Coaching 15min, Full Month)
 
 ```
-N = ¥22,550 (tax-inclusive paid_price for coaching charge)
+N = ¥22,550 (Σ paid_price across the bundle: coaching ¥22,550 + app ¥0)
 L_app = ¥3,980
 L_coaching = ¥19,800
 

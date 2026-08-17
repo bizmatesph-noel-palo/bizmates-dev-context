@@ -1,5 +1,9 @@
 # ASC-CAP/CIP Integration — Discussion Notes
 
+> **Correction (2026-08-14):** Decision #2 below ("Second Freee API call") is superseded. The chosen approach is **Option 1 (Overwrite)** — allocation overwrites N→P in `log_daily_rate_calculation` before the sum step, so only 1 Freee API call is needed. See `REF-CAP-07-Overwrite-Process-Flow-20260812.md`.
+>
+> **Correction (2026-08-14):** CIP is a brand new product (10022) with new plan_ids 1028–1032. It does NOT modify existing coaching plans. O-5 resolved: ¥88,000 tax-inclusive.
+
 **Date:** 2026-08-11  
 **Participants:** Noel Palo (Lead Dev)  
 **Assisted by:** Kiro (AI-assisted code analysis and document generation)  
@@ -9,7 +13,7 @@
 ### Terminology
 
 - **CAP** (Coaching and App Plan) — upstream project creating new plans 1016–1027 in MBTI_backend
-- **CIP** (Coaching Intensive Plan) — upstream project adding App to existing coaching plans in MBTI_backend
+- **CIP** (Coaching Intensive Plan) — upstream project creating new Coaching Intensive product (10022) with new plans 1028–1032 in MBTI_backend
 - **ASC-CAP / ASC-CIP** — our accounting-side projects that allocate revenue from those charges
 
 ---

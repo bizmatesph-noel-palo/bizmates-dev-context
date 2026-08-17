@@ -1,5 +1,7 @@
 # ASC Allocation Framework — Scenario D (Injection Approach)
 
+> **Correction (2026-08-14):** This timeline describes Option 2 (Adjust / 2nd Freee API call) as the allocation timing. The chosen approach is now **Option 1 (Overwrite)** — allocation overwrites N→P in `log_daily_rate_calculation` before the sum step, eliminating the need for a 2nd Freee API call. Steps 6–7 below are simplified: no separate Freee sender needed. See `REF-CAP-07-Overwrite-Process-Flow-20260812.md` and `docs/asc-allocation-framework-technical-design.md` for the current design.
+
 **Date:** 2026-08-11  
 **Author:** Noel Palo, Lead Developer  
 **Assisted by:** Kiro (AI-assisted analysis, code review, and document generation)  
@@ -11,7 +13,7 @@
 | Term | Full Name | What it is |
 |---|---|---|
 | **CAP** | Coaching and App Plan | Upstream project (MBTI_backend) — creates new bundled plans 1016–1027 |
-| **CIP** | Coaching Intensive Plan | Upstream project (MBTI_backend) — adds App to existing coaching plans 71, 94, 1005–1014 |
+| **CIP** | Coaching Intensive Plan | Upstream project (MBTI_backend) — creates new Coaching Intensive product (10022) with new plans 1028–1032 |
 | **ASC-CAP** | ASC for CAP | Our accounting project — allocates CAP coaching revenue between Coaching + App |
 | **ASC-CIP** | ASC for CIP | Our accounting project — allocates CIP coaching revenue between Coaching + App |
 
@@ -61,7 +63,7 @@ Both Scenario C and Scenario D agree: **CAP goes first**. The reasoning:
 | Factor | Why CAP first |
 |---|---|
 | Requirements readiness | Reference prices confirmed (¥3,980 App, ¥19,800/¥39,600 Coaching), App product_id 10021 confirmed (O-1 RESOLVED 2026-08-12) |
-| CIP blocker | O-5 (CIP reference prices) still open — blocks CIP finalize |
+| CIP blocker | O-5 (CIP reference prices) ✅ Resolved — ¥88,000 tax-inclusive (product 10022, confirmed 2026-08-14) |
 | Team familiarity | Coaching+App bundle better understood from ASCH research |
 | Business urgency | Equal — but CAP is more concrete today |
 
@@ -112,7 +114,7 @@ Both Scenario C and Scenario D agree: **CAP goes first**. The reasoning:
 | 7 | 2nd Freee API call + delivery tracking | Step 6 | 3–4 days | Simpler than Scenario C Step 7 — reuses existing API util |
 | 8 | CSV generation (detail + summary) | Step 6 | 2–3 days | Simpler than Scenario C Step 8 — adds to existing zip |
 | 9 | Refund allocation (record_kind = 1) | Step 5 | 3–4 days | Same as Scenario C Step 6 |
-| 10 | CIP Detection Strategy + config | Steps 1–5 done, O-5 | 3–5 days | Same concept — plug CIP into existing framework |
+| 10 | CIP Detection Strategy + config | Steps 1–5 done | 3–5 days | Same concept — plug CIP into existing framework. O-5 resolved (¥88,000). |
 | 11 | Reversal (record_kind = 2) | O-4 | 3–4 days | Same as Scenario C Step 9 (post-release OK) |
 
 **Steps 0–5 are unblocked now** (pending O-3 only). Steps 6–8 follow immediately.
@@ -289,7 +291,7 @@ Work that should happen BEFORE the allocation project starts. Can begin immediat
 | Shared Foundation | W0–W3 | DB, models, engine, injection points, run lifecycle | plan_ids from upstream (W1 latest) |
 | ASC-CAP Integration | W3–W5 | Detection, Freee send, CSV, refunds | None (uses seeded data) |
 | ASC-CAP Dev Testing | W6 | Full DEV04 run (Pre + Final pipeline) | None (seeded data) |
-| ASC-CIP Integration | W6–W7 | Plug CIP strategy into working framework | CIP reference prices (O-5) |
+| ASC-CIP Integration | W6–W7 | Plug CIP strategy into working framework | ✅ O-5 resolved (¥88,000 tax-inclusive) |
 | ASC-CIP Dev Testing | W7 | DEV04 validation | None (seeded data) |
 | Buffer + Reversal | W8–W9 | QA support, reversal (post-release) | None |
 | **First real batch** | **Jan 1** | **Run on actual upstream charges** | **Upstream in production** |
@@ -381,7 +383,7 @@ See QA Gantt above. Summary:
 | Accounting team confused by new email | MEDIUM — new format, new email to monitor | ZERO — same email, same format |
 | Freee journals fail independently | N/A — separate process | LOW — 2nd API call, tracked in deliveries table |
 | ASCH patterns don't translate | MEDIUM — never tested at runtime | LOW — we only borrow design concepts, not code |
-| CIP reference prices arrive late (O-5) | Blocks CIP finalize | Same — but CIP is last anyway |
+| CIP reference prices (O-5) | ✅ Resolved — ¥88,000 tax-inclusive (confirmed 2026-08-14) | ✅ Resolved |
 | CAP App product_id not decided (O-1) | Blocks CAP detection | ✅ **RESOLVED** (product_id 10021, confirmed 2026-08-12) |
 
 ---
