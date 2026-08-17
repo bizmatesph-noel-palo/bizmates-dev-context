@@ -1,5 +1,7 @@
 # CIP Coaching Campaigns — Confluence Reference
 
+> **Correction (2026-08-14):** This document's conclusions about CIP plan_ids are WRONG. REF-CIP-03 revealed that CIP is a brand NEW product (product_id 10022) with brand NEW plan_ids (1028–1032). CIP does NOT modify existing coaching plans (71, 94, 1005–1014). No date filter is needed. CIP reference price is ¥88,000 tax-inclusive (not ¥96,800). See REF-CIP-03 for correct information.
+
 **Source:** CIP Confluence space — "Coaching Campaigns" by Jefferson Gernale  
 **Date received:** 2026-08-12  
 **Filed by:** Noel Palo  

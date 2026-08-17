@@ -1,5 +1,7 @@
 # ASC for CIP — Engineering Scope for Development Estimation
 
+> **Correction (2026-08-14):** This document was written before CIP's true nature was revealed (REF-CIP-03). CIP is NOT a modification of existing coaching plans — it is a brand NEW product (product_id 10022) with NEW plan_ids (1028–1032). CIP uses App product 10021 (not 10012). CIP reference price is ¥88,000 tax-inclusive. No date filter needed (new plans have no history). The combined ASC Allocation Framework (`asc_alloc_*` tables with `project_code` column) is now used instead of separate `cip_*` tables.
+
 **Source:** Kuroda-san (Confluence: "CIP - Engineering Scope for Development Estimation")  
 **Date:** 2026-07-27  
 **Last updated:** 2026-07-31 (addendum: ASC pipeline sufficiency analysis)  

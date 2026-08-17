@@ -112,10 +112,10 @@ Previously O-5 was "CIP coaching reference prices — pending Business + Account
 
 **Now we know:**
 - CIP coaching product is 10022 (not 10005/10015)
-- Standalone price: ¥88,000 tax-exclusive = **¥96,800 tax-inclusive**
+- Price: **¥88,000 tax-inclusive** (confirmed by Kuroda-san 2026-08-14)
 - This is the L_coaching value for CIP allocation
 
-**O-5 can be resolved** — need Kuroda-san/Accounting to confirm ¥96,800 as the CIP coaching reference price. (It should be straightforward since it's the published standalone price, same logic as CAP.)
+**O-5 is resolved** — ¥88,000 tax-inclusive is the CIP coaching reference price.
 
 ---
 
@@ -130,7 +130,7 @@ Previously O-5 was "CIP coaching reference prices — pending Business + Account
 The only change needed in our design docs:
 - Update `CoachingIntensivePlanEnum` from plan_ids [71, 94, 1005–1014] to [1028–1032]
 - Remove the CIP date filter requirement (no longer needed)
-- Update CIP reference price from "TBD" to ¥96,800 (pending Accounting confirmation)
+- Update CIP reference price to ¥88,000 tax-inclusive (confirmed 2026-08-14)
 - Add product_id 10022 to the reference prices table
 
 ---
