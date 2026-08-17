@@ -72,7 +72,7 @@ The word "replace" refers ONLY to the coaching page display:
 - Old plans (71, 94, 1005–1014) and product 10012 are **retained untouched**
 - No migration, no deprecation, no deletion of legacy rows
 
-**For ASC-CIP:** This means old plan_ids still have active subscribers. The CIP upstream project adds App as companion to these EXISTING plans. Our CIP allocation must only target charges AFTER CIP goes live (date filter). Students on legacy plans without App companion are not allocated.
+**For ASC-CIP:** ~~This means old plan_ids still have active subscribers. The CIP upstream project adds App as companion to these EXISTING plans. Our CIP allocation must only target charges AFTER CIP goes live (date filter).~~ **Correction (2026-08-14):** CIP is a brand new product (10022) with new plan_ids (1028–1032). No date filter needed. See REF-CIP-03.
 
 ### 6. Pricing Model — Single package_price (Q5)
 

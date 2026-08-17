@@ -134,7 +134,7 @@ with no further changes: CSVs, Freee journals, balance transitions, PayPal recon
 ## Data Example
 
 CIP contract, 2027/01/20–02/19, ¥88,000 tax-incl. January portion.
-Reference prices: Coaching ¥84,020 / App ¥3,980 (tax-incl).
+Reference prices: Coaching ¥88,000 / App ¥3,980 (tax-incl). (Corrected 2026-08-14: L_coaching = ¥88,000, not ¥84,020.)
 
 ```
                   BEFORE (N)      OPTION 1 (Overwrite → P)
@@ -517,7 +517,7 @@ App product_type = 100 is NOT in this list. The App charge goes through the norm
 - `trn_charge` has a `plan_id` column (nullable bigint) — confirmed from migration
 - `getTrnChargeList()` uses `SELECT trn_charge.*` — so `$trnCharge->plan_id` is available in the loop
 - CAP plan_ids (1016–1027) are unique — no overlap with non-CAP plans
-- CIP plan_ids (71, 94, 1005–1014) exist historically — needs date filter
+- CIP plan_ids (1028–1032) are brand new — no date filter needed (same as CAP)
 
 **Proposed implementation (mirrors existing pattern):**
 
@@ -555,17 +555,16 @@ enum CoachingIntensivePlanEnum: int
 {
     use HasEnumHelperTrait;
 
-    case STANDALONE_C15  = 71;
-    case STANDALONE_C30  = 94;
-    case L25_C15         = 1005;
-    case L50_C15         = 1006;
-    // ... etc
+    case SOLO_INTENSIVE         = 1028;
+    case L25_INTENSIVE          = 1029;
+    case L50_INTENSIVE          = 1030;
+    case L75_INTENSIVE          = 1031;
+    case L100_INTENSIVE         = 1032;
 }
 
-// CIP also needs a date guard (historical charges must not be allocated):
+// CIP detection: same as CAP — no date filter needed (plans are brand new)
 $cipChargeIds = collect($writtenRows)
-    ->filter(fn ($row) => CoachingIntensivePlanEnum::exists($row->plan_id)
-        && $row->start_date >= config('asc_alloc.cip_launch_date'))
+    ->filter(fn ($row) => CoachingIntensivePlanEnum::exists($row->plan_id))
     ->pluck('charge_id');
 ```
 
