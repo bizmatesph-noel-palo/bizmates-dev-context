@@ -3,6 +3,8 @@
 > ⚠️ **SUPERSEDED:** ASCH was cancelled 2026-08-07. This estimate assumed ASCH as prerequisite. See `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` for current plan (Scenario D). The "Assumes ASCH is completed first" assumption below is **NO LONGER VALID**.
 >
 > **Update (2026-08-12):** CIP uses same App product_id 10021 as CAP (confirmed by Kuroda-san). See REF-CAP-05.
+>
+> **Correction (2026-08-14):** CIP is a brand NEW product (10022) with NEW plan_ids (1028–1032), NOT a modification of existing plans (71, 94, 1005–1014). CIP reference price is ¥88,000 tax-inclusive. No date filter needed. Uses shared `asc_alloc_*` tables (not separate `cip_*` tables).
 
 ## Document Info
 
