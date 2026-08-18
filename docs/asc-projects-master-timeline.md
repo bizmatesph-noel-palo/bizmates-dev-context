@@ -1,43 +1,51 @@
 # ASC Projects — Master Timeline
 
-**Last updated:** 2026-08-14  
-**Status:** ACTIVE — DB design received from Kuroda-san. O-1 RESOLVED (product_id 10021). O-5 RESOLVED (¥88,000 tax-inclusive). Steps 1–5 unblocked. Pending O-3 (prefix) decision before migrations start.  
+**Date:** 2026-08-10 (Created) · 2026-08-17 (synced with Scenario D + Kuroda-san feedback)  
+**Status:** ACTIVE — Technical design agreed with Kuroda-san. All open items resolved except O-3 (prefix). Ready to start once O-3 decided.  
 **Overall Lead:** Noel Palo  
-**Deadline:** CAP + CIP = 12/17
+**Assisted by:** Kiro  
+**Deadline:** ASC-CAP + ASC-CIP = 2026/12/17
 
 ---
 
 ## Overview
 
-Two ASC projects built on a shared allocation framework (Scenario C — confirmed):
-
 ```
-ASCH (Honki Set):     Jul 30 ═══ Aug 7 ╳ CANCELLED
-ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ══════════════════ Dec 17
+ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
+ASC-CAP + ASC-CIP (Allocation):     Sep 2026 ══════════════════════ Dec 17
+Upstream CAP (Keith's team):         In progress ════════════════════ Late Nov / Early Dec
+Upstream CIP (Jefferson's team):     In progress ════════════════════ Late Nov / Early Dec
 ```
 
-### Terminology
+**What we're building:** A shared allocation framework that splits Coaching charge revenue between Coaching and App products, injected into the existing accounting batch commands.
+
+**Architecture:** Scenario D (injection into existing commands) + Option 1 (Overwrite N→P). Single injection point in `CommonUtil::createDailyRateCalculation()`. Shared `asc_alloc_*` tables with `project_code` column.
+
+**Technical design:** `docs/asc-allocation-framework-technical-design.md` (authoritative)
+
+---
+
+## Terminology
 
 | Term | Full Name | What it is | Owner |
 |---|---|---|---|
-| **CAP** | Coaching and App Plan | Upstream project — creates new plans (1016–1027) bundling Coaching + App in MBTI_backend | CAP team (Terry, Keith, Soli) |
-| **CIP** | Coaching Intensive Plan | Upstream project — creates new Coaching Intensive product (10022) with new plans (1028–1032) bundling Coaching + App in MBTI_backend | CIP team (Jefferson) |
-| **ASC-CAP** | ASC for CAP | Our project — allocates CAP coaching charge revenue between Coaching + App in the accounting system | Noel's team |
-| **ASC-CIP** | ASC for CIP | Our project — allocates CIP coaching charge revenue between Coaching + App in the accounting system | Noel's team |
+| **CAP** | Coaching and App Plan | Upstream project — creates new plans 1016–1027 in MBTI_backend | CAP team (Keith, Terry) |
+| **CIP** | Coaching Intensive Plan | Upstream project — creates new product 10022 with plans 1028–1032 in MBTI_backend | CIP team (Jefferson) |
+| **ASC-CAP** | ASC for CAP | Our project — allocates CAP coaching charge revenue | Noel's team |
+| **ASC-CIP** | ASC for CIP | Our project — allocates CIP coaching charge revenue | Noel's team |
 
-**The upstream projects (CAP/CIP) create the charges. Our projects (ASC-CAP/ASC-CIP) allocate the revenue.**
+**The upstream projects create the charges. Our projects allocate the revenue.**
 
-### People & Roles
+---
 
-**Management Partners (JP ↔ PH pairing):**
+## People & Roles
+
+**Management Partners (JP ↔ PH):**
 
 | Japan (JP) | Philippines (PH) | Scope |
 |---|---|---|
-| Hayato Kuroda (Project Manager) | Roi Patrick Florentino (Software Delivery Manager) | ASC / Accounting projects |
-| Soli Sahukar (Project Manager) | Jasser Balido (Software Delivery Manager) | CAP / CIP upstream projects |
-
-- Kuroda-san & Patrick-san are partners — Patrick-san handles the actual ASC dev team in PH
-- Soli-san & Jasser-san are partners — Jasser-san handles the actual CAP/CIP dev teams in PH
+| Hayato Kuroda (PM) | Roi Patrick Florentino (SDM) | ASC / Accounting projects |
+| Soli Sahukar (PM) | Jasser Balido (SDM) | CAP / CIP upstream projects |
 
 **Development Teams:**
 
@@ -45,77 +53,157 @@ ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ════════
 |---|---|---|---|---|
 | **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia | Jasser-san |
 | **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Jasser-san |
-| **ASCM** (completed) | Noel Palo | — | Haggai Rei Cacacho, Throy Embudo, Raymark Reyes, Cristoff Danganan | Patrick-san |
-| **ASCH** (cancelled) | Noel Palo | — | Throy Embudo | Patrick-san |
-| **ASC-CAP** | Noel Palo | — | Throy Embudo | Patrick-san |
-| **ASC-CIP** | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
+| **ASC-CAP** (first) | Noel Palo | — | Throy Embudo | Patrick-san |
+| **ASC-CIP** (second) | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
 | **CDB** (upstream) | Paolo | — | Efren | Patrick-san |
-
-**Architecture:** Single `asc_alloc_*` table set shared by both CAP and CIP. 10 tables + 1 view. Projects distinguished by `project_code` column. Sequential execution: CAP first (builds foundation), CIP second (reuses it).
-
-**Design source:** `REF-CAP-04-ASC-Alloc-Framework-DB-Design-20260810.md` (Kuroda-san, Confluence)
+| **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
+| **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |
 
 ---
 
-## Estimate
+## Current Approach (Scenario D + Option 1)
+
+| Decision | Chosen | Why |
+|---|---|---|
+| Architecture | Scenario D — inject into existing commands | Saves ~3 weeks vs standalone. Proven pattern (monthly rate). Same email/zip. |
+| Timing | Option 1 — Overwrite N→P inside CommonUtil | 1 Freee API call. Zero downstream changes. Idempotent. |
+| Injection point | `CommonUtil::createDailyRateCalculation()` | Covers Pre, Final, and DataCorrection batches. |
+| N definition | Σ(paid_price) across bundle (coaching + app) | Idempotent by construction — safe on re-runs. |
+| Bundle grouping | student_id + order_no | Handles cancel+repurchase, simultaneous plans. |
+| Detection | product_id 10021 (App) + plan_id enums | Stable anchor. Works for both CAP and CIP. |
+| Execution order | ASC-CAP first → ASC-CIP second | CAP requirements more concrete. CIP reuses foundation. |
+
+---
+
+## Estimate (Scenario D)
 
 | Metric | Value | Confidence |
 |---|---|---|
-| **CAP Dev Effort (incl. shared foundation)** | 6–8 weeks (Noel + Throy) | Medium — design received, steps 1–5 unblocked |
-| **CIP Dev Effort (reuses foundation)** | 3–4 weeks (Orlino + Cristoff, Noel oversees) | Medium |
-| **Total Dev Effort (sequential)** | 9–12 weeks | Medium |
-| **QA Effort** | 5–7 weeks (overlapping with dev) | Low — scenarios pending |
-| **End-to-end** | 10–13 weeks | Medium |
+| **ASCM Prep** | 5–7 days | High — no blockers, can start immediately |
+| **ASC-CAP Dev (incl. shared foundation)** | 4–5 weeks (Noel + Throy) | Medium-High |
+| **ASC-CIP Dev (reuses foundation)** | 1–1.5 weeks | High — configuration only |
+| **Total Dev** | 5.5–6.5 weeks | Medium-High |
+| **QA** | 4–5 weeks (overlapping with dev) | Medium |
+| **End-to-end** | 7–9 weeks | Medium |
 | **Deadline** | 2026/12/17 | Fixed |
-| **Latest start to fit deadline** | ~Mid-September | Medium |
-| **First production run** | 2027/01/01 | Fixed |
-| **Execution model** | Sequential: CAP first (builds foundation), CIP second | Confirmed |
+| **Latest start (comfortable)** | Mid-September | Gives 1 week buffer |
+| **Latest start (tight)** | Early October | 3 days buffer ⚠️ |
+| **First production batch** | 2027/01/01 | Fixed |
+
+**Full Gantt:** `docs/asc-alloc-scenario-d-injection-timeline-20260811.md`
 
 ---
 
-## What's Blocking
+## Confirmed Data
 
-| # | Blocker | Owner | Status | Impact |
+| Item | CAP | CIP |
+|---|---|---|
+| Plan IDs | 1016–1027 (12 plans) | 1028–1032 (5 plans) |
+| Coaching product_id | 10005 (15min) / 10015 (30min) | 10022 (Intensive) |
+| App product_id | 10021 | 10021 |
+| L_coaching (reference) | ¥19,800 (15min) / ¥39,600 (30min) | ¥84,020 (= plan ¥88,000 − L_app) |
+| L_app (reference) | ¥3,980 | ¥3,980 |
+| App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
+| Date filter needed? | No (new plans) | No (new plans) |
+| Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
+
+---
+
+## Implementation Phases
+
+### Phase 0: ASCM Prep (Pre-W0, 5–7 days — no blockers)
+
+| Task | Effort |
+|---|---|
+| Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | 1–2 days |
+| Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip + missing fields | 0.5–1 day |
+| Unit test + smoke test all 3 batches on DEV04 (baseline) | 1 day |
+| Document baseline CSV file list | 0.5 days |
+| Create test data seeder for CAP/CIP charges | 1 day |
+| Review DB design, prepare migration plan | 0.5 days |
+
+### Phase 1: Shared Foundation (W0–W3)
+
+| Step | What | Blocked by |
+|---|---|---|
+| 1 | 10 migrations + 1 view + structure tests | **O-3 (prefix)** |
+| 2 | Models, enums, run lifecycle service | None |
+| 3 | Reference-price master + price resolution | None |
+| 4 | Detection strategy + bundle generation | None (O-1 resolved) |
+| 5 | Allocation engine + ΣN computation + validations | None |
+
+### Phase 2: ASC-CAP (W3–W6)
+
+| Step | What |
+|---|---|
+| 6 | Injection into CommonUtil (Option 1 Overwrite) |
+| 7 | AllocationDetail CSV generation + config |
+| 8 | DataCorrectionLogic: add `allocateForCharge()` call |
+| 9 | Refund allocation (record_kind = 1) |
+| 10 | DEV04 full pipeline testing (Pre + Final) |
+
+### Phase 3: ASC-CIP (W6–W7)
+
+| Step | What |
+|---|---|
+| 11 | CIP detection strategy (CoachingIntensivePlanEnum: 1028–1032) |
+| 12 | CIP reference price config (L_coaching = ¥84,020) |
+| 13 | DEV04 testing for CIP plans |
+
+### Phase 4: Post-Release (W8+)
+
+| Step | What |
+|---|---|
+| 14 | Reversal (record_kind = 2) — ships after first prod run |
+| 15 | Metabase saved query for Accounting (allocation breakdown) |
+
+---
+
+## Blockers & Open Items
+
+| ID | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
-| 1 | ~~Updated requirements~~ | ~~Kuroda-san~~ | ✅ **Received** (2026-08-10 DB design) | Unblocked |
-| 2 | ~~Formula confirmation~~ | ~~Kuroda-san~~ | ✅ **Confirmed** (same formula, Section 6) | Unblocked |
-| 3 | ~~How App is bundled~~ | ~~Kuroda-san~~ | ✅ **Confirmed** (normalized bundle layer, Section 8) | Unblocked |
-| 4 | ~~Design updates~~ | ~~Kuroda-san~~ | ✅ **Received** (full DB design, 10 tables) | Unblocked |
-| 5 | **O-3: Table prefix decision** | Engineering team | ⚠️ **OPEN** — blocks Step 1 (migrations) | Blocks start |
-| 6 | Start date decision | Patrick-san / Kuroda-san | ⚠️ **Pending** | Blocks timeline |
-| 7 | ~~O-1: CAP dedicated App product_id~~ | ~~CAP app team~~ | ✅ **RESOLVED (product_id 10021, confirmed 2026-08-12)** | ~~Does not block start~~ Unblocked |
-| 8 | ~~O-5: CIP reference prices~~ | ~~Business + Accounting~~ | ✅ **Resolved — ¥88,000 tax-inclusive** (product 10022, confirmed 2026-08-14) | ~~Does not block start~~ Unblocked |
+| **O-3** | **Table prefix (`asc_alloc_*`)** | **Engineering team** | **⚠️ OPEN** | **Step 1 (migrations)** |
+| O-1 | CAP App product_id | CAP team | ✅ Resolved — 10021 (2026-08-12) | — |
+| O-2 | Asymmetric discount (CIP RA-04) | Accounting | Low risk — if rejected, proration_basis returns | — |
+| O-4 | B2B App reversal logic | Accounting + CAP | Post-release (Step 14) | — |
+| O-5 | CIP coaching reference price | Accounting | ✅ Resolved — ¥84,020 (2026-08-17) | — |
+| O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
+| P-3 | CAP new coaching product_id | CAP team | ⚠️ Non-blocking — detection uses product 10021 + plan_id. Config update if confirmed. | — |
 
-**Key insight from Kuroda-san:** Steps 1–5 (migrations, models, run lifecycle, reference prices, allocation engine) do NOT depend on any open item. Work can start once O-3 (prefix) is decided.
-
----
-
-## Team Assignments
-
-| Project | Lead | Sub-Lead | Developer | QA | UAT |
-|---|---|---|---|---|---|
-| **ASC-CAP** (first — builds shared foundation) | Noel Palo | — | Throy Embudo | Miko | Business / Miyachi-san |
-| **ASC-CIP** (second — reuses foundation) | Noel Palo (oversees) | Orlino Monares | Cristoff Danganan | Glenn | Business / Miyachi-san |
-
-**Sequential execution:** ASC-CAP builds the shared framework + CAP-specific logic. ASC-CIP plugs in after.
+**Only O-3 blocks development start.**
 
 ---
 
-## Implementation Order (from Kuroda-san's design, Section 11)
+## Key Dates
 
-| # | Step | Blocked by | Est. duration |
-|---|---|---|---|
-| 1 | Naming decision + 10 migrations + structure tests | O-3 (prefix) | 2 wk |
-| 2 | Models, resources, enums, run lifecycle service | None | 1 wk |
-| 3 | Reference-price master + price resolution service | None | 0.5 wk |
-| 4 | Detection Strategy + bundle generation | ~~O-1 (CAP only)~~ (O-1 RESOLVED: 10021) | 1 wk |
-| 5 | Allocation engine + validations V-1 to V-5 | None | 1.5 wk |
-| 6 | Refund allocation (record_kind = 1) | None | 1 wk |
-| 7 | Summary aggregation + Freee thin sender + deliveries | CIP RA-05 | 1.5 wk |
-| 8 | CSV generation + unified email orchestrator | CIP RA-13 (email approval) | 1 wk |
-| 9 | Reversal (record_kind = 2) | O-4 | 1 wk (post-release OK) |
+| Date | Event |
+|---|---|
+| 2026/08/07 | ASCH cancelled |
+| 2026/08/10 | DB design received from Kuroda-san |
+| 2026/08/11 | Scenario D proposed |
+| 2026/08/12 | CAP pricing + plan_ids confirmed (REF-CAP-05/06/08) |
+| 2026/08/13 | CIP project spec received — new product 10022, plans 1028–1032 (REF-CIP-03) |
+| 2026/08/14 | Option 1 (Overwrite) proposed by Kuroda-san. Idempotency design (ΣN). |
+| 2026/08/17 | CIP price corrected to ¥84,020. Bundle grouping (order_no). O-5/O-6 resolved. |
+| TBD | **O-3 decided → ASCM Prep starts** |
+| TBD + 1 week | **Foundation starts (Step 1)** |
+| ~W6 after start | **ASC-CAP dev complete** |
+| ~W7 after start | **ASC-CIP dev complete** |
+| Late Nov | Upstream CAP/CIP go to production |
+| ~W11 after start | QA sign-off |
+| **2026/12/17** | **Production deadline** |
+| **2027/01/01** | **First real batch run** |
 
-**Steps 1–5 are unblocked now.** Steps 6–8 have minor dependencies. Step 9 can ship after release.
+---
+
+## Next Steps (as of 2026-08-17)
+
+1. **Noel:** Decide O-3 (table prefix) — recommend `asc_alloc_*` as proposed. Communicate to Kuroda-san.
+2. **Noel:** Confirm P-3 with CAP team (Keith/Terry) — will coaching product_id change?
+3. **Patrick-san:** Confirm start date and team availability.
+4. **Noel:** Begin ASCM Prep (no blockers — can start before O-3 is decided).
+5. **Once O-3 decided:** Step 1 — migrations + structure tests.
 
 ---
 
@@ -137,46 +225,18 @@ ASC Allocation Framework (ASC-CAP + ASC-CIP):  Aug 2026 ════════
 
 ---
 
-## Key Dates
+## Source Documents
 
-| Date | Event |
+| Document | What it covers |
 |---|---|
-| 2026/08/07 | ASCH project cancelled |
-| 2026/08/10 | DB design received from Kuroda-san |
-| TBD (pending O-3) | Development start (Step 1: migrations) |
-| ~W5 after start | Allocation engine complete (Steps 1–5 done) |
-| ~W8 after start | Dev complete (all steps) |
-| ~W10–12 after start | QA regression + sign-off |
-| **2026/12/17** | **CAP + CIP production deadline** |
-| **2027/01/01** | **First production batch run** |
-
----
-
-## Open Items (from Kuroda-san's design)
-
-| ID | Item | Owner | Blocks |
-|---|---|---|---|
-| O-1 | ~~CAP dedicated App product_id~~ | ~~CAP app team~~ | ✅ **Resolved (product_id 10021, confirmed 2026-08-12)** — applies to both CAP and CIP |
-| O-2 | Asymmetric discount assumption (CIP RA-04) | Accounting | If rejected, proration_basis comes back |
-| O-3 | `asc_alloc_*` prefix naming convention | Engineering team | **Step 1 (migrations)** |
-| O-4 | B2B App reversal logic (CAP F-15) | Accounting + CAP app | Step 9 (post-release OK) |
-| O-5 | CIP reference prices | Business + Accounting | ✅ **Resolved — ¥88,000 tax-inclusive** (product 10022, confirmed 2026-08-14) |
-| O-6 | Unified email subject/body format | Accounting | Step 8 |
-
----
-
-## Next Steps
-
-1. **Engineering (Noel):** Decide O-3 (table prefix) — recommend `asc_alloc_*` as proposed
-2. **Engineering (Noel):** Review and respond to Kuroda-san's design (4 questions in Section 13)
-3. **Patrick-san:** Confirm start date and team availability
-4. **Dev:** Once O-3 decided → begin Step 1 (migrations + structure tests)
-
----
-
-## Source
-
-- Original timeline: Kuroda-san's combined schedule (2026-07-30)
-- ASCH cancellation: Emergency meeting 2026-08-07 (Kuroda-san)
-- DB design: `REF-CAP-04-ASC-Alloc-Framework-DB-Design-20260810.md` (Kuroda-san, Confluence)
-- Estimate: `docs/asc-cap-cip-combined-estimate-20260808.md` (tentative)
+| `docs/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
+| `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` | Full Gantt, calendar mapping, QA timeline |
+| `docs/asc-cap-cip-combined-estimate-20260808.md` | Historical — Scenario C estimate (superseded) |
+| `projects/asch/documentation/asc-alloc-integration-discussion-notes-20260811.md` | Design session notes |
+| `projects/asch/technical-notes/research/CAP/REF-CAP-04` | Kuroda-san DB design |
+| `projects/asch/technical-notes/research/CAP/REF-CAP-05` | Confirmed pricing (Slack thread) |
+| `projects/asch/technical-notes/research/CAP/REF-CAP-06` | CAP price mechanism (Confluence) |
+| `projects/asch/technical-notes/research/CAP/REF-CAP-07` | Option 1 Overwrite (Confluence + verified) |
+| `projects/asch/technical-notes/research/CAP/REF-CAP-08` | CAP requirements decision log |
+| `projects/asch/technical-notes/research/CIP/REF-CIP-03` | CIP project spec (Jefferson) |
+| `domain-knowledge/plans-and-products.md` | Full plan/product reference |
