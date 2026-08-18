@@ -74,9 +74,23 @@ Every project directory follows this structure:
 
 | Content type | Path |
 |---|---|
-| Domain knowledge (applicable to ALL projects) | `domain-knowledge/` (at repo root) |
+| Domain knowledge (general concepts, entities, system-wide) | `domain-knowledge/` (at repo root) |
+| Upstream/external project research (shared reference) | `research/` (at repo root) |
 
-Place information here when it applies regardless of which project you're working on (e.g., entity definitions, system-wide integrations, cross-cutting concepts).
+**`domain-knowledge/`** — General system concepts that apply regardless of which project you're working on. Entity definitions, plan/product maps, campaigns, account types. Curated, verified, maintained.
+
+**`research/`** — Research and reference documents about OTHER teams' projects (upstream, external). Organized by project code (e.g., `research/CAP/`, `research/CIP/`, `research/CDB/`, `research/HCR/`). These describe how external systems work, their specs, pricing decisions, and technical details our projects depend on. Any project in the workspace can reference them.
+
+### Placement Rules
+
+| What you're documenting | Where it goes | Example |
+|---|---|---|
+| How OUR project works (design, decisions, internal) | `projects/{code}/technical-notes/` | O-3 table prefix proposal, discussion notes |
+| How an UPSTREAM project works (their spec, their pricing) | `research/{upstream_code}/` | REF-CAP-05 pricing thread, REF-CIP-03 project spec |
+| General system concept (useful to ANY project, permanent) | `domain-knowledge/` | plans-and-products.md, account-types.md |
+| Cross-project plan/timeline (not owned by one project) | `docs/` | master timeline, technical design |
+
+**The rule:** If you're writing about someone ELSE's project, it goes in `research/`. If you're writing about YOUR project's decisions, it goes in `projects/{code}/`. If it's a general concept everyone needs, it goes in `domain-knowledge/`.
 
 ## Naming Conventions
 
