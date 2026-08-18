@@ -726,21 +726,18 @@ Step [c]: getPaidPriceSumList() → sum row with paid_price=3,774
 
 ### CSV Report
 
-#### Current State: No Allocation CSV Header Defined
+#### Current State: Allocation Breakdown Required (O-6 Resolved 2026-08-17)
 
-Checked `config/const.php` — no CSV definition exists for allocation detail or allocation summary. All existing CSV keys:
+Kuroda-san confirmed with Accounting:
+1. **Existing CSVs (DailyRateCalc, CalculationSummary) will show allocated amounts** — OK, no format change needed
+2. **Accounting needs a breakdown showing HOW allocation was calculated** — new requirement
+3. **Format is flexible** — Metabase view OR additional CSV (our choice)
 
-```
-trnChargeFile, ticketFile, dailyRateCalculationFile,
-dailyRateCalculationSumFile, monthlyRateCalculationFile,
-sendJournalsHistoryFile, maeukeUrikakebalanceTransitionFile,
-balanceTransitionFile, balanceTransitionV2File,
-maeukeUrikakebalanceTransitionWithOrderNumberFile,
-balanceTransitionWithOrderNumberFile, paypalPaymentFile,
-paypalPaymentSumFile, errorInfoFile
-```
+**Decision:** Provide both:
+- **CSV in the existing zip:** AllocationDetail CSV with breakdown — included in monthly email for archival (~30 lines of code)
+- **Metabase:** A saved query on `asc_alloc_prorations` joined with charge details — created post-deployment for ad-hoc checks between batch runs
 
-**No `allocationDetailFile` or similar exists.** This needs to be added IF Accounting confirms they want a dedicated allocation CSV (pending Nemoto-san, item O-6).
+Since `asc_alloc_prorations` already stores: original N, allocated P, reference prices L, ratio, project_code, charge_id, product_id — both outputs read from the same source table.
 
 #### What Needs to Be Added (if CSV is required)
 
@@ -830,7 +827,7 @@ With Option 1 (Overwrite), the EXISTING CSVs automatically contain allocated fig
 - `03_DailyRateCalculation` — shows P values (coaching reduced, app has value)
 - `04_CalculationSummary` — shows allocated sums
 
-**The dedicated allocation CSV is optional** — it would only provide the RATIO and ORIGINAL N for audit. The actual allocated amounts are already in the existing CSVs.
+**Confirmed by Accounting (via Kuroda-san, 2026-08-17):** This is acceptable. The dedicated allocation CSV provides the RATIO, ORIGINAL N, and reference prices for audit — the "why" behind the numbers in the existing CSVs.
 
 ### Freee Journal Sending
 
@@ -1043,7 +1040,7 @@ ls-database-migrations/
 |---|---|---|---|
 | `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
 | `app/Libs/DataCorrectionLogic.php` | ASCM Prep: add monthly plan skip + missing fields (fix drift). ASC-CAP: add `allocateForCharge()` call after "addDaily" INSERT | ~20 | LOW-MED — tested via correction batch smoke test |
-| `config/const.php` | Add CSV header definitions (if allocation detail CSV needed) | ~20 | ZERO — config only |
+| `config/const.php` | Add CSV header definitions for AllocationDetail | ~20 | ZERO — config only |
 | `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
 
 **Everything else is new code** — no modifications to existing logic.
@@ -1072,8 +1069,8 @@ ls-database-migrations/
 | `CoachingAndAppPlanEnum` / `CoachingIntensivePlanEnum` (NEW) | Plan ID enums for detection | 2 new files |
 | `AscAlloc*` models (NEW) | Eloquent models for audit tables | 8–10 new files |
 | `config/asc_alloc.php` (NEW) | Config for launch dates, feature flags | 1 new file |
-| `config/const.php` | CSV header definition (IF allocation CSV needed) | ~20 lines |
-| `createSendMailAttacheFile()` | Add allocation CSV to file list (IF CSV needed) | ~5 lines |
+| `config/const.php` | CSV header definition for AllocationDetail | ~20 lines |
+| `createSendMailAttacheFile()` | Add AllocationDetail CSV to file list | ~5 lines |
 | Migrations (ls-database-migrations) | 10 tables + 1 view | 11 files |
 | Seeder | Reference prices + mst_rule_for_journals (if missing) | 1–2 files |
 
@@ -1130,7 +1127,7 @@ ls-database-migrations/
 | O-3 | Table prefix (`asc_alloc_*`) | Engineering team | ⚠️ Open | Step 1 (migrations) |
 | O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥84,020 (= plan ¥88,000 − L_app ¥3,980). Confirmed by Kuroda-san + Accounting 2026-08-17. | — |
 | P-3 | CAP new coaching product_id | CAP team | ⚠️ Open — CAP team may create replica coaching product under new ID. Affects detection whereIn + Freee mapping. | Detection logic |
-| O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ⚠️ Open | CSV config |
+| O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
 | — | Option 1 vs 2 final confirmation | Kuroda-san | ⚠️ Pending our response sent | — |
 | — | Scenario C vs D final decision | Patrick-san / Kuroda-san | ⚠️ Pending | — |

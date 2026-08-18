@@ -193,7 +193,7 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 | # | Item | Question |
 |---|---|---|
 | 1 | Table prefix | We agree with `asc_alloc_*` — confirm with engineering team (O-3) |
-| 2 | Single email approach | Does accounting team agree? Same zip, 2 extra CSVs inside |
+| 2 | Single email approach | ✅ Confirmed (2026-08-17) — Accounting agrees. Same zip, AllocationDetail CSV added for breakdown. |
 | 3 | Second Freee API call | OK to send allocation journals as a separate API call? (Same issue_date, same period) |
 | 4 | Start date | When can we begin? Steps 1–5 are unblocked once O-3 decided |
 | 5 | Delivery service extraction | 1–2 day investment before injection — acceptable? |
