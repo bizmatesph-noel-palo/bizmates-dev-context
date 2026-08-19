@@ -241,14 +241,15 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 | Document | What it covers |
 |---|---|
-| `docs/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
-| `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` | Full Gantt, calendar mapping, QA timeline |
+| `projects/asca/documentation/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
+| `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Full Gantt, calendar mapping, QA timeline |
+| `projects/asca/documentation/table-prefix-decision.md` | O-3 decision: `log_alloc_*` prefix |
 | `docs/asc-cap-cip-combined-estimate-20260808.md` | Historical — Scenario C estimate (superseded) |
-| `projects/asch/documentation/asc-alloc-integration-discussion-notes-20260811.md` | Design session notes |
-| `projects/asch/technical-notes/research/CAP/REF-CAP-04` | Kuroda-san DB design |
-| `projects/asch/technical-notes/research/CAP/REF-CAP-05` | Confirmed pricing (Slack thread) |
-| `projects/asch/technical-notes/research/CAP/REF-CAP-06` | CAP price mechanism (Confluence) |
-| `projects/asch/technical-notes/research/CAP/REF-CAP-07` | Option 1 Overwrite (Confluence + verified) |
-| `projects/asch/technical-notes/research/CAP/REF-CAP-08` | CAP requirements decision log |
-| `projects/asch/technical-notes/research/CIP/REF-CIP-03` | CIP project spec (Jefferson) |
+| `research/CAP/REF-CAP-04` | Kuroda-san DB design |
+| `research/CAP/REF-CAP-05` | Confirmed pricing (Slack thread) |
+| `research/CAP/REF-CAP-06` | CAP price mechanism (Confluence) |
+| `research/CAP/REF-CAP-07` | Option 1 Overwrite (Confluence + verified) |
+| `research/CAP/REF-CAP-08` | CAP requirements decision log |
+| `research/CIP/REF-CIP-03` | CIP project spec (Jefferson) |
 | `domain-knowledge/plans-and-products.md` | Full plan/product reference |
+| `projects/ascm/knowledge-base/` | ASCM lessons learned |

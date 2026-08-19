@@ -81,9 +81,10 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 | Document | Location |
 |---|---|
-| Technical design (authoritative) | `docs/asc-allocation-framework-technical-design.md` |
-| Master timeline | `docs/asc-projects-master-timeline.md` |
-| Scenario D timeline + Gantt | `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` |
+| Technical design (authoritative) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
+| Scenario D timeline + Gantt | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
+| Table prefix decision | `projects/asca/documentation/table-prefix-decision.md` |
+| Master timeline (all ASC projects) | `docs/asc-projects-master-timeline.md` |
 | Upstream CAP research | `research/CAP/` |
 | Base system context (ASCM) | `projects/ascm/project-context.md` |
 | ASCM knowledge base | `projects/ascm/knowledge-base/` |
