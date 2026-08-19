@@ -1,7 +1,7 @@
 # ASC Projects — Master Timeline
 
 **Date:** 2026-08-10 (Created) · 2026-08-17 (JIRA codes confirmed, synced with Scenario D)  
-**Status:** ACTIVE — Technical design agreed with Kuroda-san. JIRA projects created (ASCA, ASCI). Ready to start once O-3 decided.  
+**Status:** ACTIVE — Technical design agreed with Kuroda-san. JIRA projects created (ASCA, ASCI). **O-3 resolved (log_alloc_*). All blockers cleared. Ready to start.**  
 **Overall Lead:** Noel Palo  
 **Assisted by:** Kiro  
 **Deadline:** ASCA + ASCI = 2026/12/17
@@ -124,6 +124,8 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 ### Phase 0: ASCM Prep (Pre-W0, 5–7 days — no blockers)
 
+**Billed under:** [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) (maintenance). Linked to ASCA via [ASCA-7](https://bizmates.atlassian.net/browse/ASCA-7).
+
 | Task | Effort |
 |---|---|
 | Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | 1–2 days |
@@ -137,7 +139,7 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 | Step | What | Blocked by |
 |---|---|---|
-| 1 | 10 migrations + 1 view + structure tests | **O-3 (prefix)** |
+| 1 | 10 migrations + 1 view + structure tests | ✅ Unblocked (O-3 resolved: `log_alloc_*`) |
 | 2 | Models, enums, run lifecycle service | None |
 | 3 | Reference-price master + price resolution | None |
 | 4 | Detection strategy + bundle generation | None (O-1 resolved) |
@@ -174,7 +176,7 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 | ID | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
-| **O-3** | **Table prefix (`asc_alloc_*`)** | **Engineering team** | **⚠️ OPEN** | **Step 1 (migrations)** |
+| **O-3** | **Table prefix (`log_alloc_*`)** | **Engineering team** | **✅ Resolved (2026-08-17)** — `log_alloc_*` for batch-generated tables, `mst_alloc_*` for reference prices. Approved by Kuroda-san via [Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1787031656142909). | — |
 | O-1 | CAP App product_id | CAP team | ✅ Resolved — 10021 (2026-08-12) | — |
 | O-2 | Asymmetric discount (CIP RA-04) | Accounting | Low risk — if rejected, proration_basis returns | — |
 | O-4 | B2B App reversal logic | Accounting + CAP | Post-release (Step 14) | — |
@@ -182,7 +184,7 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 | O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
 | P-3 | CAP new coaching product_id | CAP team | ⚠️ Non-blocking — detection uses product 10021 + plan_id. Config update if confirmed. | — |
 
-**Only O-3 blocks development start.**
+**All blockers cleared.** Development can start immediately.
 
 ---
 
@@ -196,8 +198,8 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 | 2026/08/12 | CAP pricing + plan_ids confirmed (REF-CAP-05/06/08) |
 | 2026/08/13 | CIP project spec received — new product 10022, plans 1028–1032 (REF-CIP-03) |
 | 2026/08/14 | Option 1 (Overwrite) proposed by Kuroda-san. Idempotency design (ΣN). |
-| 2026/08/17 | CIP price corrected to ¥84,020. Bundle grouping (order_no). O-5/O-6 resolved. |
-| TBD | **O-3 decided → ASCM Prep starts** |
+| 2026/08/17 | CIP price corrected to ¥84,020. Bundle grouping (order_no). O-3/O-5/O-6 resolved. JIRA projects created. |
+| TBD | **Start date confirmed → ASCM Prep starts (DEVOPS-6415)** |
 | TBD + 1 week | **Foundation starts (Step 1)** |
 | ~W6 after start | **ASC-CAP dev complete** |
 | ~W7 after start | **ASC-CIP dev complete** |
@@ -210,11 +212,10 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 ## Next Steps (as of 2026-08-17)
 
-1. **Noel:** Decide O-3 (table prefix) — recommend `asc_alloc_*` as proposed. Communicate to Kuroda-san.
+1. **Patrick-san:** Confirm start date and team availability.
 2. **Noel:** Confirm P-3 with CAP team (Keith/Terry) — will coaching product_id change?
-3. **Patrick-san:** Confirm start date and team availability.
-4. **Noel:** Begin ASCM Prep (no blockers — can start before O-3 is decided).
-5. **Once O-3 decided:** Step 1 — migrations + structure tests.
+3. **Noel:** Begin ASCM Prep (DEVOPS-6415) — all blockers cleared, can start immediately.
+4. **Noel:** After Prep → Step 1 (migrations with `log_alloc_*` prefix).
 
 ---
 
