@@ -1,10 +1,21 @@
 # ASC Projects — Master Timeline
 
-**Date:** 2026-08-10 (Created) · 2026-08-17 (synced with Scenario D + Kuroda-san feedback)  
-**Status:** ACTIVE — Technical design agreed with Kuroda-san. All open items resolved except O-3 (prefix). Ready to start once O-3 decided.  
+**Date:** 2026-08-10 (Created) · 2026-08-17 (JIRA codes confirmed, synced with Scenario D)  
+**Status:** ACTIVE — Technical design agreed with Kuroda-san. JIRA projects created (ASCA, ASCI). Ready to start once O-3 decided.  
 **Overall Lead:** Noel Palo  
 **Assisted by:** Kiro  
-**Deadline:** ASC-CAP + ASC-CIP = 2026/12/17
+**Deadline:** ASCA + ASCI = 2026/12/17
+
+### JIRA Projects
+
+| Code | Project | Board | Backlog |
+|---|---|---|---|
+| ASC | ASCM (Accounting System Changes — Monthly) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) |
+| ASCH | ASC Honki Set (cancelled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
+| **ASCA** | **ASC for CAP** (active — builds foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) |
+| **ASCI** | **ASC for CIP** (active — reuses foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
+
+**Note:** "ASC" is the JIRA code for ASCM. The original project was named just "ASC" before subsequent projects (ASCH, ASCA, ASCI) were created.
 
 ---
 
@@ -12,7 +23,7 @@
 
 ```
 ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
-ASC-CAP + ASC-CIP (Allocation):     Sep 2026 ══════════════════════ Dec 17
+ASCA + ASCI (Allocation):            Sep 2026 ══════════════════════ Dec 17
 Upstream CAP (Keith's team):         In progress ════════════════════ Late Nov / Early Dec
 Upstream CIP (Jefferson's team):     In progress ════════════════════ Late Nov / Early Dec
 ```
@@ -31,8 +42,8 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 |---|---|---|---|
 | **CAP** | Coaching and App Plan | Upstream project — creates new plans 1016–1027 in MBTI_backend | CAP team (Keith, Terry) |
 | **CIP** | Coaching Intensive Plan | Upstream project — creates new product 10022 with plans 1028–1032 in MBTI_backend | CIP team (Jefferson) |
-| **ASC-CAP** | ASC for CAP | Our project — allocates CAP coaching charge revenue | Noel's team |
-| **ASC-CIP** | ASC for CIP | Our project — allocates CIP coaching charge revenue | Noel's team |
+| **ASCA** | ASC for CAP | Our project — allocates CAP coaching charge revenue | Noel's team |
+| **ASCI** | ASC for CIP | Our project — allocates CIP coaching charge revenue | Noel's team |
 
 **The upstream projects create the charges. Our projects allocate the revenue.**
 
@@ -53,8 +64,8 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 |---|---|---|---|---|
 | **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia | Jasser-san |
 | **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Jasser-san |
-| **ASC-CAP** (first) | Noel Palo | — | Throy Embudo | Patrick-san |
-| **ASC-CIP** (second) | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
+| **ASCA** (first) | Noel Palo | — | Throy Embudo | Patrick-san |
+| **ASCI** (second) | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
 | **CDB** (upstream) | Paolo | — | Efren | Patrick-san |
 | **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
 | **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |

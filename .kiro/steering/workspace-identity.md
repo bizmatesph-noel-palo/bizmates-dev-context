@@ -12,13 +12,15 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 
 ## Active Projects
 
-| Project Code | Code Repo(s) | Artifacts Directory | Status | Deadline |
-|---|---|---|---|---|
-| ASCM | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
-| ASCH | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | ❌ Cancelled (2026-08-07) — pivoted to ASC-CAP/CIP | — |
-| ASC for CAP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CAP/` | Active — Scenario D proposed | 2026/12/17 |
-| ASC for CIP | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/technical-notes/research/CIP/` | Active — reuses ASC-CAP foundation | 2026/12/17 |
-| CDB | `MBTI_backend` | `projects/asch/technical-notes/research/CDB/` | Active (separate team) | Before ASCH 10/1 |
+| Project Code | JIRA | Code Repo(s) | Artifacts Directory | Status | Deadline |
+|---|---|---|---|---|---|
+| ASC | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
+| ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | ❌ Cancelled (2026-08-07) | — |
+| ASCA | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asca/` | Active — builds shared foundation | 2026/12/17 |
+| ASCI | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asci/` | Active — reuses ASCA foundation | 2026/12/17 |
+| CDB | — | `MBTI_backend` | — | Active (upstream, Patrick-san's team) | — |
+
+**Note:** ASC is the JIRA code for ASCM (the original project was just "ASC" before subsequent projects were created).
 
 ## Cross-Project Resource Plan (from meeting 2026-07-28, updated 2026-08-12)
 
@@ -29,16 +31,16 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | Project | Lead | Sub-Lead | Developer(s) | Status |
 |---|---|---|---|---|
 | ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ❌ Cancelled (2026-08-07) |
-| ASC for CAP | Noel Palo | — | Throy Embudo | ✅ Active (builds foundation) |
-| ASC for CIP | Noel Palo (overall) | Orlino Monares | Cristoff Danganan | Active (reuses CAP foundation) |
-| CDB (upstream) | Paolo | — | Efren | ✅ Active — originally needed by ASCH; continues independently |
+| ASCA (ASC for CAP) | Noel Palo | — | Throy Embudo | ✅ Active (builds foundation) |
+| ASCI (ASC for CIP) | Noel Palo (overall) | Orlino Monares | Cristoff Danganan | Active (reuses ASCA foundation) |
+| CDB (upstream) | Paolo | — | Efren | ✅ Active |
 | CAP (upstream) | Keith Manuntag | — | Terry Balahadia | Active (Jasser-san's team) |
 | CIP (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Active (Jasser-san's team) |
 
 **Planned timeline:**
 - ASCH: ❌ Cancelled (2026-08-07)
-- ASC for CAP: starts ~September, deadline Dec 17 (builds shared foundation)
-- ASC for CIP: starts after ASC-CAP, deadline Dec 17 (reuses foundation)
+- ASCA (ASC for CAP): starts ~September, deadline Dec 17 (builds shared foundation)
+- ASCI (ASC for CIP): starts after ASCA, deadline Dec 17 (reuses foundation)
 - CAP/CIP upstream (Jasser-san's teams): production late Nov / early Dec
 
 ## Routing Rules
