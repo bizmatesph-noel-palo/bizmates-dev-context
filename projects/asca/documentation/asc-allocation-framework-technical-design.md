@@ -1,10 +1,16 @@
 # ASC Allocation Framework — Technical Design Document
 
-**Date:** 2026-08-13  
-**Author:** Noel Palo, Lead Developer  
-**Assisted by:** Kiro (AI-assisted code analysis and document generation)  
-**Status:** REFERENCE — consolidated technical design for ASC-CAP and ASC-CIP  
-**Audience:** Development team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM)
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | Technical Design |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated, references aligned) |
+| **Author** | Noel Palo, Lead Developer |
+| **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
+| **Status** | Active |
+| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM) |
+| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
 
 ---
 
