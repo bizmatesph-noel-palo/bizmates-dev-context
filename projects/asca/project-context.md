@@ -34,26 +34,27 @@
 
 ---
 
-## ASCM Prep Phase (DEVOPS-6415)
+## ASCM Refactor (DEVOPS-6415)
 
 Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 - **Epic:** [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415)
 - **Link ticket:** [ASCA-7](https://bizmates.atlassian.net/browse/ASCA-7)
-- **Effort:** 5–7 days (no blockers — can start immediately)
+- **Effort:** 3–5 days (no blockers — can start immediately)
 - **Commits go under:** Sub-tickets/stories of DEVOPS-6415
 
-### Scope
+### Scope (DEVOPS-6415 only — refactoring existing code)
 
 | Task | Why (feeds into ASCA) |
 |---|---|
-| Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | Enables conditional CSV inclusion for AllocationDetail |
+| Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | Refactor existing duplication — shared service reused by ASCA/ASCI |
 | Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip | Fix latent bug — monthly plans shouldn't enter daily log via correction |
 | Fix DataCorrectionLogic drift: add missing fields (tax_free, country_id, gross_amount) | Align with CommonUtil schema |
 | Unit test extracted service + corrected DataCorrectionLogic | Verify no regression |
 | Smoke test all 3 batches on DEV04 (baseline) | Establish "before" state |
 | Document baseline CSV file list | Know what's in the zip today |
-| Create test data seeder for CAP/CIP charges | Mock upstream data for ASCA development |
+
+**NOT in DEVOPS-6415 (belongs in ASCA Spec 01):** DB migrations, models, enums, test data seeder, reference price seeder — these are new features, not maintenance.
 
 ---
 
