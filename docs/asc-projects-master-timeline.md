@@ -60,15 +60,15 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 **Development Teams:**
 
-| Project | Lead | Sub-Lead | Developer(s) | SDM |
-|---|---|---|---|---|
-| **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia | Jasser-san |
-| **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Jasser-san |
-| **ASCA** (first) | Noel Palo | — | Throy Embudo | Patrick-san |
-| **ASCI** (second) | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
-| **CDB** (upstream) | Paolo | — | Efren | Patrick-san |
-| **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
-| **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |
+| Project | Lead | Sub-Lead | Developer(s)              | SDM |
+|---|---|---|---------------------------|---|
+| **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia           | Jasser-san |
+| **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho        | Jasser-san |
+| **ASCA** (first) | Noel Palo | — | Throy Embudo              | Patrick-san |
+| **ASCI** (second) | Noel Palo | Orlino Monares | Cristoff Danganan         | Patrick-san |
+| **CDB** (upstream) | Paolo Sandoval| — | Efren Petarte | Patrick-san |
+| **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026)  | Patrick-san |
+| **ASCH** (cancelled) | Noel Palo | — | —                         | Patrick-san |
 
 ---
 
@@ -122,40 +122,50 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 ## Implementation Phases
 
-### Phase 0: ASCM Prep (Pre-W0, 5–7 days — no blockers)
+### Phase 0: ASCM Refactor (DEVOPS-6415) — Pre-W0, 3–5 days
 
 **Billed under:** [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) (maintenance). Linked to ASCA via [ASCA-7](https://bizmates.atlassian.net/browse/ASCA-7).
 
-| Task | Effort |
-|---|---|
-| Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | 1–2 days |
-| Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip + missing fields | 0.5–1 day |
-| Unit test + smoke test all 3 batches on DEV04 (baseline) | 1 day |
-| Document baseline CSV file list | 0.5 days |
-| Create test data seeder for CAP/CIP charges | 1 day |
-| Review DB design, prepare migration plan | 0.5 days |
+Scope: Refactoring and fixing EXISTING code only. No new features, no new tables. Includes regression testing.
 
-### Phase 1: Shared Foundation (W0–W3)
+| Task | Effort | Why |
+|---|---|---|
+| Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip + missing fields | 0.5–1 day | Fix latent bug — isolated, no dependencies |
+| Extract BatchReportDeliveryService (from 3 Logic files) | 1–2 days | Refactor existing duplication — shared service for ASCA/ASCI |
+| Unit test extracted service + corrected DataCorrectionLogic | 0.5 days | Verify no regression |
+| **ASCM Refactor Regression Testing:** Smoke test all 3 batches on DEV04 | 0.5 days | Verify existing commands work after refactoring |
+| Document baseline CSV file list (what's in the zip today) | 0.5 days | Reference for ASCA |
+
+### Phase 1: Foundation — ASCA Spec 01 (W0–W3)
+
+**Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
+
+Scope: New DB tables, models, enums, services. The shared infrastructure that both ASCA and ASCI use.
 
 | Step | What | Blocked by |
 |---|---|---|
-| 1 | 10 migrations + 1 view + structure tests | ✅ Unblocked (O-3 resolved: `log_alloc_*`) |
+| 1 | 10 migrations + 1 view + structure tests (`log_alloc_*`) | ✅ Unblocked (O-3 resolved) |
 | 2 | Models, enums, run lifecycle service | None |
-| 3 | Reference-price master + price resolution | None |
+| 3 | Reference-price master + price resolution + seeder | None |
 | 4 | Detection strategy + bundle generation | None (O-1 resolved) |
 | 5 | Allocation engine + ΣN computation + validations | None |
+| 6 | Test data seeder for CAP/CIP charges (mock upstream) | None |
 
-### Phase 2: ASC-CAP (W3–W6)
+### Phase 2: CAP Integration — ASCA Spec 02+ (W3–W6)
+
+**Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
 
 | Step | What |
 |---|---|
-| 6 | Injection into CommonUtil (Option 1 Overwrite) |
-| 7 | AllocationDetail CSV generation + config |
-| 8 | DataCorrectionLogic: add `allocateForCharge()` call |
-| 9 | Refund allocation (record_kind = 1) |
-| 10 | DEV04 full pipeline testing (Pre + Final) |
+| 7 | Injection into CommonUtil (Option 1 Overwrite) |
+| 8 | AllocationDetail CSV generation + config |
+| 9 | DataCorrectionLogic: add `allocateForCharge()` call |
+| 10 | Refund allocation (record_kind = 1) |
+| 11 | DEV04 full pipeline testing (Pre + Final) |
 
-### Phase 3: ASC-CIP (W6–W7)
+### Phase 3: CIP Integration — ASCI (W6–W7)
+
+**Billed under:** [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog)
 
 | Step | What |
 |---|---|
