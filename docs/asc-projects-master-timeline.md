@@ -15,7 +15,9 @@
 
 ---
 
-**Deadline:** ASCA + ASCI = 2026/12/17
+**Deadline:** ASCA + ASCI = 2026/12/17  
+**Start date:** Aug 24, 2026 (Monday) — per Kuroda-san's ASAP directive.  
+**Work schedule:** Mon–Fri only. PH holidays skipped. No weekend work.
 
 ### JIRA Projects
 
@@ -34,12 +36,16 @@
 
 ```
 ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
-ASCM Refactor (DEVOPS-6415):         W0 (3–5 days) — prep + regression
-ASCA (Foundation + CAP Integration): W1–W7 — builds shared framework + CAP-specific logic
-ASCI (CIP Integration):              W7–W8 — plugs CIP into working framework
-QA (overlapping):                    W6–W11 — test planning, execution, regression
+ASCM Refactor (DEVOPS-6415):         Aug 24–28 (W0) — prep + regression
+ASCM QA Verification:                Aug 31–Sep 5 (W1) — gate to Foundation
+ASCA (Foundation + CAP Integration): Sep 7–Oct 30 (W2–W9) — shared framework + CAP logic
+ASCI (CIP Integration):              Nov 2–13 (W10–W11) — plugs CIP into working framework
+QA (overlapping):                    Oct 5–Dec 11 (W6–W15) — planning, execution, regression
+Buffer:                              Nov 16–Dec 11 (W12–W15) — absorbed into QA schedule
 Upstream CAP (Keith's team):         In progress ════════════════════ Late Nov / Early Dec
 Upstream CIP (Jefferson's team):     In progress ════════════════════ Late Nov / Early Dec
+Production deadline:                 Dec 17
+First real batch:                    Jan 1, 2027
 ```
 
 **What we're building:** A shared allocation framework that splits Coaching charge revenue between Coaching and App products, injected into the existing accounting batch commands.
@@ -135,15 +141,15 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 | Metric | Value | Confidence |
 |---|---|---|
-| **ASCM Refactor (DEVOPS-6415)** | 3–5 days | High — no blockers, can start immediately |
+| **ASCM Refactor (DEVOPS-6415)** | 3–5 days | High — starts Aug 24 |
 | **ASC-CAP Dev (incl. shared foundation)** | 4–5 weeks (Noel + Throy) | Medium-High — code analyzed, injection points identified |
 | **ASC-CIP Dev (reuses foundation)** | 1–1.5 weeks (same team or Orlino + Cristoff) | High — only adds strategy + config |
 | **Total Dev** | 5.5–6.5 weeks | Medium-High |
 | **QA** | 4–5 weeks (overlapping with dev) | Medium |
-| **End-to-end** | ~11 weeks (W0 refactor → W11 sign-off) | Medium |
+| **End-to-end** | ~11 weeks (W0–W11) | Medium |
+| **Available time** | 17 weeks / 80 workdays (Aug 24 → Dec 17) | — |
+| **Buffer** | ~5 weeks (~25 workdays) | High — very comfortable margin |
 | **Deadline** | 2026/12/17 | Fixed |
-| **Latest start (comfortable)** | Mid-September | Gives 1 week buffer |
-| **Latest start (tight)** | Early October | 3 days buffer ⚠️ |
 | **First production batch** | 2027/01/01 | Fixed |
 
 ---
@@ -165,7 +171,7 @@ Upstream CIP (Jefferson's team):     In progress ══════════�
 
 ## Implementation Phases — Detailed
 
-### Phase 0: ASCM Refactor (DEVOPS-6415) — W0, 3–5 days
+### Phase 0: ASCM Refactor (DEVOPS-6415) — W0, Aug 24–28 (3–5 days)
 
 **Billed under:** [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) (maintenance). Linked to ASCA via [ASCA-7](https://bizmates.atlassian.net/browse/ASCA-7).
 
@@ -194,7 +200,7 @@ Scope: Refactoring and fixing EXISTING code only. No new features, no new tables
 
 ---
 
-### Phase 1: ASC Shared Foundation — W1–W4
+### Phase 1: ASC Shared Foundation — W2–W5 (Sep 7 – Oct 2)
 
 **Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
 
@@ -211,7 +217,7 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 ---
 
-### Phase 2: ASCA CAP Integration — W4–W7
+### Phase 2: ASCA CAP Integration — W6–W9 (Oct 5 – Oct 30)
 
 **Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
 
@@ -226,7 +232,7 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 ---
 
-### Phase 3: ASCI CIP Integration — W7–W8
+### Phase 3: ASCI CIP Integration — W10–W11 (Nov 2 – Nov 13)
 
 **Billed under:** [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog)
 
@@ -238,7 +244,7 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 ---
 
-### Phase 4: Post-Release — W9+
+### Phase 4: Post-Release — W12+ (Nov 16+)
 
 | Step | What | Priority |
 |---|---|---|
@@ -250,122 +256,143 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 ## Development Gantt
 
 ```
-Upstream (other teams):
-  CAP project  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ → Prod: late Nov / early Dec
-  CIP project  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ → Prod: late Nov / early Dec
+                          Aug    Sep         Oct              Nov         Dec
+                          24     |           |                |           17
+Upstream:                 ║══════════════════════════════════════════════║
+  CAP project             ║━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║→ Prod late Nov
+  CIP project             ║━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━║→ Prod late Nov
 
-Dev Team:
-  ASCM Refactor (DEVOPS-6415)  ━━━━┓
-  ASCM Refactor Regression          ┣━┓
-  ASC Shared Foundation                 ┣━━━━━━━━━━━━┓
-  ASCA CAP Integration                               ┣━━━━━━━━━━━━┓
-  ASCI CIP Integration                                              ┣━━━━┓
-  QA (CAP scenarios)                                  ┣━━━━━━━━━━━━━━━━━━┓
-  QA (CIP scenarios)                                                 ┣━━━━━━━━┓
-  Final Regression                                                            ┣━━━━┓
-  Buffer                                                                            ┣━━ → Dec 17
+Dev Team:                 ║══════════════════════════════════════════════║
+  ASCM Refactor           ║■■■■┓                                        ║
+  QA Verification              ┣■┓                                      ║
+  Foundation                     ┣━━━━━━━━━━━━━━━━┓                     ║
+  ASCA CAP Integration                            ┣━━━━━━━━━━━━━━━━┓    ║
+  ASCI CIP Integration                                              ┣━━━┓║
+  QA (CAP scenarios)                          ┣━━━━━━━━━━━━━━━━━━━━━━━━━║
+  QA (CIP scenarios)                                            ┣━━━━━━━║
+  Regression + Sign-off                                              ┣━━║
+                                                                     Dec 17
 ```
 
 ### Detailed Dev Gantt (Week by Week)
 
-| Category | Owner | Task | W0 | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 |
+| Category | Owner | Task | W0 (Aug 24) | W1 (Aug 31)🔴 | W2 (Sep 7) | W3 (Sep 14) | W4 (Sep 21) | W5 (Sep 28) | W6 (Oct 5) | W7 (Oct 12) | W8 (Oct 19) | W9 (Oct 26) | W10 (Nov 2)🔴 | W11 (Nov 9) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **ASCM Refactor** | Lead | Fix DataCorrectionLogic drift | ■ | | | | | | | | | | | |
 | **ASCM Refactor** | Lead | Extract BatchReportDeliveryService (3 files) | ■ | | | | | | | | | | | |
 | **ASCM Refactor** | Lead | Unit test extracted service | ■ | | | | | | | | | | | |
 | **ASCM Regression** | Lead | Smoke test Pre + Final + Correction on DEV04 | ■ | | | | | | | | | | | |
-| **ASCM Regression** | Lead | Collect generated CSVs/reports (baseline) | ■ | | | | | | | | | | | |
-| **ASCM Regression** | QA Team | Manual verification: compare reports against expected | | ■ | | | | | | | | | | |
-| **Foundation** | Dev 1 | DB migrations (10 tables + 1 view) + structure tests | | ■ | ■ | | | | | | | | | |
-| **Foundation** | Lead | Models / enums / run lifecycle service | | | ■ | | | | | | | | | |
-| **Foundation** | Lead | Reference-price master + price resolution + seeder | | | | ■ | | | | | | | | |
-| **Foundation** | Dev 1 | Allocation engine + ΣN computation + validations | | | | ■ | ■ | | | | | | | |
-| **Foundation** | Lead | Test data seeder (mock CAP/CIP charges) | | | | ■ | | | | | | | | |
-| **ASCA Integration** | Lead | Injection into CommonUtil (Option 1 Overwrite) | | | | | ■ | | | | | | | |
-| **ASCA Integration** | Dev 1 | CAP Detection Strategy + bundle generation | | | | | ■ | | | | | | | |
-| **ASCA Integration** | Lead | AllocationDetail CSV generation + config | | | | | | ■ | | | | | | |
-| **ASCA Integration** | Dev 1 | DataCorrectionLogic: add `allocateForCharge()` | | | | | | ■ | | | | | | |
-| **ASCA Integration** | Lead + Dev 1 | Refund allocation (record_kind = 1) | | | | | | | ■ | | | | | |
-| **ASCA Integration** | Lead + Dev 1 | ASCA dev testing on DEV04 (full pipeline) | | | | | | | | ■ | | | | |
-| **ASCI Integration** | Dev 1 (or Orlino + Cristoff) | CIP Detection Strategy + reference prices | | | | | | | | ■ | ■ | | | |
-| **ASCI Integration** | Lead | ASCI dev testing on DEV04 | | | | | | | | | ■ | | | |
-| **Post-release** | Dev 1 | Reversal (record_kind = 2) | | | | | | | | | | ■ | | |
-| **Buffer** | All | Bug fixes from QA / environment issues | | | | | | | | | | | ■ | ■ |
+| **ASCM Regression** | QA Team | Manual verification: compare reports | | ■ | | | | | | | | | | |
+| **Foundation** | Dev 1 | DB migrations (10 tables + 1 view) + structure tests | | | ■ | ■ | | | | | | | | |
+| **Foundation** | Lead | Models / enums / run lifecycle service | | | | ■ | | | | | | | | |
+| **Foundation** | Lead | Reference-price master + price resolution + seeder | | | | | ■ | | | | | | | |
+| **Foundation** | Dev 1 | Allocation engine + ΣN computation + validations | | | | | ■ | ■ | | | | | | |
+| **Foundation** | Lead | Test data seeder (mock CAP/CIP charges) | | | | | | ■ | | | | | | |
+| **ASCA Integration** | Lead | Injection into CommonUtil (Option 1 Overwrite) | | | | | | | ■ | | | | | |
+| **ASCA Integration** | Dev 1 | CAP Detection Strategy + bundle generation | | | | | | | ■ | | | | | |
+| **ASCA Integration** | Lead | AllocationDetail CSV generation + config | | | | | | | | ■ | | | | |
+| **ASCA Integration** | Dev 1 | DataCorrectionLogic: add `allocateForCharge()` | | | | | | | | ■ | | | | |
+| **ASCA Integration** | Lead + Dev 1 | Refund allocation (record_kind = 1) | | | | | | | | | ■ | | | |
+| **ASCA Integration** | Lead + Dev 1 | ASCA dev testing on DEV04 (full pipeline) | | | | | | | | | | ■ | | |
+| **ASCI Integration** | Dev 1 (or Orlino + Cristoff) | CIP Detection Strategy + reference prices | | | | | | | | | | | ■ | ■ |
+| **ASCI Integration** | Lead | ASCI dev testing on DEV04 | | | | | | | | | | | | ■ |
+
+🔴 = week with PH holiday (1 lost workday): W1 = National Heroes Day (Aug 31), W10 = All Souls' Day (Nov 2)
 
 ---
 
 ## QA Gantt
 
-| Category | Owner | Task | W0 | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| QA | QA Team | ASCM Refactor: Manual report verification | | ■ | | | | | | | | | | |
-| QA | QA Team | Test planning + strategy | | | ■ | ■ | | | | | | | | |
-| QA | QA Team | Test case creation + data prep (CAP + CIP) | | | | ■ | ■ | ■ | | | | | | |
-| QA | Miko | Test execution: ASCA CAP scenarios (10 cases) | | | | | | | ■ | ■ | ■ | | | |
-| QA | Glenn | Test execution: ASCI CIP scenarios (11 cases) | | | | | | | | | ■ | ■ | | |
-| QA | QA Team | Integration testing (cross-project, failure isolation) | | | | | | | | | | ■ | ■ | |
-| QA | QA Team | Regression testing | | | | | | | | | | | ■ | ■ |
-| QA | Dev + QA | Bug fix / retest (ongoing) | | | | | | ■ | ■ | ■ | ■ | ■ | ■ | |
-| QA | QA Team | Release sign-off | | | | | | | | | | | | ■ |
+| Category | Owner | Task | W1 (Aug 31) | W2 (Sep 7) | W3 (Sep 14) | W4 (Sep 21) | W5 (Sep 28) | W6 (Oct 5) | W7 (Oct 12) | W8 (Oct 19) | W9 (Oct 26) | W10 (Nov 2)🔴 | W11 (Nov 9) | W12 (Nov 16) | W13 (Nov 23) | W14 (Nov 30)🔴 | W15 (Dec 7)🔴 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| QA | QA Team | ASCM Refactor: Manual report verification | ■ | | | | | | | | | | | | | | |
+| QA | QA Team | Test planning + strategy | | ■ | ■ | | | | | | | | | | | | |
+| QA | QA Team | Test case creation + data prep (CAP + CIP) | | | ■ | ■ | ■ | | | | | | | | | | |
+| QA | Miko | Test execution: ASCA CAP scenarios (10 cases) | | | | | | | ■ | ■ | ■ | ■ | | | | | |
+| QA | Glenn | Test execution: ASCI CIP scenarios (11 cases) | | | | | | | | | | | ■ | ■ | | | |
+| QA | QA Team | Integration testing (cross-project, failure isolation) | | | | | | | | | | | | | ■ | ■ | |
+| QA | QA Team | Regression testing | | | | | | | | | | | | | | | ■ |
+| QA | Dev + QA | Bug fix / retest (ongoing) | | | | | | ■ | ■ | ■ | ■ | ■ | ■ | ■ | ■ | ■ | |
+| QA | QA Team | Release sign-off | | | | | | | | | | | | | | | ■ |
 
-**QA total:** ~7 weeks overlapping with dev. Active testing: W6–W11.
+🔴 = week with PH holiday: W10 = All Souls' Day (Nov 2), W14 = Bonifacio Day (Nov 30), W15 = Immaculate Conception (Dec 8)
+
+**QA total:** W1–W15 (~15 weeks including planning). Active testing: W7–W15. Buffer absorbed into QA schedule.
 
 ---
 
 ## Calendar Mapping
 
-### Scenario A: Start Sep 15 (Recommended)
+**Start date:** Aug 24, 2026 (Monday) — per Kuroda-san's ASAP directive.  
+**Work schedule:** Mon–Fri only. No weekends. PH holidays skipped.  
+**Total available workdays to deadline:** 80 days (Aug 24 – Dec 17)  
+**Project needs:** ~55 workdays (11 weeks × 5 days) — leaves ~25 workdays (~5 weeks) buffer.
 
-| Actual Dates | Week | Phase |
-|---|---|---|
-| Sep 15–19 | W0 | ASCM Refactor (DEVOPS-6415) |
-| Sep 22–26 | W1 | ASC Shared Foundation starts + ASCM QA verification |
-| Sep 29–Oct 3 | W2 | Foundation (models, enums, run lifecycle) |
-| Oct 6–10 | W3 | Foundation (engine, reference prices) |
-| Oct 13–17 | W4 | Foundation complete + ASCA CAP Integration starts |
-| Oct 20–24 | W5 | ASCA Integration (injection, CSV) |
-| Oct 27–31 | W6 | ASCA Integration (refunds, allocateForCharge) |
-| Nov 3–7 | W7 | ASCA dev testing + ASCI CIP Integration starts |
-| Nov 10–14 | W8 | ASCI CIP testing + QA starts CAP scenarios |
-| Nov 17–21 | W9 | QA CAP scenarios |
-| Nov 24–28 | W10 | QA CIP + Integration testing |
-| Dec 1–5 | W11 | Regression testing + sign-off |
-| Dec 8–12 | — | **Buffer (5 business days)** |
-| **Dec 17** | — | **Production deadline** |
-| Late Nov–Early Dec | — | Upstream CAP/CIP goes to production |
-| **Jan 1, 2027** | — | **First real ASC batch run** |
+### PH Holidays in Project Period (Workdays Lost)
 
-### Scenario B: Start Oct 1 (Tight)
+| Date | Day | Holiday | Impact |
+|---|---|---|---|
+| Aug 31 | Mon | National Heroes Day | W1 reduced to 4 days |
+| Nov 2 | Mon | All Souls' Day | W10 reduced to 4 days |
+| Nov 30 | Mon | Bonifacio Day | W14 reduced to 4 days |
+| Dec 8 | Tue | Feast of the Immaculate Conception | W15 reduced to 4 days |
 
-| Milestone | Calendar Date | Notes |
-|---|---|---|
-| ASCM Refactor starts | Oct 1 | |
-| Foundation starts | Oct 6 | |
-| Foundation complete | Oct 27 | |
-| ASCA CAP dev complete | Nov 17 | |
-| ASCI CIP dev complete | Nov 24 | |
-| QA sign-off | Dec 15 | |
-| **Buffer** | **Dec 15–17 (2 days)** | ⚠️ Very tight |
-| **Deadline** | **Dec 17** | |
+### Week-by-Week Calendar (Actual Dates)
 
-⚠️ Starting Oct 1 leaves only 2 business days buffer. **Strongly recommend Sep 15 start.**
+| Week | Dates | Workdays | Phase | Notes |
+|---|---|---|---|---|
+| **W0** | Aug 24–28 | 5 | ASCM Refactor (DEVOPS-6415) | Start date. Full week. |
+| **W1** | Aug 31–Sep 5 | 4 | ASCM Refactor → QA verification | 🔴 Aug 31 = National Heroes Day (Mon off) |
+| **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | |
+| **W3** | Sep 14–18 | 5 | Foundation: models, enums, run lifecycle | |
+| **W4** | Sep 21–25 | 5 | Foundation: reference prices, engine | |
+| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | |
+| **W6** | Oct 5–9 | 5 | ASCA: injection + detection | |
+| **W7** | Oct 12–16 | 5 | ASCA: CSV, DataCorrection allocateForCharge | |
+| **W8** | Oct 19–23 | 5 | ASCA: refund allocation | |
+| **W9** | Oct 26–30 | 5 | ASCA dev testing (DEV04) + ASCI starts | |
+| **W10** | Nov 2–6 | 4 | ASCI CIP integration | 🔴 Nov 2 = All Souls' Day (Mon off) |
+| **W11** | Nov 9–13 | 5 | ASCI dev testing + QA CAP scenarios | Dev complete |
+| — | — | — | **--- Buffer zone starts below ---** | |
+| **W12** | Nov 16–20 | 5 | QA: CAP + CIP scenario testing | Buffer / QA |
+| **W13** | Nov 23–27 | 5 | QA: Integration testing | Buffer / QA |
+| **W14** | Nov 30–Dec 4 | 4 | QA: Regression | 🔴 Nov 30 = Bonifacio Day (Mon off) |
+| **W15** | Dec 7–11 | 4 | QA: Final regression + sign-off | 🔴 Dec 8 = Immaculate Conception (Tue off) |
+| **W16** | Dec 14–17 | 4 | **Production release** | Deadline week (Mon–Thu) |
+
+### Key Observations
+
+- **Dev complete by W11 (Nov 13)** — 5 full weeks before the Dec 17 deadline
+- **QA has W6–W15** (~10 weeks overlapping with dev + buffer) for test planning, execution, and regression
+- **Buffer is generous:** W12–W15 (4 weeks) available for QA overflow, bug fixes, and surprises
+- **Holiday impact is minimal:** 4 lost workdays spread across the project. Only W1 (Refactor week) and W10 (CIP) are affected during dev. The remaining 2 holidays hit buffer/QA weeks.
+- **Worst case:** Even if dev slips 2 weeks, QA still has W13–W15 (3 weeks) for testing before deadline
+
+### Comparison to Previous Scenarios
+
+| Start | Dev Complete | Buffer to Deadline | Verdict |
+|---|---|---|---|
+| **Aug 24 (actual)** | **~Nov 13** | **~5 weeks** | ✅ Very comfortable |
+| Sep 15 (old recommendation) | ~Dec 5 | ~1 week | Adequate |
+| Oct 1 (latest acceptable) | ~Dec 15 | 2 days | ⚠️ No room for error |
 
 ---
 
 ## Milestones
 
-| Milestone | Week | Sep 15 Start | Notes |
+| Milestone | Week | Date | Notes |
 |---|---|---|---|
-| ASCM Refactor complete | W0 | Sep 19 | Can start immediately — no blockers |
-| ASCM QA verification passes | W1 | Sep 26 | Gate to Foundation phase |
-| ASC Shared Foundation complete | W4 | Oct 17 | All tables + engine ready |
-| ASCA CAP dev complete | W7 | Nov 7 | Full pipeline tested on seeded data |
-| ASCI CIP dev complete | W8 | Nov 14 | CIP tested on seeded data |
-| QA active testing begins | W6 | Oct 27 | CAP scenarios |
+| **Project starts** | **W0** | **Aug 24** | ASCM Refactor begins |
+| ASCM Refactor complete | W0 | Aug 28 | No blockers |
+| ASCM QA verification passes | W1 | Sep 5 | Gate to Foundation (1 day lost to holiday) |
+| ASC Shared Foundation complete | W5 | Oct 2 | All tables + engine ready |
+| ASCA CAP dev complete | W9 | Oct 30 | Full pipeline tested on seeded data |
+| ASCI CIP dev complete | W11 | Nov 13 | CIP tested on seeded data |
+| QA active testing begins | W6 | Oct 5 | CAP scenarios (parallel with dev) |
 | Upstream CAP/CIP go to prod | — | Late Nov / early Dec | Real charges start flowing |
-| QA sign-off | W11 | Dec 5 | All regression passing |
-| **ASC production release** | — | **Dec 10–12** | Ready before deadline |
-| **Buffer ends** | — | **Dec 17** | Production deadline |
+| QA sign-off | W15 | Dec 12 | All regression passing |
+| **ASC production release** | **W16** | **Dec 14–17** | **Ready for deadline** |
+| **Deadline** | — | **Dec 17** | |
 | First real batch run | — | Jan 1, 2027 | On real upstream charges |
 
 ---
@@ -460,13 +487,18 @@ ASC is NOT blocked by upstream timelines:
 | 2026/08/13 | CIP project spec received — new product 10022, plans 1028–1032 |
 | 2026/08/14 | Option 1 (Overwrite) proposed. Idempotency design (ΣN). |
 | 2026/08/17 | O-3/O-5/O-6 resolved. JIRA projects created. Bundle grouping (order_no). |
-| 2026/08/20 | Timeline consolidated into single master document. |
-| TBD | **Start date confirmed → ASCM Prep starts (DEVOPS-6415)** |
-| TBD + 1 week | **Foundation starts (Step 1)** |
-| ~W7 after start | **ASC-CAP dev complete** |
-| ~W8 after start | **ASC-CIP dev complete** |
+| 2026/08/20 | Timeline consolidated. Kuroda-san directive: start ASAP. |
+| **2026/08/24** | **W0 — ASCM Refactor starts (DEVOPS-6415)** |
+| 2026/08/31 | 🔴 National Heroes Day (W1 loses 1 day) |
+| ~2026/09/05 | ASCM QA verification passes → Foundation starts |
+| ~2026/10/02 | ASC Shared Foundation complete |
+| ~2026/10/30 | ASCA CAP dev complete |
+| ~2026/11/02 | 🔴 All Souls' Day (W10 loses 1 day) |
+| ~2026/11/13 | ASCI CIP dev complete |
 | Late Nov | Upstream CAP/CIP go to production |
-| ~W11 after start | QA sign-off |
+| 2026/11/30 | 🔴 Bonifacio Day |
+| 2026/12/08 | 🔴 Feast of Immaculate Conception |
+| ~2026/12/12 | QA sign-off |
 | **2026/12/17** | **Production deadline** |
 | **2027/01/01** | **First real batch run** |
 
@@ -474,10 +506,12 @@ ASC is NOT blocked by upstream timelines:
 
 ## Next Steps (as of 2026-08-20)
 
-1. **Patrick-san:** Confirm start date and team availability.
-2. **Noel:** Confirm P-3 with CAP team (Keith/Terry) — will coaching product_id change?
-3. **Noel:** Begin ASCM Prep (DEVOPS-6415) — all blockers cleared, can start immediately.
-4. **Noel:** After Prep → Step 1 (migrations with `log_alloc_*` prefix).
+**Start date: Aug 24, 2026.** All blockers cleared.
+
+1. **Noel:** Begin ASCM Refactor (DEVOPS-6415) on Aug 24 — first action on the critical path.
+2. **Noel:** Confirm P-3 with CAP team (Keith/Terry) — will coaching product_id change? (non-blocking, but good to settle in W0)
+3. **Patrick-san:** Confirm Throy's availability for W2 (Foundation phase — migrations + allocation engine).
+4. **Noel:** After Refactor regression passes (~Sep 5) → Step 1 (migrations with `log_alloc_*` prefix).
 
 ---
 
