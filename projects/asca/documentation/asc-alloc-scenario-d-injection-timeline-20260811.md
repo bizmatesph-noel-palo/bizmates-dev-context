@@ -1,5 +1,18 @@
 # ASC Allocation Framework — Scenario D (Injection Approach)
 
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | Project Estimation |
+| **Date** | 2026-08-11 (Created) · 2026-08-17 (aligned with Option 1 + JIRA codes + parallel flow) |
+| **Author** | Noel Palo, Lead Developer |
+| **Assisted by** | Kiro (code analysis, estimation modeling, document generation) |
+| **Status** | Historical |
+| **Audience** | Dev team, Patrick-san (SDM), Kuroda-san (PM) |
+| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
+| **Superseded by** | `docs/asc-projects-master-timeline.md` (timeline content consolidated there) |
+
 > ⚠️ **HISTORICAL REFERENCE ONLY** (as of 2026-08-20)
 >
 > This document is the original Scenario D proposal. Its timeline, Gantt, calendar mapping, and QA schedule have been **consolidated into the master timeline:**
@@ -8,10 +21,8 @@
 >
 > This file is preserved for historical context — the rationale, Scenario C vs D comparison, and lead dev assessment remain useful background. For current schedule and task tracking, always refer to the master timeline.
 
-**Date:** 2026-08-11 (Created) · 2026-08-17 (aligned with Option 1 + JIRA codes + parallel flow)  
-**Author:** Noel Palo, Lead Developer  
-**Assisted by:** Kiro (AI-assisted analysis, code review, and document generation)  
-**Status:** HISTORICAL — timeline consolidated into `docs/asc-projects-master-timeline.md`  
+---
+
 **Context:** Based on ASCM experience and code analysis of existing accounting commands.
 
 ### Terminology
