@@ -1,9 +1,17 @@
 # ASC Allocation Framework — Scenario D (Injection Approach)
 
+> ⚠️ **HISTORICAL REFERENCE ONLY** (as of 2026-08-20)
+>
+> This document is the original Scenario D proposal. Its timeline, Gantt, calendar mapping, and QA schedule have been **consolidated into the master timeline:**
+>
+> **→ `docs/asc-projects-master-timeline.md`** (single authoritative timeline for ASCM Refactor, ASCA, and ASCI)
+>
+> This file is preserved for historical context — the rationale, Scenario C vs D comparison, and lead dev assessment remain useful background. For current schedule and task tracking, always refer to the master timeline.
+
 **Date:** 2026-08-11 (Created) · 2026-08-17 (aligned with Option 1 + JIRA codes + parallel flow)  
 **Author:** Noel Palo, Lead Developer  
 **Assisted by:** Kiro (AI-assisted analysis, code review, and document generation)  
-**Status:** AGREED — confirmed with Kuroda-san  
+**Status:** HISTORICAL — timeline consolidated into `docs/asc-projects-master-timeline.md`  
 **Context:** Based on ASCM experience and code analysis of existing accounting commands.
 
 ### Terminology

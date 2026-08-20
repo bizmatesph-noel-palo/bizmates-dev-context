@@ -61,7 +61,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 ## What ASCA Builds
 
 1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract BatchReportDeliveryService
-2. **Shared Foundation:** DB migrations (`log_alloc_*` or `asc_alloc_*` — O-3 pending), models, enums, run lifecycle, allocation engine
+2. **Shared Foundation:** DB migrations (`log_alloc_*` for batch tables, `mst_alloc_*` for reference prices — O-3 resolved), models, enums, run lifecycle, allocation engine
 3. **CAP-specific:** Detection for plans 1016–1027, reference prices (App ¥3,980, Coaching ¥19,800/¥39,600), AllocationDetail CSV
 4. **Injection:** Allocation call in `CommonUtil::createDailyRateCalculation()` + `DataCorrectionLogic`
 
@@ -83,9 +83,9 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 | Document | Location |
 |---|---|
 | Technical design (authoritative) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
-| Scenario D timeline + Gantt | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
-| Table prefix decision | `projects/asca/documentation/table-prefix-decision.md` |
-| Master timeline (all ASC projects) | `docs/asc-projects-master-timeline.md` |
+| **Master timeline (authoritative schedule)** | **`docs/asc-projects-master-timeline.md`** |
+| Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
+| Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` |
 | Upstream CAP research | `research/CAP/` |
 | Base system context (ASCM) | `projects/ascm/project-context.md` |
 | ASCM knowledge base | `projects/ascm/knowledge-base/` |

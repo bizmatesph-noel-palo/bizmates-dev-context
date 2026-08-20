@@ -1122,15 +1122,17 @@ ls-database-migrations/
 
 ## 15. Open Items
 
+> **Note on table names:** This document uses `asc_alloc_*` in code examples (reflecting the original DB design from Kuroda-san). Per O-3 resolution (2026-08-17), actual table names will use `log_alloc_*` for batch-generated tables and `mst_alloc_*` for reference prices. See `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` for the full decision. Model class names (`AscAlloc*`) remain unchanged — only the `$table` property changes.
+
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
-| O-3 | Table prefix (`asc_alloc_*`) | Engineering team | ⚠️ Open | Step 1 (migrations) |
+| O-3 | Table prefix | Engineering team | ✅ **Resolved (2026-08-17)** — `log_alloc_*` for batch-generated, `mst_alloc_*` for reference prices. Approved by Kuroda-san. | — |
 | O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥84,020 (= plan ¥88,000 − L_app ¥3,980). Confirmed by Kuroda-san + Accounting 2026-08-17. | — |
-| P-3 | CAP new coaching product_id | CAP team | ⚠️ Open — CAP team may create replica coaching product under new ID. Affects detection whereIn + Freee mapping. | Detection logic |
+| P-3 | CAP new coaching product_id | CAP team | ⚠️ Open — CAP team may create replica coaching product under new ID. Affects detection whereIn + Freee mapping. Non-blocking (detection anchored on product 10021 + plan_id). | Detection logic (config update only) |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
-| — | Option 1 vs 2 final confirmation | Kuroda-san | ⚠️ Pending our response sent | — |
-| — | Scenario C vs D final decision | Patrick-san / Kuroda-san | ⚠️ Pending | — |
+| — | Option 1 vs 2 final confirmation | Kuroda-san | ✅ **Confirmed** — Option 1 (Overwrite) agreed. | — |
+| — | Scenario C vs D final decision | Patrick-san / Kuroda-san | ✅ **Confirmed** — Scenario D (injection) agreed. | — |
 
 ---
 
@@ -1138,7 +1140,9 @@ ls-database-migrations/
 
 | Document | Location | What it covers |
 |---|---|---|
-| Scenario D timeline | `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` | Full Gantt, calendar mapping, team assignments |
+| **Master timeline** | **`docs/asc-projects-master-timeline.md`** | **Authoritative timeline — Gantt, calendar mapping, team assignments, QA schedule** |
+| Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Original proposal — rationale, Scenario C vs D comparison, lead dev assessment |
+| Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` / `mst_alloc_*` prefix |
 | Discussion notes | `projects/asch/documentation/asc-alloc-integration-discussion-notes-20260811.md` | Decisions, scope assessment, refactoring discussion |
 | Process flow diagram | `projects/asch/documentation/diagrams/asc-alloc-injection-process-flow.md` | Visual flow diagrams |
 | Kuroda-san DB design | `projects/asch/technical-notes/research/CAP/REF-CAP-04-ASC-Alloc-Framework-DB-Design-20260810.md` | 10 tables + 1 view |
@@ -1148,4 +1152,3 @@ ls-database-migrations/
 | CIP campaigns reference | `projects/asch/technical-notes/research/CIP/REF-CIP-02-Coaching-Campaigns-Reference-20260812.md` | CIP plan_ids, campaign tiers |
 | ASCM knowledge base | `projects/ascm/knowledge-base/00-index.md` | Lessons learned (what NOT to repeat) |
 | Engineering standards | `projects/asch/documentation/asch-engineering-standards.md` | Patterns, naming, coding standards |
-| Master timeline | `docs/asc-projects-master-timeline.md` | Overall schedule, teams, blockers |
