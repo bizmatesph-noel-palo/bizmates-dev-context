@@ -1,9 +1,20 @@
 # ASC Projects — Master Timeline
 
-**Date:** 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline)  
-**Status:** ACTIVE — Technical design agreed. All blockers cleared. Ready to start.  
-**Overall Lead:** Noel Palo  
-**Assisted by:** Kiro  
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | Project Timeline |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) |
+| **Author** | Noel Palo, Lead Developer |
+| **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
+| **Status** | Active |
+| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM), QA Team |
+| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) · [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) |
+| **Supersedes** | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` (timeline content), `docs/asc-cap-cip-combined-estimate-20260808.md` (Scenario C estimate) |
+
+---
+
 **Deadline:** ASCA + ASCI = 2026/12/17
 
 ### JIRA Projects
