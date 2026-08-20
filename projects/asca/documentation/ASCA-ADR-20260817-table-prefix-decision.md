@@ -1,10 +1,15 @@
 # O-3: Table Prefix Decision — Proposal
 
-**Date:** 2026-08-17  
-**Author:** Noel Palo  
-**Assisted by:** Kiro  
-**For:** Kuroda-san (decision), Patrick-san (awareness)  
-**Status:** Proposal — requesting confirmation
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | ADR (Architecture Decision Record) |
+| **Date** | 2026-08-17 (Created) |
+| **Author** | Noel Palo, Lead Developer |
+| **Status** | Approved |
+| **Audience** | Kuroda-san (decision), Patrick-san (awareness), Dev team |
+| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) |
 
 ---
 
