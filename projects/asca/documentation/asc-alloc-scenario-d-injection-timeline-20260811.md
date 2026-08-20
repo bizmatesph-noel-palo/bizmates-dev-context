@@ -2,10 +2,10 @@
 
 > **Correction (2026-08-14):** This timeline describes Option 2 (Adjust / 2nd Freee API call) as the allocation timing. The chosen approach is now **Option 1 (Overwrite)** — allocation overwrites N→P in `log_daily_rate_calculation` before the sum step, eliminating the need for a 2nd Freee API call. Steps 6–7 below are simplified: no separate Freee sender needed. See `REF-CAP-07-Overwrite-Process-Flow-20260812.md` and `docs/asc-allocation-framework-technical-design.md` for the current design.
 
-**Date:** 2026-08-11  
+**Date:** 2026-08-11 (Created) · 2026-08-17 (aligned with Scenario D + Option 1 + DEVOPS-6415 scope)  
 **Author:** Noel Palo, Lead Developer  
 **Assisted by:** Kiro (AI-assisted analysis, code review, and document generation)  
-**Status:** PROPOSAL — alternative integration strategy. For review with Patrick-san and Kuroda-san.  
+**Status:** AGREED — Scenario D + Option 1 (Overwrite) confirmed with Kuroda-san.  
 **Context:** Based on ASCM experience and code analysis of existing accounting commands.
 
 ### Terminology
@@ -102,17 +102,23 @@ Both Scenario C and Scenario D agree: **CAP goes first**. The reasoning:
 
 ## Implementation Steps (Scenario D)
 
-| # | Step | Blocked by | Est. duration | Notes vs Scenario C |
+> **Note:** Step 0 (Extract BatchReportDeliveryService) was moved to the DEVOPS-6415 Prep Phase (see below). These steps begin after Prep is complete.
+
+| # | Step | Blocked by | Est. duration | Notes |
 |---|---|---|---|---|
-| 0 | Extract BatchReportDeliveryService | None | 1–2 days | NEW — not in Scenario C. Low-risk extraction. |
-| 1 | O-3 decision + 10 migrations + structure tests | O-3 (prefix) | 1 week | Same as Scenario C Step 1 |
-| 2 | Models, enums, run lifecycle service | None | 3–4 days | Same as Scenario C Step 2 |
-| 3 | Reference-price master + price resolution | None | 2–3 days | Same as Scenario C Step 3 |
-| 4 | CAP Detection Strategy + bundle generation | ~~O-1 (CAP App product_id)~~ (O-1 RESOLVED: product_id 10021) | 3–4 days | Same as Scenario C Step 4 |
-| 5 | Allocation engine + validations V-1 to V-5 | None | 4–5 days | Same as Scenario C Step 5 |
-| 6 | Injection: DailyRateCalcPre + SendJournals | Steps 1–5 | 2 days | **REPLACES** Scenario C Steps 7–8 (Freee sender + email orchestrator) |
-| 7 | 2nd Freee API call + delivery tracking | Step 6 | 3–4 days | Simpler than Scenario C Step 7 — reuses existing API util |
-| 8 | CSV generation (detail + summary) | Step 6 | 2–3 days | Simpler than Scenario C Step 8 — adds to existing zip |
+| 1 | 10 migrations + 1 view + structure tests (`log_alloc_*`) | ✅ O-3 resolved | 1 week | Foundation |
+| 2 | Models, enums, run lifecycle service | None | 3–4 days | Foundation |
+| 3 | Reference-price master + price resolution + seeder | None | 2–3 days | Foundation |
+| 4 | CAP Detection Strategy + bundle generation | ✅ O-1 resolved | 3–4 days | Foundation |
+| 5 | Allocation engine + ΣN computation + validations V-1 to V-5 | None | 4–5 days | Foundation |
+| 6 | Test data seeder (mock CAP/CIP charges for DEV04) | None | 1 day | Foundation |
+| 7 | Injection into CommonUtil (Option 1 Overwrite) | Steps 1–5 | 2 days | CAP Integration |
+| 8 | AllocationDetail CSV generation + config | Step 7 | 2–3 days | CAP Integration |
+| 9 | DataCorrectionLogic: add `allocateForCharge()` call | Step 7 | 1 day | CAP Integration |
+| 10 | Refund allocation (record_kind = 1) | Step 7 | 3–4 days | CAP Integration |
+| 11 | DEV04 full pipeline testing (Pre + Final) | Steps 7–10 | 2–3 days | CAP Integration |
+| 12 | CIP detection strategy + reference price config | Steps 1–5 | 3–5 days | CIP Integration |
+| 13 | DEV04 testing for CIP plans | Step 12 | 1–2 days | CIP Integration |
 | 9 | Refund allocation (record_kind = 1) | Step 5 | 3–4 days | Same as Scenario C Step 6 |
 | 10 | CIP Detection Strategy + config | Steps 1–5 done | 3–5 days | Same concept — plug CIP into existing framework. O-5 resolved (¥88,000). |
 | 11 | Reversal (record_kind = 2) | O-4 | 3–4 days | Same as Scenario C Step 9 (post-release OK) |
@@ -139,38 +145,51 @@ O-3 decision → Step 1 (migrations) → Steps 2–5 (parallel tracks) → Step 
 
 ```
 Upstream (other teams):
-  CAP project  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ → Prod: late Nov / early Dec
-  CIP project  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ → Prod: late Nov / early Dec
+  CAP project  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ → Prod: late Nov / early Dec
+  CIP project  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ → Prod: late Nov / early Dec
 
-ASC Team (Noel's team — this plan):
-  ASCM Prep    ━━━━┓
-  Foundation        ┣━━━━━━━━━━━━━━┓
-  ASC-CAP                          ┣━━━━━━━━━━━━━━┓
-  ASC-CIP                                         ┣━━━━┓
-  QA                                                    ┣━━━━━━━━━━ → Dec 17 deadline
+ASC Team (Noel's team):
+  ASCM Refactor (DEVOPS-6415)  ━━━━┓
+  ASCM Refactor Regression          ┣━┓
+  ASCA Foundation                       ┣━━━━━━━━━━━━┓
+  ASCA CAP Integration                               ┣━━━━━━━━━━━━┓
+  ASCI CIP Integration                                              ┣━━━━┓
+  QA (CAP scenarios)                                  ┣━━━━━━━━━━━━━━━━━━┓
+  QA (CIP scenarios)                                                 ┣━━━━━━━━┓
+  Final Regression                                                            ┣━━━━┓
+  Buffer                                                                            ┣━━ → Dec 17
 ```
+
+**What's parallel:**
+- QA starts planning/prepping while Foundation is being built
+- QA tests CAP scenarios while CIP integration is being built
+- Requirements for ASCA/ASCI unique logic can be identified while Foundation is being built
+- Upstream CAP/CIP teams develop independently from our ASC work
+
+**What's sequential (dependencies):**
+- ASCM Refactor (DEVOPS-6415) → ASCM Refactor Regression (verify existing commands still work)
+- ASCM Refactor Regression passes → ASCA Foundation can safely start (building on stable code)
+- ASCA Foundation → must finish before CAP Integration (needs tables + models + engine)
+- ASCA CAP Integration → must be proven before ASCI CIP starts (CIP reuses the framework)
+- Final Regression → runs after all dev is complete (validates nothing broke end-to-end)
 
 ### Can ASC Develop Alongside Upstream?
 
-**Yes.** Here's what ASC needs from upstream and WHEN:
+**Yes.** ASC is NOT blocked by upstream timelines:
 
-| What ASC needs from upstream | When ASC needs it | When upstream delivers it | Blocked? |
-|---|---|---|---|
-| Upstream DB schema (tables that produce charges) | Not needed — ASC reads existing `trn_charge` + `log_daily_rate_calculation` | Already exists | ❌ No |
-| Plan IDs for CAP/CIP products | Step 4 (detection strategy) — W3 | CAP/CIP teams define plan_ids early in their design | ⚠️ Maybe — ask early |
-| Reference prices (L values) | Step 3 (reference price seeder) — W2 | Business/accounting decision — independent of dev | ⚠️ Open item O-5 |
-| Actual charges in dev04 for testing | W6 (CAP dev testing) | Upstream charges appear when their product goes live | ⚠️ Need test data seeder |
-| Upstream in production (real charges flowing) | Post-release (first real batch run Jan 1) | Late Nov / early Dec | ❌ No — we don't need upstream prod for OUR release |
-
-**Key insight:** ASC-CAP/CIP calculates allocation on charges that ALREADY EXIST in `trn_charge`. The upstream projects create those charges. But for development and QA, we can seed test charges ourselves. We only need real upstream data for the first production batch run (Jan 1, 2027) — NOT for our Dec 17 release.
-
-**Conclusion:** ASC development is NOT blocked by upstream CAP/CIP timelines. We can build and test the allocation engine independently using seeded test data. When upstream goes live (late Nov / early Dec), real charges start flowing, and our Jan 1 batch picks them up.
+| What ASC needs from upstream | Status |
+|---|---|
+| Plan IDs for CAP/CIP products | ✅ Confirmed (CAP: 1016–1027, CIP: 1028–1032) |
+| Reference prices (L values) | ✅ Confirmed (CAP: ¥19,800/¥39,600 + ¥3,980, CIP: ¥84,020 + ¥3,980) |
+| Upstream DB schema | ✅ Not needed — ASC reads existing `trn_charge` + `log_daily_rate_calculation` |
+| Actual charges in dev04 for testing | ⚠️ We seed test data ourselves (test data seeder in ASCA Spec 01) |
+| Upstream in production (real charges) | Not needed until first batch run (Jan 1, 2027) |
 
 ### Can ASC Finish Earlier Than Dec 17?
 
-**Yes — dev can be complete by early November.** The Dec 17 deadline is for production readiness including QA sign-off. Dev completion (code done, DEV04 tested) can happen 4–6 weeks before that.
+**Yes — dev can be complete by early November.** The Dec 17 deadline is for production readiness including QA sign-off.
 
-| Scenario | Dev complete | QA complete | Buffer |
+| Scenario | Dev complete | QA + Regression complete | Buffer |
 |---|---|---|---|
 | Start Sep 15 | Oct 27 (W6) | Dec 5 (W11) | 12 days |
 | Start Sep 22 | Nov 3 (W6) | Dec 10 (W11) | 7 days |
@@ -182,19 +201,19 @@ ASC Team (Noel's team — this plan):
 
 | Actual Dates | Week | Phase |
 |---|---|---|
-| Sep 8–12 | Pre-W0 | ASCM Prep (can start before formal project kickoff) |
-| Sep 15–19 | W0 | ASCM Prep + Foundation start |
-| Sep 22–26 | W1 | Foundation |
-| Sep 29–Oct 3 | W2 | Foundation |
-| Oct 6–10 | W3 | Foundation + CAP starts |
-| Oct 13–17 | W4 | CAP |
-| Oct 20–24 | W5 | CAP |
-| Oct 27–31 | W6 | CAP dev testing + CIP starts |
-| Nov 3–7 | W7 | CIP + QA starts CAP testing |
-| Nov 10–14 | W8 | QA CAP + QA CIP starts |
-| Nov 17–21 | W9 | QA CIP |
-| Nov 24–28 | W10 | Integration testing |
-| Dec 1–5 | W11 | Regression + sign-off |
+| Sep 8–12 | Pre-W0 | DEVOPS-6415 Prep (before formal project start) |
+| Sep 15–19 | W0 | ASCA Foundation starts (migrations) |
+| Sep 22–26 | W1 | Foundation (models, enums, run lifecycle) |
+| Sep 29–Oct 3 | W2 | Foundation (engine, reference prices) |
+| Oct 6–10 | W3 | Foundation complete + CAP integration starts |
+| Oct 13–17 | W4 | CAP integration (injection, CSV) |
+| Oct 20–24 | W5 | CAP integration (refunds, allocateForCharge) |
+| Oct 27–31 | W6 | CAP dev testing (DEV04) + CIP integration starts |
+| Nov 3–7 | W7 | CIP testing + QA starts CAP scenario testing |
+| Nov 10–14 | W8 | QA CAP scenarios |
+| Nov 17–21 | W9 | QA CIP scenarios |
+| Nov 24–28 | W10 | Integration testing (cross-project) |
+| Dec 1–5 | W11 | Regression testing + sign-off |
 | Dec 8–12 | W12 | Buffer |
 | **Dec 17** | — | **ASC Deadline** |
 | Late Nov–Early Dec | — | **Upstream CAP/CIP goes to production** |
@@ -202,42 +221,59 @@ ASC Team (Noel's team — this plan):
 
 ---
 
-### ASCM Prep / Refactor Gantt (Pre-W0)
+### ASCM Prep / Refactor Gantt (Pre-W0) — DEVOPS-6415
 
-Work that should happen BEFORE the allocation project starts. Can begin immediately — no blockers.
+**Billed under:** [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) (maintenance)  
+**Scope:** Refactoring and fixing EXISTING code only. No new features, no new tables.
 
-| Category | Owner | Task / Phase | Week | Pre-W0 | W0 |
-|---|---|---|---|---|---|
-| **ASCM Refactor** | Lead | Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | Pre-W0 | ■ | |
-| **ASCM Refactor** | Lead | Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip + missing fields (tax_free, country_id, gross_amount) | Pre-W0 | ■ | |
-| **ASCM Refactor** | Lead | Unit test the extracted service + corrected DataCorrectionLogic | Pre-W0 | ■ | |
-| **ASCM Verify** | Lead | Smoke test: run existing Pre + Final + Correction commands on DEV04 (baseline before changes) | Pre-W0 | ■ | |
-| **ASCM Verify** | Lead | Document baseline CSV file list (what's in the zip today) | Pre-W0 | ■ | |
-| **ASCM Prep** | Dev 1 | Review Kuroda-san DB design, prepare migration plan, confirm O-3 | Pre-W0 | ■ | |
-| **ASCM Prep** | Lead | Create test data seeder for CAP/CIP charges (mock upstream data for dev04) | W0 | | ■ |
+| # | Category | Owner | Task | Detail |
+|---|---|---|---|---|
+| 1 | **Fix** | Lead | Fix DataCorrectionLogic drift | Add `BizmatesMonthlyPlanEnum::exists()` skip at top of `createDailyRateCalculation()`. Add missing `$condition` fields: `tax_free`, `country_id`, `gross_amount`. Isolated fix — does not depend on anything else. |
+| 2 | **Extract** | Lead | Extract zip+email from DailyRateCalculationPreLogic | Move `ZipArchive` creation + file cleanup + `sendMail()` call (~20 lines) into `BatchReportDeliveryService::deliver($fileNameList, $mailType, $suffix)`. Replace original code with service call. |
+| 3 | **Extract** | Lead | Extract zip+email from SendJournalsDataLogic | Same extraction — replace inline zip+email with `BatchReportDeliveryService::deliver()` call. |
+| 4 | **Extract** | Lead | Extract zip+email from DataCorrectionLogic | Same extraction — replace inline zip+email with `BatchReportDeliveryService::deliver()` call. |
+| 5 | **Test** | Lead | Unit test BatchReportDeliveryService | Test zip creation, file cleanup, email dispatch. Mock `CommonUtil::sendMail()`. |
+| 6 | **Test** | Lead | Unit test DataCorrectionLogic fix | Test that monthly plan charges are skipped. Test that missing fields are present. |
+| 7 | **Verify** | Lead | Smoke test: run Pre + Final + Correction on DEV04 | Verify output matches baseline — no regression from extraction or fix. |
+| 8 | **Verify** | Lead | Document baseline CSV file list | Record which files are in the zip today (before any ASCA changes). |
 
-**Duration:** 5–7 days (can overlap with O-3 decision waiting period).  
-**Blocker:** None — this is purely internal preparation on existing code.  
-**Deliverable:** Working `BatchReportDeliveryService` + DataCorrectionLogic drift fixed + baseline verification + test data ready.
+**Duration:** 3–5 days.  
+**Blocker:** None — purely internal preparation on existing code.  
+**Deliverables:**
+- `BatchReportDeliveryService` class (new, shared by all 3 commands)
+- DataCorrectionLogic aligned with CommonUtil (skip + fields)
+- Baseline documentation (CSV list, smoke test results)
+- All 3 commands verified working on DEV04 after changes
 
-**What ASCM Prep fixes (before allocation work starts):**
-- DataCorrectionLogic's `createDailyRateCalculation()` is missing `BizmatesMonthlyPlanEnum` skip (latent bug — monthly plans shouldn't enter daily log via correction)
-- DataCorrectionLogic's `$condition` array is missing `tax_free`, `country_id`, `gross_amount` fields (schema drift from CommonUtil)
-- These are ASCM-era fixes that should have been applied when the monthly plan logic was introduced but were missed because the correction batch has its own private copy (KB #14 pattern)
-
-**What remains for ASC-CAP phase (not ASCM Prep):**
-- Adding `allocateForCharge()` call to DataCorrectionLogic (requires the allocation service to exist first)
-- This is a ~5-line addition at the end of the "addDaily" INSERT loop, done as part of the ASC-CAP injection work
+**NOT in DEVOPS-6415:** DB migrations, models, allocation service, test data seeder, reference prices — those are ASCA Spec 01.
 
 ---
 
-### Development Gantt (Main Build)
+### Development Gantt — Full Flow
 
-| Category | Owner | Task / Phase | Week | W0 | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-| **Foundation** | Dev 1 | DB migrations (10 tables + 1 view) + structure tests | W0–W1 | ■ | ■ | | | | | | | | |
-| **Foundation** | Lead | Models / enums / run lifecycle service | W1 | | ■ | | | | | | | | |
-| **Foundation** | Lead | Reference-price master + price resolution service | W2 | | | ■ | | | | | | | |
+| Category | Owner | Task / Phase | Week | W0 | W1 | W2 | W3 | W4 | W5 | W6 | W7 | W8 | W9 | W10 | W11 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| **ASCM Refactor** | Lead | Fix DataCorrectionLogic drift (skip + missing fields) | W0 | ■ | | | | | | | | | | | |
+| **ASCM Refactor** | Lead | Extract BatchReportDeliveryService (3 files) | W0 | ■ | | | | | | | | | | | |
+| **ASCM Refactor** | Lead | Unit test extracted service + corrected DataCorrection | W0 | ■ | | | | | | | | | | | |
+| **ASCM Regression** | Lead | Smoke test: run Pre + Final + Correction on DEV04 (verify no runtime errors) | W1 | | ■ | | | | | | | | | | |
+| **ASCM Regression** | Lead | Collect generated CSVs/reports (baseline artifacts) | W1 | | ■ | | | | | | | | | | |
+| **ASCM Regression** | QA | Manual verification: compare generated reports against expected output | W1 | | ■ | | | | | | | | | | |
+| **Foundation** | Dev 1 | DB migrations (10 tables + 1 view) + structure tests | W1–W2 | | ■ | ■ | | | | | | | | | |
+| **Foundation** | Lead | Models / enums / run lifecycle service | W2 | | | ■ | | | | | | | | | |
+| **Foundation** | Lead | Reference-price master + price resolution service + seeder | W3 | | | | ■ | | | | | | | | |
+| **Foundation** | Dev 1 | Allocation engine + ΣN computation + validations | W3–W4 | | | | ■ | ■ | | | | | | | |
+| **Foundation** | Lead | Test data seeder (mock CAP/CIP charges) | W3 | | | | ■ | | | | | | | | |
+| **ASCA Integration** | Lead | Injection into CommonUtil (Option 1 Overwrite) | W4 | | | | | ■ | | | | | | | |
+| **ASCA Integration** | Dev 1 | CAP Detection Strategy + bundle generation | W4 | | | | | ■ | | | | | | | |
+| **ASCA Integration** | Lead | AllocationDetail CSV generation + config | W5 | | | | | | ■ | | | | | | |
+| **ASCA Integration** | Dev 1 | DataCorrectionLogic: add `allocateForCharge()` | W5 | | | | | | ■ | | | | | | |
+| **ASCA Integration** | Lead + Dev 1 | Refund allocation (record_kind = 1) | W6 | | | | | | | ■ | | | | | |
+| **ASCA Integration** | Lead + Dev 1 | ASCA dev testing on DEV04 (full pipeline) | W7 | | | | | | | | ■ | | | | |
+| **ASCI Integration** | Dev 1 (or Dev 2) | CIP Detection Strategy + reference prices + config | W7–W8 | | | | | | | | ■ | ■ | | | |
+| **ASCI Integration** | Lead | ASCI dev testing on DEV04 | W8 | | | | | | | | | ■ | | | |
+| **Post-release** | Dev 1 | Reversal (record_kind = 2) | W9 | | | | | | | | | | ■ | | |
+| **Buffer** | All | Bug fixes from QA / environment issues | W10–W11 | | | | | | | | | | | ■ | ■ |
 | **Foundation** | Dev 1 | Allocation engine + validations V-1 to V-5 | W2–W3 | | | ■ | ■ | | | | | | |
 | **Foundation** | Lead | Injection: wire into DailyRateCalcPre + SendJournals | W3 | | | | ■ | | | | | | |
 | **ASC-CAP** | Dev 1 | CAP Detection Strategy + bundle generation | W3 | | | | ■ | | | | | | |
