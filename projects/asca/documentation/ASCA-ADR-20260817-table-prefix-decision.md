@@ -7,6 +7,7 @@
 | **Document type** | ADR (Architecture Decision Record) |
 | **Date** | 2026-08-17 (Created) |
 | **Author** | Noel Palo, Lead Developer |
+| **Assisted by** | Kiro (convention analysis, proposal drafting) |
 | **Status** | Approved |
 | **Audience** | Kuroda-san (decision), Patrick-san (awareness), Dev team |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) |
