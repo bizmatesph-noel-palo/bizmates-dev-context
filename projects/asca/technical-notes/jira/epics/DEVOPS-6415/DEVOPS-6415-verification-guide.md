@@ -134,7 +134,7 @@ The monthly plan skip and missing fields fix are verified by automated unit test
 |---|---|
 | Environment | DEV04 |
 | Branch | `feature/DEVOPS/DEVOPS-6415-ASCM-fix-data-correction-logic` |
-| Correction CSV | Not required — the fix is preventive. Standard commands (Pre/Final) are the primary test surface. |
+| Correction CSV | **Required if running DataCorrectionCommand** — must exist at `storage/app/csv/correction_{Ym}.csv` (where `{Ym}` is the current year-month). The command will fail with an error if the file is missing. Not required for Daily/SendJournals commands. |
 | Baseline comparison | Compare against reports from the last successful DEV04 run (Harvey-san's recent run) |
 
 ---
@@ -144,13 +144,16 @@ The monthly plan skip and missing fields fix are verified by automated unit test
 ```bash
 # 1. Deploy the branch to DEV04
 
-# 2. Run Pre command
+# 2. Run Pre command (no CSV needed)
 php artisan command:DailyRateCalculationPreCommand {exeDate}
 
-# 3. Run Final command
+# 3. Run Final command (no CSV needed)
 php artisan command:SendJournalsDataCommand {exeDate}
 
-# 4. Run Correction command (only if a correction CSV exists)
+# 4. Run Correction command (REQUIRES correction CSV at storage/app/csv/correction_{Ym}.csv)
+#    - Place the CSV file first, or the command will fail
+#    - Can use a minimal test CSV (header + 1 row with a valid charge_id and operation 'addDaily')
+#    - If no correction scenario needs testing, skip this step — Daily/SendJournals cover the regression
 php artisan command:DataCorrectionCommand {exeDate}
 
 # 5. Check logs
@@ -165,7 +168,7 @@ tail -50 storage/logs/laravel.log | grep -E "ERROR|FAILED|COMPLETED"
 
 | Question | Answer |
 |---|---|
-| Do I need a correction CSV to test? | No. The Pre and Final commands are the primary verification. The correction fix is unit-tested. |
+| Do I need a correction CSV to test? | **For Daily/SendJournals:** No. **For DataCorrectionCommand:** Yes — it reads from `storage/app/csv/correction_{Ym}.csv` and will error if the file doesn't exist. You can use an empty CSV (header only) or one with test rows. |
 | What if the reports differ from baseline? | Check if the diff is in data (normal — DEV04 data changes over time) or in structure/format (that would be a bug). Column count and header names must match. |
 | Is there a new report file? | No. Same file set as before. |
 | When does this deploy to production? | After QA sign-off. It will be active for the next monthly batch run (1st of the month). |
