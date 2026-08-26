@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -37,6 +37,7 @@
 ```
 ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
 ASCM Refactor (DEVOPS-6415):         Aug 24–28 (W0) — prep + regression
+Spec Preparation (Lead):             Aug 31–Sep 5 (W1) — steering files + spec session (parallel with QA)
 ASCM QA Verification:                Aug 31–Sep 5 (W1) — gate to Foundation
 ASCA (Foundation + CAP Integration): Sep 7–Oct 30 (W2–W9) — shared framework + CAP logic
 ASCI (CIP Integration):              Nov 2–13 (W10–W11) — plugs CIP into working framework
@@ -200,6 +201,41 @@ Scope: Refactoring and fixing EXISTING code only. No new features, no new tables
 
 ---
 
+### Phase 0.5: Spec Preparation — W1, Aug 31–Sep 5 (4 days, parallel with QA gate)
+
+**Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
+
+**Purpose:** While QA verifies ASCM Refactor reports, Lead prepares the Foundation phase for immediate execution on W2 Day 1. This eliminates a week of idle dev time and ensures Throy (Dev 1) has a clear task list when Foundation begins.
+
+**Prerequisite chain:** Steering files must exist before the spec session can produce correct, convention-aligned output. The spec session (requirements → design → tasks) uses steering rules to enforce naming, file placement, and architecture decisions.
+
+| # | Category | Owner | Task | Detail |
+|---|---|---|---|---|
+| 1 | **Steering** | Lead | Create `accounting_related_system_for_freee/.kiro/steering/` files | Codify patterns from technical design: file structure (`AscAlloc/` dirs), naming conventions, enum pattern (int-backed + `HasEnumHelperTrait`), log prefix `[ASC_ALLOC]`, error handling (3-transaction model), testing expectations. Scoped to new `AscAlloc` code only — existing code untouched. |
+| 2 | **Spec** | Lead | ASCA Spec 01: requirements.md | Formalize Foundation requirements from the technical design doc. Covers: DB schema (10 tables + 1 view), models, enums, allocation service, run lifecycle, reference prices, test data seeder. |
+| 3 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves scope, allocation formula, reference prices, plan detection before design begins. |
+| 4 | **Spec** | Lead | ASCA Spec 01: design.md | Technical design decisions specific to implementation — class responsibilities, method signatures, injection points, validation invariants, DTO shapes (if needed). References the authoritative technical design doc. Starts after G1 pass (can spill into early W2). |
+| 5 | **Spec** | Lead | ASCA Spec 01: tasks.md | Executable task list derived from design. Each task scoped to a single PR, with clear acceptance criteria. Maps to Gantt steps in Phase 1. |
+| 6 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Throy — confirm architecture is sound and tasks are clear before execution begins. |
+
+**Dependency:** Step 1 (steering files) must complete before Steps 2–6 (spec session). The spec session runs with steering loaded to ensure generated artifacts follow the conventions. G1 (PM sign-off on requirements) must pass before design begins. G2 (Lead + Dev approval) must pass before task execution.
+
+**Deliverables:**
+- Steering files in `accounting_related_system_for_freee/.kiro/steering/`
+- `requirements.md` — ASCA Foundation requirements (submitted for G1)
+- G1 pass — PM approves requirements
+- `design.md` — implementation design decisions (after G1)
+- `tasks.md` — executable task list for W2+ (after G1)
+- G2 pass — Lead + Dev confirm tasks are ready for execution
+
+**Why this matters:**
+- Throy starts W2 with a ready task list (no "what do I build?" delay)
+- Steering files ensure all W2+ code follows consistent patterns from Day 1
+- Spec documents serve as the single reference for PR reviews during Foundation
+- QA gate runs in parallel — no dev idle time wasted
+
+---
+
 ### Phase 1: ASC Shared Foundation — W2–W5 (Sep 7 – Oct 2)
 
 **Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
@@ -221,14 +257,23 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 **Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
 
-| Step | What | Owner | Effort |
-|---|---|---|---|
-| 7 | Injection into CommonUtil (Option 1 Overwrite) | Lead | 2 days |
-| 8 | CAP Detection Strategy + bundle generation | Dev 1 | Included in Step 4 |
-| 9 | AllocationDetail CSV generation + config | Lead | 2–3 days |
-| 10 | DataCorrectionLogic: add `allocateForCharge()` call | Dev 1 | 1 day |
-| 11 | Refund allocation (record_kind = 1) | Lead + Dev 1 | 3–4 days |
-| 12 | ASCA dev testing on DEV04 (full pipeline Pre + Final) | Lead + Dev 1 | 2–3 days |
+**Spec:** ASCA Spec 02 — CAP Integration ⚠️ (may split into 2–4 smaller specs during requirements generation; see Spec Overview note)
+
+**Prerequisite:** Phase 1 Foundation complete (G3 passed — all Foundation PRs merged).
+
+| # | Category | Owner | Task | Detail |
+|---|---|---|---|---|
+| 1 | **Spec** | Lead | ASCA Spec 02: requirements.md | Formalize CAP injection requirements — CommonUtil overwrite, detection strategy, AllocationDetail CSV format, DataCorrectionLogic scoped allocation, refund handling. Written during W5 (overlaps with Foundation completion). |
+| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CAP injection scope, CSV format, refund handling rules. |
+| 3 | **Spec** | Lead | ASCA Spec 02: design.md + tasks.md | Implementation plan — injection point, detection query, CSV columns, refund sign-flip logic. If scope splits, each sub-spec gets its own design + tasks. |
+| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev — confirm task list is executable. |
+| 5 | **Execute** | Lead | Injection into CommonUtil (Option 1 Overwrite) | ~2 days |
+| 6 | **Execute** | Dev 1 | CAP Detection Strategy + bundle generation | Included with injection |
+| 7 | **Execute** | Lead | AllocationDetail CSV generation + config | ~2–3 days |
+| 8 | **Execute** | Dev 1 | DataCorrectionLogic: add `allocateForCharge()` call | ~1 day |
+| 9 | **Execute** | Lead + Dev 1 | Refund allocation (record_kind = 1) | ~3–4 days |
+| 10 | **Gate 3** | Lead | Code review — CAP Integration PRs | PR approved before merge. |
+| 11 | **Verify** | Lead + Dev 1 | ASCA dev testing on DEV04 (full pipeline Pre + Final) | ~2–3 days |
 
 ---
 
@@ -236,11 +281,19 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 **Billed under:** [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog)
 
-| Step | What | Owner | Effort |
-|---|---|---|---|
-| 13 | CIP Detection Strategy (`CoachingIntensivePlanEnum`: 1028–1032) | Dev 1 (or Orlino + Cristoff) | 3–5 days |
-| 14 | CIP reference price config (L_coaching = ¥84,020) | Same | Included |
-| 15 | ASCI dev testing on DEV04 | Lead | 1–2 days |
+**Spec:** ASCI Spec 01 — CIP Integration ⚠️ (may split if CIP introduces edge cases not present in CAP)
+
+**Prerequisite:** Phase 2 CAP Integration complete (G3 passed) — proves the allocation engine works end-to-end with real injection.
+
+| # | Category | Owner | Task | Detail |
+|---|---|---|---|---|
+| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product 10022, L_coaching = ¥84,020. Written during W9 (overlaps with ASCA dev testing). |
+| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection, reference price (¥84,020 = ¥88,000 − ¥3,980). |
+| 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — CIP enum, reference price seeder row, detection query addition. Minimal design since it reuses ASCA engine. |
+| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm scope is config-only addition. |
+| 5 | **Execute** | Dev 2 | CIP Detection Strategy (`CoachingIntensivePlanEnum`: 1028–1032) + reference price config | ~3–5 days |
+| 6 | **Gate 3** | Lead | Code review — CIP Integration PRs | PR approved before merge. |
+| 7 | **Verify** | Lead | ASCI dev testing on DEV04 | ~1–2 days |
 
 ---
 
@@ -264,6 +317,7 @@ Upstream:                 ║═════════════════
 
 Dev Team:                 ║══════════════════════════════════════════════║
   ASCM Refactor           ║■■■■┓                                        ║
+  Spec Prep (Lead)             ┣■┓                                      ║
   QA Verification              ┣■┓                                      ║
   Foundation                     ┣━━━━━━━━━━━━━━━━┓                     ║
   ASCA CAP Integration                            ┣━━━━━━━━━━━━━━━━┓    ║
@@ -276,6 +330,28 @@ Dev Team:                 ║═════════════════
 
 ### Detailed Dev Gantt (Week by Week)
 
+**Spec Overview:**
+
+| Spec | Full Name | What it delivers |
+|---|---|---|
+| **ASCA Spec 01** | Foundation | New DB tables (`log_alloc_*`, `mst_alloc_*`), Eloquent models, plan detection enums, allocation engine (formula + idempotency), run lifecycle service, reference price seeder, test data seeder |
+| **ASCA Spec 02** | CAP Integration ⚠️ | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation |
+| **ASCI Spec 01** | CIP Integration ⚠️ | CIP bundle detection (plans 1028–1032, product 10022), CIP reference prices (L_coaching = ¥84,020), reuses ASCA Spec 01 engine — config-only addition |
+
+> ⚠️ **Spec sizing note (ASCA Spec 02 and ASCI Spec 01):**
+>
+> The scope listed above is preliminary grouping based on the technical design. Per spec-driven development standards, each spec targets 5–15 tasks and a design document of 1–3 pages. If a spec exceeds these thresholds during requirements generation, it will be split into smaller, independently shippable specs.
+>
+> **ASCA Spec 02** is the most likely candidate for splitting. It covers 4 distinct concerns (injection, CSV, refund, DataCorrection) across 4 weeks. Probable split:
+> - Spec 02a: CAP Core Injection (CommonUtil + detection + overwrite)
+> - Spec 02b: AllocationDetail CSV (reporting layer)
+> - Spec 02c: Refund Allocation (record_kind = 1)
+> - Spec 02d: DataCorrection Integration (`allocateForCharge()`)
+>
+> **ASCI Spec 01** may remain as-is (config-only addition to existing engine) or split if CIP introduces edge cases not present in CAP (e.g., different bundle structure, multi-product detection).
+>
+> **Impact on timeline:** Splitting does not change the W6–W9 / W10–W11 time allocation — it changes the number of G1 sign-offs Kuroda-san receives during those weeks. Final spec boundaries will be determined when requirements are written (W5 for ASCA Spec 02, W9 for ASCI Spec 01).
+
 | Category | Owner | Task | W0 (Aug 24) | W1 (Aug 31)🔴 | W2 (Sep 7) | W3 (Sep 14) | W4 (Sep 21) | W5 (Sep 28) | W6 (Oct 5) | W7 (Oct 12) | W8 (Oct 19) | W9 (Oct 26) | W10 (Nov 2)🔴 | W11 (Nov 9) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **ASCM Refactor** | Lead | Fix DataCorrectionLogic drift | ■ | | | | | | | | | | | |
@@ -283,21 +359,42 @@ Dev Team:                 ║═════════════════
 | **ASCM Refactor** | Lead | Unit test extracted service | ■ | | | | | | | | | | | |
 | **ASCM Regression** | Lead | Smoke test Pre + Final + Correction on DEV04 | ■ | | | | | | | | | | | |
 | **ASCM Regression** | QA Team | Manual verification: compare reports | | ■ | | | | | | | | | | |
+| ══ **GATE** ══ | QA Team | **ASCM Regression gate pass** | | ■ | | | | | | | | | | |
+| **Spec Prep** | Lead | Create steering files for `accounting_related_system_for_freee` | | ■ | | | | | | | | | | |
+| **Spec Prep** | Lead | ASCA Spec 01 (Foundation): requirements.md | | ■ | | | | | | | | | | |
+| ══ **GATE 1** ══ | PM | **Requirements sign-off — Foundation scope, formula, reference prices** | | ■ | | | | | | | | | | |
+| **Spec Prep** | Lead | ASCA Spec 01 (Foundation): design.md + tasks.md | | | ■ | | | | | | | | | |
+| ══ **GATE 2** ══ | Lead + Dev | **Design & tasks approval — Foundation architecture + task list** | | | ■ | | | | | | | | | |
 | **Foundation** | Dev 1 | DB migrations (10 tables + 1 view) + structure tests | | | ■ | ■ | | | | | | | | |
 | **Foundation** | Lead | Models / enums / run lifecycle service | | | | ■ | | | | | | | | |
 | **Foundation** | Lead | Reference-price master + price resolution + seeder | | | | | ■ | | | | | | | |
 | **Foundation** | Dev 1 | Allocation engine + ΣN computation + validations | | | | | ■ | ■ | | | | | | |
 | **Foundation** | Lead | Test data seeder (mock CAP/CIP charges) | | | | | | ■ | | | | | | |
+| ══ **GATE 3** ══ | Lead | **Code review — Foundation PRs (DB + models + engine)** | | | | | | ■ | | | | | | |
+| **Spec Prep** | Lead | ASCA Spec 02 (CAP Integration): requirements.md → design.md → tasks.md | | | | | | ■ | | | | | | |
+| ══ **GATE 1** ══ | PM | **Requirements sign-off — CAP injection scope, CSV format, refund handling** | | | | | | ■ | | | | | | |
+| ══ **GATE 2** ══ | Lead + Dev | **Design & tasks approval — CAP integration task list** | | | | | | ■ | | | | | | |
 | **ASCA Integration** | Lead | Injection into CommonUtil (Option 1 Overwrite) | | | | | | | ■ | | | | | |
 | **ASCA Integration** | Dev 1 | CAP Detection Strategy + bundle generation | | | | | | | ■ | | | | | |
 | **ASCA Integration** | Lead | AllocationDetail CSV generation + config | | | | | | | | ■ | | | | |
 | **ASCA Integration** | Dev 1 | DataCorrectionLogic: add `allocateForCharge()` | | | | | | | | ■ | | | | |
 | **ASCA Integration** | Lead + Dev 1 | Refund allocation (record_kind = 1) | | | | | | | | | ■ | | | |
+| ══ **GATE 3** ══ | Lead | **Code review — CAP Integration PRs (injection + CSV + refund)** | | | | | | | | | ■ | | | |
 | **ASCA Integration** | Lead + Dev 1 | ASCA dev testing on DEV04 (full pipeline) | | | | | | | | | | ■ | | |
-| **ASCI Integration** | Dev 1 (or Orlino + Cristoff) | CIP Detection Strategy + reference prices | | | | | | | | | | | ■ | ■ |
+| **Spec Prep** | Lead | ASCI Spec 01 (CIP Integration): requirements.md → design.md → tasks.md | | | | | | | | | | ■ | | |
+| ══ **GATE 1** ══ | PM | **Requirements sign-off — CIP plans 1028–1032, L_coaching = ¥84,020** | | | | | | | | | | ■ | | |
+| ══ **GATE 2** ══ | Lead + Dev | **Design & tasks approval — CIP detection strategy + config** | | | | | | | | | | ■ | | |
+| **ASCI Integration** | Dev 2 | CIP Detection Strategy + reference prices | | | | | | | | | | | ■ | ■ |
+| ══ **GATE 3** ══ | Lead | **Code review — CIP Integration PRs (detection + config)** | | | | | | | | | | | | ■ |
 | **ASCI Integration** | Lead | ASCI dev testing on DEV04 | | | | | | | | | | | | ■ |
 
 🔴 = week with PH holiday (1 lost workday): W1 = National Heroes Day (Aug 31), W10 = All Souls' Day (Nov 2)
+
+**Gate legend:**
+- **GATE 1** = PM requirements sign-off (Kuroda-san approves scope before design begins)
+- **GATE 2** = Lead + Dev design/tasks approval (architecture confirmed, Dev understands scope before coding)
+- **GATE 3** = Lead code review (PR approved before merge)
+- **Regression gate** = QA confirms no regression from refactor (blocks Foundation start)
 
 ---
 
@@ -342,7 +439,7 @@ Dev Team:                 ║═════════════════
 | Week | Dates | Workdays | Phase | Notes |
 |---|---|---|---|---|
 | **W0** | Aug 24–28 | 5 | ASCM Refactor (DEVOPS-6415) | Start date. Full week. |
-| **W1** | Aug 31–Sep 5 | 4 | ASCM Refactor → QA verification | 🔴 Aug 31 = National Heroes Day (Mon off) |
+| **W1** | Aug 31–Sep 5 | 4 | QA verification + Lead: steering files + spec session | 🔴 Aug 31 = National Heroes Day (Mon off). Lead prepares ASCA Spec 01 while QA runs regression gate. |
 | **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | |
 | **W3** | Sep 14–18 | 5 | Foundation: models, enums, run lifecycle | |
 | **W4** | Sep 21–25 | 5 | Foundation: reference prices, engine | |
@@ -412,8 +509,159 @@ Dev Team:                 ║═════════════════
 
 **Critical path:**
 ```
-ASCM Refactor → Regression gate → Foundation → ASCA CAP Integration → ASCI CIP → QA → Regression → Buffer → Dec 17
+ASCM Refactor → Regression gate + Spec Prep (parallel) → Foundation → ASCA CAP Integration → ASCI CIP → QA → Regression → Buffer → Dec 17
 ```
+
+---
+
+## Spec-Driven Development Workflow
+
+### Overview
+
+Each phase (Foundation, CAP Integration, CIP Integration) follows a spec-driven lifecycle with mandatory gates. This ensures Kuroda-san has visibility into progress and the team executes against approved scope.
+
+```
+┌───────────────────────────────────────────────────────────────────────────────┐
+│                                                                               │
+│  SCAFFOLD        SPECIFY           DESIGN &            TASK        QA &       │
+│  (one-time)      (per spec)        TASK GEN            EXECUTION   DEPLOY     │
+│                                    (per spec)          (per spec)             │
+│  Lead Dev        Lead Dev          Lead Dev            Dev + AI    Lead + QA  │
+│  ────────        ────────          ────────            ──────────  ─────────  │
+│  Steering files  requirements.md   design.md           Execute     DEV04 →    │
+│  (Phase 0.5)     → PM sign-off    tasks.md            tasks.md    Staging →  │
+│                  ═══ GATE 1 ═══    → Lead + Dev        → Lead PR   Prod      │
+│                                    review              review                 │
+│                                    ═══ GATE 2 ═══      ═══ GATE 3 ═══        │
+│                                                                               │
+└───────────────────────────────────────────────────────────────────────────────┘
+```
+
+### Sign-Off Gates
+
+There are **3 mandatory gates** where work cannot proceed without approval:
+
+| # | Gate | Who Approves | What's Being Approved | Happens Between |
+|---|------|-------------|----------------------|-----------------|
+| **G1** | Requirements Sign-Off | PM (Kuroda-san) | Business rules, scope, allocation formula, reference prices, plan detection | Specify → Design |
+| **G2** | Design & Tasks Approval | Lead Dev + Dev | Architecture is sound, task breakdown is clear and executable | Design → Task Execution |
+| **G3** | Code Review | Lead Dev | Code is correct, follows steering standards, no regressions | Task Execution → Merge |
+
+### What Happens If a Gate Fails
+
+| Gate | If rejected | Who resolves | Timeline impact |
+|------|-------------|-------------|-----------------|
+| G1 | PM requests scope changes | Lead Dev revises requirements, resubmits | 1–2 days slip |
+| G2 | Design has flaws or tasks unclear | Lead Dev revises design/tasks | 0.5–1 day |
+| G3 | Code doesn't meet standards | Dev addresses feedback, re-requests review | 0.5 day per round |
+
+### ASCA/ASCI Spec Structure
+
+| Spec | Repo(s) | Phase | What it delivers |
+|---|---|---|---|
+| **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | Phase 1 (W2–W5) | DB schema (10 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
+| **ASCA Spec 02: CAP Integration** ⚠️ | `accounting_related_system_for_freee` | Phase 2 (W6–W9) | CommonUtil injection, CAP detection strategy, AllocationDetail CSV, DataCorrectionLogic allocation call, refund allocation |
+| **ASCI Spec 01: CIP Integration** ⚠️ | `accounting_related_system_for_freee` | Phase 3 (W10–W11) | CIP detection strategy (plans 1028–1032), CIP reference prices (L_coaching = ¥84,020) |
+
+⚠️ = Preliminary scope. May split into smaller specs during requirements generation if scope exceeds 15 tasks or 3-page design threshold. See Spec Overview note in Development Gantt section for probable split boundaries.
+
+### Multi-Repo Coordination (ASCA Spec 01)
+
+ASCA Spec 01 spans two repos. Execution order matters:
+
+```
+ls-database-migrations                    accounting_related_system_for_freee
+──────────────────────                    ──────────────────────────────────
+1. Create migration files (10 tables)     (can write model code in parallel)
+2. Run migrations on dev DB               
+3. Generate structure tests               
+4. PR → merge                            3. Create models, enums, services
+                                          4. Integration test against real tables
+                                          5. PR → merge
+```
+
+**Rule:** ls-db migrations must be merged and run BEFORE accounting repo models can be integration-tested. Model code CAN be written in parallel.
+
+### Gate Timeline (Mapped to Weeks)
+
+```
+W1:  ┣━━━━ Steering + Spec 01 requirements → ══ G1: PM Sign-Off ══
+W2:  ┣━━━━ Spec 01 design + tasks (after G1) → ══ G2: Lead + Dev Review ══
+W2:  ┣━━━━ Task execution begins (after G2)
+W5:  ┣━━━━ All Spec 01 PRs → ══ G3: Code Review ══ → Foundation complete
+W6:  ┣━━━━ Spec 02 requirements → ══ G1 ══ → design → ══ G2 ══ → execution
+W9:  ┣━━━━ All Spec 02 PRs → ══ G3 ══ → CAP Integration complete
+W10: ┣━━━━ ASCI Spec 01 requirements → ══ G1 ══ → design → ══ G2 ══ → execution
+W11: ┣━━━━ All ASCI PRs → ══ G3 ══ → CIP Integration complete → Dev done
+```
+
+**Note:** For ASCA Spec 02 and ASCI Spec 01, the gate cycle (G1→G2) is faster because:
+- Requirements are smaller (building on established foundation)
+- PM already approved the allocation formula and reference prices in Spec 01 G1
+- Design decisions (injection point, detection strategy) are documented in the technical design
+
+### JIRA Ticket Structure
+
+Each spec = 1 Epic with standard stories:
+
+```
+Epic: ASCA Spec 01 — Foundation
+├── Story: Requirements + Sign-off         → Assigned: PM (Kuroda-san)
+├── Story: Architecture (Design + Tasks)   → Assigned: Lead (Noel)
+├── Story: Coding (ls-db migrations)       → Assigned: Dev (Throy)
+├── Story: Coding (accounting application) → Assigned: Dev (Throy)
+├── Story: Code Review                     → Assigned: Lead (Noel)
+├── Story: Dev/Manual Testing              → Assigned: Lead (Noel)
+└── Story: QA Testing                      → Assigned: QA (Miko)
+
+Epic: ASCA Spec 02 — CAP Integration
+├── Story: Requirements + Sign-off         → Assigned: PM (Kuroda-san)
+├── Story: Architecture (Design + Tasks)   → Assigned: Lead (Noel)
+├── Story: Coding                          → Assigned: Dev (Throy)
+├── Story: Code Review                     → Assigned: Lead (Noel)
+├── Story: Dev/Manual Testing              → Assigned: Lead (Noel)
+└── Story: QA Testing                      → Assigned: QA (Miko)
+
+Epic: ASCI Spec 01 — CIP Integration
+├── Story: Requirements + Sign-off         → Assigned: PM (Kuroda-san)
+├── Story: Architecture (Design + Tasks)   → Assigned: Lead (Noel)
+├── Story: Coding                          → Assigned: Dev (Orlino or Cristoff)
+├── Story: Code Review                     → Assigned: Lead (Noel)
+├── Story: Dev/Manual Testing              → Assigned: Lead (Noel)
+└── Story: QA Testing                      → Assigned: QA (Glenn)
+```
+
+### Branch Strategy
+
+```
+accounting_related_system_for_freee:
+main
+└── feature/ASCA/ASCA-master (long-lived feature branch)
+    ├── feature/ASCA/asca-foundation         (Spec 01 → PR to ASCA-master)
+    ├── feature/ASCA/asca-cap-integration    (Spec 02 → PR to ASCA-master)
+    ├── feature/ASCI/asci-cip-integration    (ASCI Spec 01 → PR to ASCA-master)
+    ├── release/ASCA/dev04                   (deploy for QA)
+    └── release/ASCA/prod                    (production release)
+
+ls-database-migrations:
+main
+└── feature/ASCA/ASCA-master (long-lived feature branch)
+    └── feature/ASCA/asca-database-migrations (Spec 01a → PR to ASCA-master)
+```
+
+### Role Summary
+
+| Role | Person | What they do in this workflow |
+|---|---|---|
+| **PM** | Kuroda-san | Reviews requirements at G1, approves scope, resolves open business items |
+| **SDM** | Patrick-san | Manages JIRA epics/stories, tracks progress, presents to business |
+| **Lead** | Noel | Steering files, requirements, design, tasks, PR review, deployment |
+| **Dev 1** | Throy | Executes ASCA tasks with AI agent, creates PRs |
+| **Dev 2** | Orlino/Cristoff | Executes ASCI tasks with AI agent, creates PRs |
+| **QA (CAP)** | Miko | Tests ASCA CAP scenarios (10 cases) |
+| **QA (CIP)** | Glenn | Tests ASCI CIP scenarios (11 cases) |
+
+---
 
 ### Upstream Independence
 
