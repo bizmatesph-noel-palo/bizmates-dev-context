@@ -47,7 +47,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 | Task | Why (feeds into ASCA) |
 |---|---|
-| Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | Refactor existing duplication — shared service reused by ASCA/ASCI |
+| Extract ArchiverService + MailerService from DailyRateCalcPre + SendJournals + DataCorrection | Refactor existing duplication — shared services reused by ASCA/ASCI |
 | Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip | Fix latent bug — monthly plans shouldn't enter daily log via correction |
 | Fix DataCorrectionLogic drift: add missing fields (tax_free, country_id, gross_amount) | Align with CommonUtil schema |
 | Unit test extracted service + corrected DataCorrectionLogic | Verify no regression |
@@ -60,7 +60,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 ## What ASCA Builds
 
-1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract BatchReportDeliveryService
+1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract ArchiverService + MailerService
 2. **Shared Foundation:** DB migrations (`log_alloc_*` for batch tables, `mst_alloc_*` for reference prices — O-3 resolved), models, enums, run lifecycle, allocation engine
 3. **CAP-specific:** Detection for plans 1016–1027, reference prices (App ¥3,980, Coaching ¥19,800/¥39,600), AllocationDetail CSV
 4. **Injection:** Allocation call in `CommonUtil::createDailyRateCalculation()` + `DataCorrectionLogic`
