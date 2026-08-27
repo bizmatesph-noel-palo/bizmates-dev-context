@@ -77,11 +77,11 @@ Unlike the Daily/SendJournals commands which query `trn_charge` directly, the Co
 
 **Observable impact on reports:** None. The correction command generates the same CSVs as before. The added fields are not columns in any CSV output — they only exist in the DB table (`log_daily_rate_calculation`). The monthly plan skip prevents a hypothetical future bug (no monthly plan charges have ever been corrected via this path).
 
-### Change 2: BatchReportDeliveryService Extraction
+### Change 2: ArchiverService + MailerService Extraction
 
-**What:** Extracted the zip creation + file cleanup + email sending code from 3 Logic files into one shared `BatchReportDeliveryService`.
+**What:** Extracted the zip creation + file cleanup code into `ArchiverService` and email sending code into `MailerService`. Both are called from the 3 Logic files via `app()->make()`.
 
-**Why:** Eliminate duplication. ASCA will add a new CSV to the zip — with a shared service, that's a 1-line change instead of 3.
+**Why:** Eliminate duplication (SOLID: Single Responsibility). ASCA will add a new CSV to the zip — with separated services, that's a file list change, not a service change. Each service is independently testable and mockable for ASCA/ASCI.
 
 **Observable impact on reports:** None. The zip contents, file names, and email recipients are identical. Only the internal code structure changed.
 
