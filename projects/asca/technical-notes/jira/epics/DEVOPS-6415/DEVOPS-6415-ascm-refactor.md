@@ -42,10 +42,9 @@ The ASCA project (ASC for CAP — revenue allocation framework) injects into the
 
 - Fix DataCorrectionLogic: add `BizmatesMonthlyPlanEnum::exists()` skip (Bizmates only)
 - Fix DataCorrectionLogic: add missing `$condition` fields (`tax_free`, `country_id`, `gross_amount`)
-- Extract zip+email from `DailyRateCalculationPreLogic` into `BatchReportDeliveryService`
-- Extract zip+email from `SendJournalsDataLogic` into `BatchReportDeliveryService`
-- Extract zip+email from `DataCorrectionLogic` into `BatchReportDeliveryService`
-- Unit test for `BatchReportDeliveryService`
+- Extract zip logic from 3 Logic files into `ArchiverService`
+- Extract email logic from 3 Logic files into `MailerService`
+- Unit tests for `ArchiverService` and `MailerService`
 - Smoke test all 3 commands on DEV04
 - QA verification of generated reports
 
@@ -69,9 +68,9 @@ Stories already exist under this epic (created by Patrick-san per standard KPI s
 
 - [ ] DataCorrectionLogic skips monthly plans (`BizmatesMonthlyPlanEnum::exists()` — Bizmates only)
 - [ ] DataCorrectionLogic writes `tax_free`, `country_id`, `gross_amount` to log table
-- [ ] `BatchReportDeliveryService` exists and is called by all 3 Logic files
+- [ ] `ArchiverService` and `MailerService` exist and are called by all 3 Logic files
 - [ ] All 3 batch commands produce identical output to pre-refactor baseline
-- [ ] Unit test passes
+- [ ] Unit tests pass
 - [ ] QA verifies generated reports match expected output on DEV04
 
 ---
@@ -113,42 +112,63 @@ if ($data->containts !== 'Zipan' && BizmatesMonthlyPlanEnum::exists($trnCharge->
 
 Place them in the same positions as CommonUtil: `tax_free` after `start_date`, `country_id` and `gross_amount` after `paid_price`.
 
-### 2. Extract BatchReportDeliveryService
+### 2. Extract ArchiverService and MailerService
 
-**New file:** `app/Libs/BatchReportDeliveryService.php`
+**New files:**
+- `app/Libs/ArchiverService.php` — zip creation + source file cleanup (single responsibility)
+- `app/Libs/MailerService.php` — email dispatch with attachments (single responsibility)
 
 ```php
-class BatchReportDeliveryService
+class ArchiverService
 {
     /**
-     * Create zip from generated CSVs, send email, clean up source files.
+     * Create zip from generated CSVs and delete source files.
      *
      * @param array  $fileNameList  Map of filename => display name
-     * @param string $mailType      Config key for mail template
      * @param string $suffix        Zip filename suffix ('_pre', '', etc.)
      * @return string               Path to created zip file
      */
-    public static function deliver(array $fileNameList, string $mailType, string $suffix = ''): string
+    public function create(array $fileNameList, string $suffix = ''): string
     {
         // 1. Create ZipArchive
         // 2. Add all CSVs from $fileNameList
         // 3. Close zip
         // 4. Delete source CSVs
-        // 5. Send email via CommonUtil::sendMail()
-        // 6. Return zip path
+        // 5. Return zip path
+    }
+}
+
+class MailerService
+{
+    /**
+     * Send batch result email with zip attachment.
+     *
+     * @param string $zipFilePath   Path to zip file
+     * @param array  $fileNameList  Map of filename => display name (for email body)
+     * @param int    $mailType      Mail template ID
+     */
+    public function send(string $zipFilePath, array $fileNameList, int $mailType): void
+    {
+        // Delegates to CommonUtil::sendMail()
     }
 }
 ```
 
 **Replace in each Logic file:**
 
+```php
+// At the end of createSendMailAttacheFile():
+$zipFilePath = app(ArchiverService::class)->create($fileNameList, '_pre');
+app(MailerService::class)->send($zipFilePath, $fileNameList, config('const.mailType.dailyRateCalculationPreMail'));
+```
+
 | File | Mail type config key | Suffix |
 |---|---|---|
 | `DailyRateCalculationPreLogic` | `dailyRateCalculationPreMail` | `'_pre'` |
-| `SendJournalsDataLogic` | `sendJournalDataMail` | `''` |
+| `SendJournalsDataLogic` | `sendJournalsMail` | `''` |
 | `DataCorrectionLogic` | `reCalculation` | `''` |
 
-Each file keeps its `createSendMailAttacheFile()` for CSV generation but delegates zip/cleanup/email to the shared service.
+Each file keeps its `createSendMailAttacheFile()` for CSV generation but delegates zip/cleanup to `ArchiverService` and email to `MailerService`.
 
 ### 3. Verification
 
@@ -169,10 +189,12 @@ Pass: no errors in log, reports generated, CSVs match baseline.
 | File | Change |
 |---|---|
 | `app/Libs/DataCorrectionLogic.php` | Fix: monthly plan skip + 3 missing fields |
-| `app/Libs/DailyRateCalculationPreLogic.php` | Refactor: extract zip+email to service |
-| `app/Libs/SendJournalsDataLogic.php` | Refactor: extract zip+email to service |
-| `app/Libs/BatchReportDeliveryService.php` | **NEW** — shared delivery service |
-| `tests/Unit/Libs/BatchReportDeliveryServiceTest.php` | **NEW** — unit test |
+| `app/Libs/DailyRateCalculationPreLogic.php` | Refactor: extract zip+email to services |
+| `app/Libs/SendJournalsDataLogic.php` | Refactor: extract zip+email to services |
+| `app/Libs/ArchiverService.php` | **NEW** — zip creation + file cleanup |
+| `app/Libs/MailerService.php` | **NEW** — email dispatch |
+| `tests/Unit/Libs/ArchiverServiceTest.php` | **NEW** — unit test |
+| `tests/Unit/Libs/MailerServiceTest.php` | **NEW** — unit test |
 
 ---
 
