@@ -125,49 +125,6 @@ First real batch:                    Jan 1, 2027
 | Simpler testing (E2E = run existing command) | 3 days | No separate command integration tests needed. |
 | **Total saved** | **~16 days (~3 weeks)** | |
 
-### ASCM Knowledge Base Application
-
-| ASCM Lesson | How Scenario D applies it |
-|---|---|
-| KB #13: Tenant duplication | CAP/CIP is Bizmates-only. No Zipan path to duplicate. |
-| KB #14: Pre/Final duplication | Single `AscAllocationService` with `$preFlg`. One codebase, two modes. |
-| KB #15: Unsafe delete scope | Delete by `target_ym + project_code`. Never `created_at`. |
-| KB #12: Stale aggregation | Clear-and-rebuild within transaction. Idempotent re-runs. |
-| KB #10: Pre/Final table mismatch | N source table is explicit config, not implicit convention. |
-| KB #16: Global mutable state | Service receives dates as parameters. Doesn't use `CommonUtil::setSystemDate()`. |
-
----
-
-## Estimate
-
-| Metric | Value | Confidence |
-|---|---|---|
-| **ASCM Refactor (DEVOPS-6415)** | 3–5 days | High — starts Aug 24 |
-| **ASC-CAP Dev (incl. shared foundation)** | 4–5 weeks (Noel + Throy) | Medium-High — code analyzed, injection points identified |
-| **ASC-CIP Dev (reuses foundation)** | 1–1.5 weeks (same team or Orlino + Cristoff) | High — only adds strategy + config |
-| **Total Dev** | 5.5–6.5 weeks | Medium-High |
-| **QA** | 4–5 weeks (overlapping with dev) | Medium |
-| **End-to-end** | ~11 weeks (W0–W11) | Medium |
-| **Available time** | 17 weeks / 80 workdays (Aug 24 → Dec 17) | — |
-| **Buffer** | ~5 weeks (~25 workdays) | High — very comfortable margin |
-| **Deadline** | 2026/12/17 | Fixed |
-| **First production batch** | 2027/01/01 | Fixed |
-
----
-
-## Confirmed Data
-
-| Item | CAP | CIP |
-|---|---|---|
-| Plan IDs | 1016–1027 (12 plans) | 1028–1032 (5 plans) |
-| Coaching product_id | 10005 (15min) / 10015 (30min) | 10022 (Intensive) |
-| App product_id | 10021 | 10021 |
-| L_coaching (reference) | ¥19,800 (15min) / ¥39,600 (30min) | ¥84,020 (= plan ¥88,000 − L_app) |
-| L_app (reference) | ¥3,980 | ¥3,980 |
-| App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
-| Date filter needed? | No (new plans) | No (new plans) |
-| Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
-
 ---
 
 ## Implementation Phases — Detailed
@@ -181,10 +138,10 @@ Scope: Refactoring and fixing EXISTING code only. No new features, no new tables
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
 | 1 | **Fix** | Lead | Fix DataCorrectionLogic drift | Add `BizmatesMonthlyPlanEnum::exists()` skip at top of `createDailyRateCalculation()`. Add missing `$condition` fields: `tax_free`, `country_id`, `gross_amount`. |
-| 2 | **Extract** | Lead | Extract zip+email from DailyRateCalculationPreLogic | Move into `BatchReportDeliveryService::deliver($fileNameList, $mailType, $suffix)`. |
-| 3 | **Extract** | Lead | Extract zip+email from SendJournalsDataLogic | Same extraction — replace inline zip+email with service call. |
-| 4 | **Extract** | Lead | Extract zip+email from DataCorrectionLogic | Same extraction — replace inline zip+email with service call. |
-| 5 | **Test** | Lead | Unit test BatchReportDeliveryService | Basic service test — zip creation, file cleanup, email dispatch. |
+| 2 | **Extract** | Lead | Extract zip into ArchiverService | Move `ZipArchive` creation + file cleanup into `ArchiverService::create($fileNameList, $suffix)`. |
+| 3 | **Extract** | Lead | Extract email into MailerService | Move email dispatch into `MailerService::send($zipFilePath, $fileNameList, $mailType)`. |
+| 4 | **Refactor** | Lead | Update 3 Logic files to call services | Replace inline zip+email with `app(ArchiverService::class)->create(...)` + `app(MailerService::class)->send(...)`. |
+| 5 | **Test** | Lead | Unit test ArchiverService + MailerService | Zip creation, file cleanup, email dispatch tested in isolation. |
 | 6 | **Test** | Lead | Verify DataCorrectionLogic fix via smoke test | Run DataCorrection on DEV04 to confirm monthly plans skipped + fields present. |
 | 7 | **Verify** | Lead | Run Pre + Final + Correction commands on DEV04 | Check: no runtime errors, reports generated, email dispatch logged. |
 | 8 | **Verify** | Lead | Collect generated reports/CSVs | Hand off to QA Team for manual verification. |
@@ -193,7 +150,8 @@ Scope: Refactoring and fixing EXISTING code only. No new features, no new tables
 **NOT in DEVOPS-6415:** DB migrations, models, allocation service, test data seeder, reference prices — those are ASCA Spec 01.
 
 **Deliverables:**
-- `BatchReportDeliveryService` class (new, shared by all 3 commands)
+- `ArchiverService` class (zip creation + file cleanup)
+- `MailerService` class (email dispatch)
 - DataCorrectionLogic aligned with CommonUtil (skip + fields)
 - Baseline documentation (CSV list, smoke test results)
 - All 3 commands verified working on DEV04 after changes
@@ -250,6 +208,22 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 | 4 | Detection strategy + bundle generation | Dev 1 | 3–4 days | None |
 | 5 | Allocation engine + ΣN computation + validations V-1 to V-5 | Dev 1 | 4–5 days | None |
 | 6 | Test data seeder (mock CAP/CIP charges for DEV04) | Lead | 1 day | None |
+
+**DB Schema (Step 1 deliverable — 10 tables + 1 view):**
+
+| # | Table | Prefix | Role |
+|---|---|---|---|
+| 1 | `log_alloc_calculation_runs` | `log_*` | Run lifecycle (status, timing, error messages) |
+| 2 | `log_alloc_source_documents` | `log_*` | Immutable input snapshots (original N before overwrite) |
+| 3 | `log_alloc_bundles` | `log_*` | Bundle header (primary_charge_id, match_rule) |
+| 4 | `log_alloc_bundle_charges` | `log_*` | Products per bundle (always 2 today) |
+| 5 | `log_alloc_groups` | `log_*` | One bundle × one month (ΣN, ΣP, is_balanced) |
+| 6 | `log_alloc_prorations` | `log_*` | Core: one row per product per group (L, ratio, N, P) |
+| 7 | `mst_alloc_reference_prices` | `mst_*` | Allocation weights (effective-dated) — master data |
+| 8 | `log_alloc_sum_calculation` | `log_*` | Freee aggregation |
+| 9 | `log_alloc_sum_calculation_history` | `log_*` | Trace: summary → allocation rows |
+| 10 | `log_alloc_deliveries` | `log_*` | Freee/CSV/email attempt tracking |
+| 11 | `v_alloc_prorations_active` | `v_*` | View for active-run queries |
 
 ---
 
@@ -355,8 +329,8 @@ Dev Team:                 ║═════════════════
 | Category | Owner | Task | W0 (Aug 24) | W1 (Aug 31)🔴 | W2 (Sep 7) | W3 (Sep 14) | W4 (Sep 21) | W5 (Sep 28) | W6 (Oct 5) | W7 (Oct 12) | W8 (Oct 19) | W9 (Oct 26) | W10 (Nov 2)🔴 | W11 (Nov 9) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | **ASCM Refactor** | Lead | Fix DataCorrectionLogic drift | ■ | | | | | | | | | | | |
-| **ASCM Refactor** | Lead | Extract BatchReportDeliveryService (3 files) | ■ | | | | | | | | | | | |
-| **ASCM Refactor** | Lead | Unit test extracted service | ■ | | | | | | | | | | | |
+| **ASCM Refactor** | Lead | Extract ArchiverService + MailerService (from 3 files) | ■ | | | | | | | | | | | |
+| **ASCM Refactor** | Lead | Unit test extracted services | ■ | | | | | | | | | | | |
 | **ASCM Regression** | Lead | Smoke test Pre + Final + Correction on DEV04 | ■ | | | | | | | | | | | |
 | **ASCM Regression** | QA Team | Manual verification: compare reports | | ■ | | | | | | | | | | |
 | ══ **GATE** ══ | QA Team | **ASCM Regression gate pass** | | ■ | | | | | | | | | | |
@@ -706,24 +680,6 @@ ASC is NOT blocked by upstream timelines:
 
 ---
 
-## DB Schema (10 tables + 1 view)
-
-| # | Table | Prefix | Role |
-|---|---|---|---|
-| 1 | `log_alloc_calculation_runs` | `log_*` | Run lifecycle (status, timing, error messages) |
-| 2 | `log_alloc_source_documents` | `log_*` | Immutable input snapshots (original N before overwrite) |
-| 3 | `log_alloc_bundles` | `log_*` | Bundle header (primary_charge_id, match_rule) |
-| 4 | `log_alloc_bundle_charges` | `log_*` | Products per bundle (always 2 today) |
-| 5 | `log_alloc_groups` | `log_*` | One bundle × one month (ΣN, ΣP, is_balanced) |
-| 6 | `log_alloc_prorations` | `log_*` | Core: one row per product per group (L, ratio, N, P) |
-| 7 | `mst_alloc_reference_prices` | `mst_*` | Allocation weights (effective-dated) — master data |
-| 8 | `log_alloc_sum_calculation` | `log_*` | Freee aggregation |
-| 9 | `log_alloc_sum_calculation_history` | `log_*` | Trace: summary → allocation rows |
-| 10 | `log_alloc_deliveries` | `log_*` | Freee/CSV/email attempt tracking |
-| 11 | `v_alloc_prorations_active` | `v_*` | View for active-run queries |
-
----
-
 ## Key Dates (History + Future)
 
 | Date | Event |
@@ -752,14 +708,35 @@ ASC is NOT blocked by upstream timelines:
 
 ---
 
-## Next Steps (as of 2026-08-20)
+## Current Status
 
-**Start date: Aug 24, 2026.** All blockers cleared.
+**Last updated:** 2026-08-27 (Thursday)  
+**Current week:** W0 (Aug 24–28) — ASCM Refactor (DEVOPS-6415)
 
-1. **Noel:** Begin ASCM Refactor (DEVOPS-6415) on Aug 24 — first action on the critical path.
-2. **Noel:** Confirm P-3 with CAP team (Keith/Terry) — will coaching product_id change? (non-blocking, but good to settle in W0)
-3. **Patrick-san:** Confirm Throy's availability for W2 (Foundation phase — migrations + allocation engine).
-4. **Noel:** After Refactor regression passes (~Sep 5) → Step 1 (migrations with `log_alloc_*` prefix).
+| Item | Status |
+|---|---|
+| DataCorrectionLogic drift fix | ✅ Complete — monthly plan skip + missing fields added |
+| ArchiverService + MailerService extraction | ✅ Complete — all 3 Logic files refactored |
+| Unit tests | ✅ Complete — ArchiverServiceTest + MailerServiceTest |
+| Smoke test on DEV04 | ⏳ Pending — deploy branch and run 3 commands |
+| QA manual verification (W1) | ⏳ Not started — blocked by smoke test |
+| P-3: Confirm coaching product_id with CAP team | ⏳ Open — non-blocking |
+| Throy availability for W2 | ⏳ Confirm with Patrick-san |
+
+---
+
+## Reference: Confirmed Data
+
+| Item | CAP | CIP |
+|---|---|---|
+| Plan IDs | 1016–1027 (12 plans) | 1028–1032 (5 plans) |
+| Coaching product_id | 10005 (15min) / 10015 (30min) | 10022 (Intensive) |
+| App product_id | 10021 | 10021 |
+| L_coaching (reference) | ¥19,800 (15min) / ¥39,600 (30min) | ¥84,020 (= plan ¥88,000 − L_app) |
+| L_app (reference) | ¥3,980 | ¥3,980 |
+| App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
+| Date filter needed? | No (new plans) | No (new plans) |
+| Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
 
 ---
 
