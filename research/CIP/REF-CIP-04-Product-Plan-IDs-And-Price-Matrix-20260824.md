@@ -12,7 +12,7 @@
 | **Status** | Active — supersedes product_id and price figures in REF-CIP-03 |
 | **Audience** | Dev team (ASCA/ASCI), Kuroda-san (PM), Patrick-san (SDM) |
 | **Supersedes** | REF-CIP-03 (product_id 10022, price ¥88,000) |
-| **Open items raised** | O-5 (L_coaching reopened), O-7 (product_id change — confirmed), O-8 (2-way vs 3-way split) — pending Kuroda-san/Accounting |
+| **Open items raised** | O-5 (L_coaching reopened — pending Kuroda-san/Accounting), O-7 (product_id change — ✅ confirmed FINAL), O-8 (split arity — ✅ resolved 2026-08-28: **2-way**, Coaching + App only) |
 
 ---
 
@@ -80,7 +80,7 @@ The detection query in the technical design (§9) uses:
 ```php
 ->whereIn('c.product_id', [10005, 10015, 10022, 10021])
 ```
-Must change `10022` → `10025` once confirmed. Also, plans 1029–1032 bundle Online Lesson (1L–4L) — the bundle now has MORE than 2 products (Lesson + Coaching Intensive + App), which may change the allocation split from 2-way to 3-way for those plans. **This needs analysis** — CAP is strictly 2-way (Coaching + App); CIP plans 1029–1032 appear to be 3-way.
+Change `10022` → `10025` (CIP coaching) and `10021` → `10022` (App). **✅ Split arity resolved (2026-08-28, Kuroda-san): 2-way (Coaching + App only)** for ALL CIP plans including 1029–1032. Online Lesson is handled separately by the existing daily-rate logic and does NOT enter the allocation — same as CAP. So detection whereIn = `[10005, 10015, 10025, 10022]` and the split stays 2-way.
 
 ---
 
@@ -88,7 +88,8 @@ Must change `10022` → `10025` once confirmed. Also, plans 1029–1032 bundle O
 
 1. **L_coaching for CIP:** Is it ¥71,920 (¥75,900 − ¥3,980 App)? Or does Accounting define it differently? (reopens O-5)
 2. **App price in CIP:** Still ¥3,980 tax-incl, same as CAP? The formula lumps "Coaching Intensive & App" — need the App portion isolated.
-3. **3-way split for 1029–1032:** Plans with Online Lesson (1L–4L) bundle 3 products. Does ASCI allocate across all 3, or is Lesson recognized separately (leaving Coaching + App as the 2-way split)?
+3. ~~**3-way split for 1029–1032:**~~ ✅ **RESOLVED (2026-08-28, Kuroda-san): 2-way (Coaching + App only).** Online Lesson handled separately by existing daily-rate logic — does not enter the allocation. Same as CAP.
+   - **Source:** [Kuroda-san Slack confirmation (2026-08-28)](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) — *"This's 2 products, Coaching and App only."*
 4. **Half Price columns:** What triggers half price? Is it a first-period discount (like Honki Set month-6), and does it affect the allocation basis?
 5. **product_id 10025 confirmation:** Confirm the whereIn detection update and any Freee mapping (mst_code_change / mst_rule_for_journals) for the new product_id.
 

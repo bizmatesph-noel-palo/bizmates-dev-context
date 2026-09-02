@@ -261,8 +261,8 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
-| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product **10025**, L_coaching (🔴 pending O-5 re-confirm), split arity (⚠️ pending O-8). Written during W9. |
-| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection, reference price (pending O-5), and 2-way vs 3-way split (pending O-8). |
+| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product **10025**, L_coaching (🔴 pending O-5 re-confirm). Split confirmed 2-way (O-8). Written during W9. |
+| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection and reference price (pending O-5). Split arity already confirmed 2-way. |
 | 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — CIP enum, reference price seeder row, detection query addition. Minimal design since it reuses ASCA engine. |
 | 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm scope is config-only addition. |
 | 5 | **Execute** | Dev 2 | CIP Detection Strategy (`CoachingIntensivePlanEnum`: 1028–1032) + reference price config | ~3–5 days |
@@ -310,7 +310,7 @@ Dev Team:                 ║═════════════════
 |---|---|---|
 | **ASCA Spec 01** | Foundation | New DB tables (`log_alloc_*`, `mst_alloc_*`), Eloquent models, plan detection enums, allocation engine (formula + idempotency), run lifecycle service, reference price seeder, test data seeder |
 | **ASCA Spec 02** | CAP Integration ⚠️ | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation |
-| **ASCI Spec 01** | CIP Integration ⚠️ | CIP bundle detection (plans 1028–1032, product **10025**), CIP reference prices (L_coaching 🔴 pending O-5). Config-only addition IF 2-way; larger IF 3-way (⚠️ O-8 pending). |
+| **ASCI Spec 01** | CIP Integration | CIP bundle detection (plans 1028–1032, product **10025**), CIP reference prices (L_coaching 🔴 pending O-5). Config-only addition — 2-way split confirmed (O-8), same as CAP. |
 
 > ⚠️ **Spec sizing note (ASCA Spec 02 and ASCI Spec 01):**
 >
@@ -542,10 +542,10 @@ ASC is NOT blocked by upstream timelines:
 | O-5 | CIP coaching reference price | Accounting | 🔴 **REOPENED (2026-08-28)** — plan price ¥88,000 → ¥75,900. ¥84,020 stale. New L_coaching pending (likely ¥71,920). | ASCI seeder |
 | O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
 | O-7 | Product ID changes | Business (Go-san) | ✅ **Confirmed FINAL (2026-08-19)** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. | Detection + seeder + Freee mapping |
-| O-8 | CIP split arity | Accounting (Kuroda-san) | ⚠️ **Open** — CIP 1029–1032 bundle Lesson+Coaching+App (3 products). Confirm 2-way vs 3-way split. | ASCI scope/effort |
+| O-8 | CIP split arity | Accounting (Kuroda-san) | ✅ **Resolved (2026-08-28)** — **2-way (Coaching + App)**, even for 1029–1032. Lesson handled separately. Same as CAP → ASCI stays config-only. [Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | — |
 
-**Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic and unaffected by the CIP price/split questions.
-**Blockers for ASCI:** O-5 (reference price) and O-8 (split arity) must resolve before ASCI design (W10).
+**Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic and unaffected by the CIP price question.
+**Blockers for ASCI:** O-5 (reference price) must resolve before ASCI design (W10). O-8 resolved (2-way).
 
 ---
 
@@ -619,7 +619,7 @@ ASC is NOT blocked by upstream timelines:
 
 > **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. See `research/CIP/REF-CIP-04-*`. Note `10022` now = App (was CIP coaching).
 > **🔴 O-5 reopened:** CIP plan price dropped ¥88,000 → ¥75,900, so the ¥84,020 L_coaching is stale. Awaiting Kuroda-san/Accounting.
-> **⚠️ O-8 open:** CIP plans 1029–1032 bundle Lesson + Coaching + App (3 products) — confirm 2-way vs 3-way split before ASCI.
+> **✅ O-8 resolved (2026-08-28):** CIP is **2-way (Coaching + App)**, even for plans 1029–1032. Online Lesson handled separately by existing daily-rate logic. Same split as CAP.
 | App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
 | Date filter needed? | No (new plans) | No (new plans) |
 | Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |

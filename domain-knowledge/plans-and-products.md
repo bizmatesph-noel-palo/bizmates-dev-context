@@ -187,7 +187,7 @@ New premium coaching product. **ASC allocation required.**
 | 1032 | 4L + FVP + Coaching Intensive | ¥117,150 | 4 + 10011 + 10025 + 10022 | Intensive | ¥0 |
 
 > **Updated 2026-08-24 (REF-CIP-04):** Coaching Intensive product_id = **10025** (was 10022). App = **10022** (was 10021). Prices are tax-incl full price per Jefferson's matrix (Solo ¥75,900, was ¥88,000). Base formula: ¥69,000 pre-tax (Coaching Intensive + App) + Online Lesson.
-> **⚠️ O-8:** Plans 1029–1032 bundle Lesson + Coaching Intensive + App (3 products) — confirm whether allocation is 2-way (Coaching+App) or 3-way before ASCI.
+> **✅ O-8 resolved (2026-08-28, Kuroda-san):** Allocation is **2-way (Coaching + App only)** for all CIP plans including 1029–1032. Online Lesson is handled separately by the existing daily-rate logic — it does NOT enter the allocation split.
 
 **Upstream project:** CIP (Coaching Intensive Plan)  
 **ASC project:** ASC-CIP  
