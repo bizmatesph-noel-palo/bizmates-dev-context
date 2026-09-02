@@ -62,7 +62,7 @@ First real batch:                    Jan 1, 2027
 | Term | Full Name | What it is | Owner |
 |---|---|---|---|
 | **CAP** | Coaching and App Plan | Upstream project — creates new plans 1016–1027 in MBTI_backend | CAP team (Keith, Terry) |
-| **CIP** | Coaching Intensive Plan | Upstream project — creates new product 10022 with plans 1028–1032 in MBTI_backend | CIP team (Jefferson) |
+| **CIP** | Coaching Intensive Plan | Upstream project — creates new product **10025** with plans 1028–1032 in MBTI_backend | CIP team (Jefferson) |
 | **ASCA** | ASC for CAP | Our project — allocates CAP coaching charge revenue | Noel's team |
 | **ASCI** | ASC for CIP | Our project — allocates CIP coaching charge revenue | Noel's team |
 
@@ -111,7 +111,7 @@ First real batch:                    Jan 1, 2027
 | Injection point | `CommonUtil::createDailyRateCalculation()` | Covers Pre, Final, and DataCorrection batches. |
 | N definition | Σ(paid_price) across bundle (coaching + app) | Idempotent by construction — safe on re-runs. |
 | Bundle grouping | student_id + order_no | Handles cancel+repurchase, simultaneous plans. |
-| Detection | product_id 10021 (App) + plan_id enums | Stable anchor. Works for both CAP and CIP. |
+| Detection | product_id 10022 (App, new id) + plan_id enums | Anchor on App id. Works for both CAP and CIP. (App id changed 10021→10022 on 2026-08-19) |
 | Execution order | ASC-CAP first → ASC-CIP second | CAP requirements more concrete. CIP reuses foundation. |
 
 ### Why Scenario D Over Scenario C
@@ -261,8 +261,8 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
-| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product 10022, L_coaching = ¥84,020. Written during W9 (overlaps with ASCA dev testing). |
-| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection, reference price (¥84,020 = ¥88,000 − ¥3,980). |
+| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product **10025**, L_coaching (🔴 pending O-5 re-confirm), split arity (⚠️ pending O-8). Written during W9. |
+| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection, reference price (pending O-5), and 2-way vs 3-way split (pending O-8). |
 | 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — CIP enum, reference price seeder row, detection query addition. Minimal design since it reuses ASCA engine. |
 | 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm scope is config-only addition. |
 | 5 | **Execute** | Dev 2 | CIP Detection Strategy (`CoachingIntensivePlanEnum`: 1028–1032) + reference price config | ~3–5 days |
@@ -310,7 +310,7 @@ Dev Team:                 ║═════════════════
 |---|---|---|
 | **ASCA Spec 01** | Foundation | New DB tables (`log_alloc_*`, `mst_alloc_*`), Eloquent models, plan detection enums, allocation engine (formula + idempotency), run lifecycle service, reference price seeder, test data seeder |
 | **ASCA Spec 02** | CAP Integration ⚠️ | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation |
-| **ASCI Spec 01** | CIP Integration ⚠️ | CIP bundle detection (plans 1028–1032, product 10022), CIP reference prices (L_coaching = ¥84,020), reuses ASCA Spec 01 engine — config-only addition |
+| **ASCI Spec 01** | CIP Integration ⚠️ | CIP bundle detection (plans 1028–1032, product **10025**), CIP reference prices (L_coaching 🔴 pending O-5). Config-only addition IF 2-way; larger IF 3-way (⚠️ O-8 pending). |
 
 > ⚠️ **Spec sizing note (ASCA Spec 02 and ASCI Spec 01):**
 >
@@ -356,7 +356,7 @@ Dev Team:                 ║═════════════════
 | ══ **GATE 3** ══ | Lead | **Code review — CAP Integration PRs (injection + CSV + refund)** | | | | | | | | | ■ | | | |
 | **ASCA Integration** | Lead + Dev 1 | ASCA dev testing on DEV04 (full pipeline) | | | | | | | | | | ■ | | |
 | **Spec Prep** | Lead | ASCI Spec 01 (CIP Integration): requirements.md → design.md → tasks.md | | | | | | | | | | ■ | | |
-| ══ **GATE 1** ══ | PM | **Requirements sign-off — CIP plans 1028–1032, L_coaching = ¥84,020** | | | | | | | | | | ■ | | |
+| ══ **GATE 1** ══ | PM | **Requirements sign-off — CIP plans 1028–1032, product 10025, L_coaching (O-5) + split arity (O-8)** | | | | | | | | | | ■ | | |
 | ══ **GATE 2** ══ | Lead + Dev | **Design & tasks approval — CIP detection strategy + config** | | | | | | | | | | ■ | | |
 | **ASCI Integration** | Dev 2 | CIP Detection Strategy + reference prices | | | | | | | | | | | ■ | ■ |
 | ══ **GATE 3** ══ | Lead | **Code review — CIP Integration PRs (detection + config)** | | | | | | | | | | | | ■ |
@@ -536,14 +536,16 @@ ASC is NOT blocked by upstream timelines:
 | ID | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
 | **O-3** | **Table prefix** | **Engineering** | **✅ Resolved (2026-08-17)** — `log_alloc_*` for batch-generated, `mst_alloc_*` for reference prices. Approved by Kuroda-san. | — |
-| O-1 | CAP App product_id | CAP team | ✅ Resolved — 10021 (2026-08-12) | — |
+| O-1 | CAP App product_id | CAP team | ✅ Resolved — was 10021; changed to **10022** on 2026-08-19 (see O-7) | — |
 | O-2 | Asymmetric discount (CIP RA-04) | Accounting | Low risk — if rejected, proration_basis returns | — |
 | O-4 | B2B App reversal logic | Accounting + CAP | Post-release (Phase 4) | — |
-| O-5 | CIP coaching reference price | Accounting | ✅ Resolved — ¥84,020 (2026-08-17) | — |
+| O-5 | CIP coaching reference price | Accounting | 🔴 **REOPENED (2026-08-28)** — plan price ¥88,000 → ¥75,900. ¥84,020 stale. New L_coaching pending (likely ¥71,920). | ASCI seeder |
 | O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
-| P-3 | CAP new coaching product_id | CAP team | ⚠️ Non-blocking — detection uses product 10021 + plan_id. Config update if confirmed. | — |
+| O-7 | Product ID changes | Business (Go-san) | ✅ **Confirmed FINAL (2026-08-19)** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. | Detection + seeder + Freee mapping |
+| O-8 | CIP split arity | Accounting (Kuroda-san) | ⚠️ **Open** — CIP 1029–1032 bundle Lesson+Coaching+App (3 products). Confirm 2-way vs 3-way split. | ASCI scope/effort |
 
-**All blockers cleared.** Development can start immediately.
+**Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic and unaffected by the CIP price/split questions.
+**Blockers for ASCI:** O-5 (reference price) and O-8 (split arity) must resolve before ASCI design (W10).
 
 ---
 
@@ -555,7 +557,7 @@ ASC is NOT blocked by upstream timelines:
 | Allocation can't run independently | LOW | LOW | Thin debug command: `php artisan asc:allocation-debug {exeDate}` (~15 lines) |
 | QA finds edge cases late | MEDIUM | MEDIUM | Buffer week. Property-based tests catch invariant violations early. |
 | CIP reference prices change | LOW | LOW | Effective-dated config in `mst_alloc_reference_prices`. No code change needed. |
-| CAP team creates new coaching product_id (P-3) | MEDIUM | LOW | Detection anchored on product 10021 + plan_id enum. Config update only. |
+| Product ids changed (O-7, done) | — | LOW | App 10021→10022, CIP coaching 10022→10025 (2026-08-19, final). Detection whereIn + seeder + Freee mapping use new ids. |
 | Upstream delays (CAP/CIP not in prod by late Nov) | LOW | ZERO | ASC uses seeded test data. Real validation happens Jan 1. |
 
 ---
@@ -610,10 +612,14 @@ ASC is NOT blocked by upstream timelines:
 | Item | CAP | CIP |
 |---|---|---|
 | Plan IDs | 1016–1027 (12 plans) | 1028–1032 (5 plans) |
-| Coaching product_id | 10005 (15min) / 10015 (30min) | 10022 (Intensive) |
-| App product_id | 10021 | 10021 |
-| L_coaching (reference) | ¥19,800 (15min) / ¥39,600 (30min) | ¥84,020 (= plan ¥88,000 − L_app) |
+| Coaching product_id | 10005 (15min) / 10015 (30min) | **10025** (Intensive — changed from 10022 on 2026-08-19) |
+| App product_id | **10022** (changed from 10021 on 2026-08-19) | **10022** (same as CAP) |
+| L_coaching (reference) | ¥19,800 (15min) / ¥39,600 (30min) | 🔴 ¥84,020 STALE — O-5 reopened (plan now ¥75,900, new L_coaching pending) |
 | L_app (reference) | ¥3,980 | ¥3,980 |
+
+> **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. See `research/CIP/REF-CIP-04-*`. Note `10022` now = App (was CIP coaching).
+> **🔴 O-5 reopened:** CIP plan price dropped ¥88,000 → ¥75,900, so the ¥84,020 L_coaching is stale. Awaiting Kuroda-san/Accounting.
+> **⚠️ O-8 open:** CIP plans 1029–1032 bundle Lesson + Coaching + App (3 products) — confirm 2-way vs 3-way split before ASCI.
 | App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
 | Date filter needed? | No (new plans) | No (new plans) |
 | Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
