@@ -234,8 +234,8 @@ Formula: `P_app = floor(N × L_app / (L_coaching + L_app))`
 |---|---|---|
 | Monthly plans | `BizmatesMonthlyPlanEnum::exists($productId)` | CommonUtil line 401 (skip in daily rate) |
 | Zipan monthly | `ZipanMonthlyPlanEnum::exists($productId)` | ZipanUtil (skip in daily rate) |
-| CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` or `product_id = 10021` | AscAllocationService (new) |
-| CIP bundles | `CoachingIntensivePlanEnum::exists($planId)` or `product_id = 10021` | AscAllocationService (new) |
+| CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` or `product_id = 10021` | RevenueAllocationService (new) |
+| CIP bundles | `CoachingIntensivePlanEnum::exists($planId)` or `product_id = 10021` | RevenueAllocationService (new) |
 | Excluded from proration | `NotDailyCalculationProductType` config (product_type 8) | CommonUtil (full amount at start_date) |
 
 ---
