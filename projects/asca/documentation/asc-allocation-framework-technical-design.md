@@ -143,8 +143,8 @@ The formula works identically regardless of month or proration — it just split
 | **N** | Bundle group total | Σ(paid_price) of coaching + app rows | Computed at allocation time | The sum of all rows in the bundle for a given target_ym. Using the group total (not coaching row alone) makes allocation idempotent — N is invariant across re-runs. |
 | **P_coaching** | Allocated coaching amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten) | N minus App's share. What Freee should book as Coaching revenue. |
 | **P_app** | Allocated app amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten from 0) | App's proportional share. What Freee should book as App revenue. |
-| **L_app** | App reference price | `asc_alloc_reference_prices` | Config / DB | ¥3,980 tax-inclusive. Standalone selling price of App. |
-| **L_coaching** | Coaching reference price | `asc_alloc_reference_prices` | Config / DB | ¥19,800 (15min) or ¥39,600 (30min) tax-inclusive. |
+| **L_app** | App reference price | `mst_alloc_reference_prices` | Config / DB | ¥3,980 tax-inclusive. Standalone selling price of App. |
+| **L_coaching** | Coaching reference price | `mst_alloc_reference_prices` | Config / DB | ¥19,800 (15min) or ¥39,600 (30min) tax-inclusive. |
 
 ### Data Flow: Source → Calculation → Output
 
@@ -196,16 +196,16 @@ AGGREGATION (feeds Freee + CSVs)
 
 AUDIT TABLES (new — allocation detail)
 ┌─────────────────────────────────────────────────────┐
-│ asc_alloc_calculation_runs                          │
+│ log_alloc_calculation_runs                          │
 │   • run_id, project_code, target_ym, run_type     │
 │   • status (creating/completed/failed)             │
 │                                                     │
-│ asc_alloc_prorations                                │
+│ log_alloc_prorations                                │
 │   • charge_id, product_id, reference_price (L)     │
 │   • original_amount (N), allocated_amount (P)      │
 │   • ratio                                           │
 │                                                     │
-│ asc_alloc_source_documents                          │
+│ log_alloc_source_documents                          │
 │   • Immutable snapshot of N values before overwrite│
 └─────────────────────────────────────────────────────┘
 ```
@@ -226,7 +226,7 @@ AUDIT TABLES (new — allocation detail)
 
 ### How Reference Prices Are Stored
 
-Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change without code changes):
+Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change without code changes):
 
 ```php
 // Seeder data
@@ -342,7 +342,7 @@ public static function createDailyRateCalculation(
     // Step [b]: ★ NEW — ASC Allocation (Overwrite N → P) ★
     // ═══════════════════════════════════════════════════════════════
     try {
-        app(AscAllocationService::class)->allocate($targetYm, $preFlg);
+        app(RevenueAllocationService::class)->allocate($targetYm, $preFlg);
     } catch (\Throwable $e) {
         Log::error('[ASC_ALLOC] Allocation failed: ' . $e->getMessage());
         Log::error($e->getTraceAsString());
@@ -406,7 +406,7 @@ private function createDailyRateCalculation($data)
     // ═══════════════════════════════════════════════════════════════
     try {
         $targetYm = CommonUtil::getTargetYm();
-        app(AscAllocationService::class)->allocate($targetYm, preFlg: false);
+        app(RevenueAllocationService::class)->allocate($targetYm, preFlg: false);
     } catch (\Throwable $e) {
         Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
     }
@@ -426,7 +426,7 @@ private function createDailyRateCalculation($data)
 - Effort: 0.5–1 day
 
 **Phase 2 (ASC-CAP):** Add allocation call to DataCorrectionLogic:
-- Add `AscAllocationService::allocateForCharge($chargeId, $targetYm)` method to the service (targeted single-charge allocation, not full-month rebuild)
+- Add `RevenueAllocationService::allocateForCharge($chargeId, $targetYm)` method to the service (targeted single-charge allocation, not full-month rebuild)
 - Call it from DataCorrectionLogic after the INSERT loop
 - Effort: included in allocation service design (~5 lines at call site)
 
@@ -455,7 +455,7 @@ foreach ($ContractDateLists as $key => $value) {
 // ★ Phase 2 (ASC-CAP): Allocate this specific charge ★
 try {
     $targetYm = array_key_first($ContractDateLists);  // target_ym from the first period
-    app(AscAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
+    app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
 } catch (\Throwable $e) {
     Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
 }
@@ -474,7 +474,7 @@ CommonUtil::createDailyRateCalculation()
 │       Log error                                  - log table still has N
 │       Mark run as failed                         - system behaves as today
 │       Continue to step [c]                       - no revenue lost
-│   }                                              - visible in asc_alloc_calculation_runs
+│   }                                              - visible in log_alloc_calculation_runs
 │
 └── Step [c]: Build sum from log table         ← Works with N or P (either way valid)
 ```
@@ -485,10 +485,10 @@ CommonUtil::createDailyRateCalculation()
 
 ## 9. The Allocation Service — Internal Design
 
-### AscAllocationService::allocate()
+### RevenueAllocationService::allocate()
 
 ```php
-class AscAllocationService
+class RevenueAllocationService
 {
     public function allocate(string $targetYm, bool $preFlg): void
     {
@@ -519,7 +519,7 @@ class AscAllocationService
             // 5. UPDATE log_daily_rate_calculation with P values
             $this->overwriteLogTable($table, $allocations);
 
-            // 6. Write asc_alloc_* tables (detailed audit)
+            // 6. Write log_alloc_* / mst_alloc_* tables (detailed audit)
             $this->persistAllocationDetail($run->id, $allocations);
 
             // 7. Finalize run
@@ -655,12 +655,12 @@ private function snapshotSourceData(int $runId, Collection $bundles, string $tab
 {
     foreach ($bundles->flatten() as $row) {
         // Skip if already snapshotted (prevents audit corruption on re-run)
-        $exists = AscAllocSourceDocument::where('charge_id', $row->charge_id)
+        $exists = LogAllocSourceDocument::where('charge_id', $row->charge_id)
             ->where('target_ym', $row->target_ym)
             ->exists();
 
         if (!$exists) {
-            AscAllocSourceDocument::create([
+            LogAllocSourceDocument::create([
                 'run_id' => $runId,
                 'charge_id' => $row->charge_id,
                 'target_ym' => $row->target_ym,
@@ -679,7 +679,7 @@ For `addDaily`, allocate ONLY the charge being added, not the entire target_ym:
 ```php
 // After INSERT in DataCorrectionLogic::createDailyRateCalculation()
 try {
-    app(AscAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
+    app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
 } catch (\Throwable $e) {
     Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
 }
@@ -741,9 +741,9 @@ Kuroda-san confirmed with Accounting:
 
 **Decision:** Provide both:
 - **CSV in the existing zip:** AllocationDetail CSV with breakdown — included in monthly email for archival (~30 lines of code)
-- **Metabase:** A saved query on `asc_alloc_prorations` joined with charge details — created post-deployment for ad-hoc checks between batch runs
+- **Metabase:** A saved query on `log_alloc_prorations` joined with charge details — created post-deployment for ad-hoc checks between batch runs
 
-Since `asc_alloc_prorations` already stores: original N, allocated P, reference prices L, ratio, project_code, charge_id, product_id — both outputs read from the same source table.
+Since `log_alloc_prorations` already stores: original N, allocated P, reference prices L, ratio, project_code, charge_id, product_id — both outputs read from the same source table.
 
 #### What Needs to Be Added (if CSV is required)
 
@@ -784,8 +784,8 @@ public static function createAllocationDetailFile(string $targetYm, bool $preFlg
 {
     [$fileName, $name, $headerTitle] = CommonUtil::getCsvFileInfo('allocationDetailFile');
 
-    // Read from asc_alloc_prorations for the target month
-    $rows = AscAllocProration::getForTargetYm($targetYm, $preFlg);
+    // Read from log_alloc_prorations for the target month
+    $rows = LogAllocProration::getForTargetYm($targetYm, $preFlg);
 
     $detailDataLists = [];
     foreach ($rows as $row) {
@@ -819,8 +819,8 @@ public static function createAllocationDetailFile(string $targetYm, bool $preFlg
 // In createSendMailAttacheFile(), after existing CSVs:
 
 // ASC Allocation Detail CSV (only if allocation ran successfully)
-if (AscAllocCalculationRun::hasCompletedRun($targetYm)) {
-    [$fileName, $name] = AscAllocationCsvService::createAllocationDetailFile($targetYm, false);
+if (LogAllocCalculationRun::hasCompletedRun($targetYm)) {
+    [$fileName, $name] = RevenueAllocationCsvService::createAllocationDetailFile($targetYm, false);
     $fileNameList[$fileName] = $name;
 }
 ```
@@ -989,41 +989,41 @@ The order_no-level breakdown will show:
 > - `asc_alloc_reference_prices` → **`mst_alloc_reference_prices`** (master data)
 > - `v_asc_alloc_prorations_active` → **`v_alloc_prorations_active`** (view)
 >
-> The **migration filenames and table names below have been updated** to match the ADR. The `AscAlloc*` **model names and `AscAlloc/` namespace are unchanged** — models are grouped by domain (allocation feature), not by table prefix. This is a deliberate split: table prefix reflects data category (`log_`/`mst_`), model namespace reflects feature ownership (`AscAlloc`). Confirm this convention at Spec 01 design (G2).
+> The **migration filenames and table names below have been updated** to match the ADR. The **PHP namespace was renamed** from the earlier `AscAlloc` to **`RevenueAllocation`** (2026-09-01) — a descriptive domain name, consistent with the ADR's principle that structure should reflect what the code IS (revenue allocation), not which project built it (ASC). **Model class names follow the existing table→model convention** (`log_alloc_*` → `LogAlloc*`, `mst_alloc_*` → `MstAlloc*`), so a model name predictably maps to its table. Feature grouping comes from the `RevenueAllocation` namespace/folder, not from the class-name prefix.
 
 ```
 accounting_related_system_for_freee/
 ├── app/
-│   ├── Enums/AscAlloc/
+│   ├── Enums/RevenueAllocation/
 │   │   ├── CoachingAndAppPlanEnum.php   # CAP plan_ids 1016–1027
 │   │   ├── CoachingIntensivePlanEnum.php # CIP plan_ids 1028–1032
 │   │   ├── ProjectCode.php          # 'cap', 'cip'
 │   │   ├── RunType.php              # Preview, Final
 │   │   └── RunStatus.php            # Creating, Completed, Failed
 │   │
-│   ├── Libs/AscAllocation/
-│   │   └── AscAllocationService.php # Main orchestrator (allocate method)
+│   ├── Libs/RevenueAllocation/
+│   │   └── RevenueAllocationService.php # Main orchestrator (allocate method)
 │   │
-│   ├── Models/AscAlloc/
-│   │   ├── AscAllocCalculationRun.php
-│   │   ├── AscAllocSourceDocument.php
-│   │   ├── AscAllocBundle.php
-│   │   ├── AscAllocBundleCharge.php
-│   │   ├── AscAllocGroup.php
-│   │   ├── AscAllocProration.php
-│   │   ├── AscAllocReferencePrice.php
-│   │   ├── AscAllocSumCalculation.php
-│   │   ├── AscAllocSumCalculationHistory.php
-│   │   └── AscAllocDelivery.php
+│   ├── Models/RevenueAllocation/    # models named after their table (LogAlloc* / MstAlloc*)
+│   │   ├── LogAllocCalculationRun.php      → log_alloc_calculation_runs
+│   │   ├── LogAllocSourceDocument.php      → log_alloc_source_documents
+│   │   ├── LogAllocBundle.php              → log_alloc_bundles
+│   │   ├── LogAllocBundleCharge.php        → log_alloc_bundle_charges
+│   │   ├── LogAllocGroup.php               → log_alloc_groups
+│   │   ├── LogAllocProration.php           → log_alloc_prorations
+│   │   ├── MstAllocReferencePrice.php      → mst_alloc_reference_prices
+│   │   ├── LogAllocSumCalculation.php      → log_alloc_sum_calculation
+│   │   ├── LogAllocSumCalculationHistory.php → log_alloc_sum_calculation_history
+│   │   └── LogAllocDelivery.php            → log_alloc_deliveries
 │   │
 │   └── Traits/
 │       └── HasEnumHelperTrait.php   # Already exists — reused by new enums
 │
 ├── config/
-│   └── asc_alloc.php                # NEW: allocation config (launch dates, feature flags)
+│   └── revenue_allocation.php       # NEW: allocation config (launch dates, feature flags)
 │
-└── tests/Unit/AscAllocation/
-    ├── AscAllocationServiceTest.php
+└── tests/Unit/RevenueAllocation/
+    ├── RevenueAllocationServiceTest.php
     ├── CoachingAndAppPlanEnumTest.php
     └── AllocationFormulaTest.php
 
@@ -1051,10 +1051,10 @@ ls-database-migrations/
 
 | File | Change | Lines Added | Risk |
 |---|---|---|---|
-| `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
+| `app/Libs/CommonUtil.php` | Add `RevenueAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
 | `app/Libs/DataCorrectionLogic.php` | ASCM Prep: add monthly plan skip + missing fields (fix drift). ASC-CAP: add `allocateForCharge()` call after "addDaily" INSERT | ~20 | LOW-MED — tested via correction batch smoke test |
 | `config/const.php` | Add CSV header definitions for AllocationDetail | ~20 | ZERO — config only |
-| `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
+| `config/revenue_allocation.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
 
 **Everything else is new code** — no modifications to existing logic.
 
@@ -1078,10 +1078,10 @@ ls-database-migrations/
 |---|---|---|
 | `CommonUtil::createDailyRateCalculation()` | Add allocation service call between [a] and [c] | ~8 lines |
 | `DataCorrectionLogic::createDailyRateCalculation()` | ASCM Prep: fix drift (add skip + missing fields). ASC-CAP: add `allocateForCharge()` call | ~20 lines |
-| `AscAllocationService` (NEW) | Main orchestrator — detect, compute, overwrite, persist | 1 new class |
+| `RevenueAllocationService` (NEW) | Main orchestrator — detect, compute, overwrite, persist | 1 new class |
 | `CoachingAndAppPlanEnum` / `CoachingIntensivePlanEnum` (NEW) | Plan ID enums for detection | 2 new files |
-| `AscAlloc*` models (NEW) | Eloquent models for audit tables | 8–10 new files |
-| `config/asc_alloc.php` (NEW) | Config for launch dates, feature flags | 1 new file |
+| `LogAlloc*` / `MstAlloc*` models (NEW) | Eloquent models for audit tables (in `App\Models\RevenueAllocation\`) | 8–10 new files |
+| `config/revenue_allocation.php` (NEW) | Config for launch dates, feature flags | 1 new file |
 | `config/const.php` | CSV header definition for AllocationDetail | ~20 lines |
 | `createSendMailAttacheFile()` | Add AllocationDetail CSV to file list | ~5 lines |
 | Migrations (ls-database-migrations) | 10 tables + 1 view | 11 files |
@@ -1124,7 +1124,7 @@ ls-database-migrations/
 | 4 | Detection | plan_id enum | product_id check | product_id 10005/10015 is shared with non-CAP plans. plan_id is unique. |
 | 5 | CIP guard | ~~Date filter~~ → Not needed (new plan_ids) | Date filter (historical charges) | CIP has brand new plan_ids (1028–1032) with zero history. Same detection as CAP. |
 | 6 | Rounding | floor() on App, remainder to Coaching | Round both | Guarantees P_coaching + P_app = N exactly. No ¥1 gaps. |
-| 7 | N preservation | asc_alloc_source_documents | Keep N in log table | Option 1 overwrites log. Source_documents provides audit trail. |
+| 7 | N preservation | log_alloc_source_documents | Keep N in log table | Option 1 overwrites log. Source_documents provides audit trail. |
 | 8 | Tenant scope | Bizmates only | Both tenants | Coaching/App don't exist on Zipan. ZipanUtil untouched. |
 | 9 | Pre/Final | Single service with preFlg parameter | Separate classes | Avoids duplication (KB #14 lesson). |
 | 10 | CAP first | CAP builds foundation, CIP reuses | CIP first | CAP requirements more concrete. Same total effort either way. |
@@ -1135,7 +1135,11 @@ ls-database-migrations/
 
 ## 15. Open Items
 
-> **Note on table names:** This document uses `asc_alloc_*` in code examples (reflecting the original DB design from Kuroda-san). Per O-3 resolution (2026-08-17), actual table names will use `log_alloc_*` for batch-generated tables and `mst_alloc_*` for reference prices. See `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` for the full decision. Model class names (`AscAlloc*`) remain unchanged — only the `$table` property changes.
+> **Note on table & code names:** Older code examples in this document may still show `asc_alloc_*` (the original DB design from Kuroda-san). The authoritative naming is:
+> - **Tables:** `log_alloc_*` (batch-generated) / `mst_alloc_*` (reference prices) / `v_alloc_*` (view) — per O-3 ADR (2026-08-17). See `ASCA-ADR-20260817-table-prefix-decision.md`.
+> - **PHP namespace:** `RevenueAllocation` (renamed from `AscAlloc` on 2026-09-01) — `App\Models\RevenueAllocation\`, `App\Libs\RevenueAllocation\`, `App\Enums\RevenueAllocation\`, `config/revenue_allocation.php`.
+> - **Model class names:** follow the table→model convention — `log_alloc_*` → `LogAlloc*`, `mst_alloc_*` → `MstAlloc*` (e.g., `LogAllocProration`, `MstAllocReferencePrice`).
+> - **Service:** `RevenueAllocationService`.
 
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
