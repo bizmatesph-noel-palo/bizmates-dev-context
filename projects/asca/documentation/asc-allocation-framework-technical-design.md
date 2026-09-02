@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated, references aligned) · 2026-09-01 (§11 table names synced with ADR) |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR) · 2026-09-01 (product_id changes 10021→10022 App, 10022→10025 CIP; O-5 reopened; O-7/O-8 added) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -61,7 +61,7 @@ When a student purchases a CAP or CIP plan, they pay a single amount that covers
 ```
 Student buys plan 1018 (L25 + Coaching 15 + App):
   trn_charge for Coaching (product 10005): paid_price = ¥22,550 (includes App fee)
-  trn_charge for App (product 10021):      paid_price = ¥0      (companion)
+  trn_charge for App (product 10022):      paid_price = ¥0      (companion — App id now 10022, was 10021)
 ```
 
 Existing ASC calculates daily rate for the Coaching charge and books the full ¥22,550 as Coaching revenue. But accounting standards require the revenue to be split:
@@ -216,13 +216,21 @@ AUDIT TABLES (new — allocation detail)
 
 ### Confirmed Values
 
-| Project | Product | product_id | L (reference price, tax-incl) | Source |
+> **🔴 PRODUCT ID CHANGE (2026-08-19, approved by Go-san — FINAL):** Two product_ids changed upstream (Soli-san, CIP Slack). **All `10021`/`10022` references below and elsewhere in this doc reflect the OLD ids** and are being reconciled. The authoritative mapping is:
+> - **CAP Bizmates App: `10021` → `10022`** (this is the detection anchor — was 10021, now 10022)
+> - **CIP Coaching Intensive: `10022` → `10025`**
+>
+> ⚠️ Note the collision: `10022` now means **App** (CAP), but older text uses `10022` to mean **Coaching Intensive** (CIP). When reading any `10022` below, check context. See `research/CIP/REF-CIP-04-Product-Plan-IDs-And-Price-Matrix-20260824.md`.
+>
+> **🟡 PRICE PENDING (O-5 reopened):** CIP Solo (1028) is now ¥75,900 tax-incl (was ¥88,000), bundling Coaching Intensive + App. `L_coaching = ¥84,020` below is stale. Awaiting Kuroda-san/Accounting confirmation of the new L_coaching (likely ¥71,920 = 75,900 − 3,980, unconfirmed).
+
+| Project | Product | product_id (NEW) | L (reference price, tax-incl) | Source |
 |---|---|---|---|---|
-| CAP | App Premium | 10021 | ¥3,980 | REF-CAP-05 (Kuroda-san confirmed) |
+| CAP | App Premium | **10022** (was 10021) | ¥3,980 | REF-CAP-05 · id change REF-CIP-04 |
 | CAP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
 | CAP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
-| CIP | App Premium | 10021 | ¥3,980 | Same product as CAP |
-| CIP | Coaching Intensive | 10022 | ¥84,020 | L_coaching = plan_price − L_app = 88,000 − 3,980. Confirmed by Kuroda-san + Accounting (2026-08-17). |
+| CIP | App Premium | **10022** (was 10021) | ¥3,980 | Same product as CAP |
+| CIP | Coaching Intensive | **10025** (was 10022) | ⚠️ ¥84,020 STALE — pending O-5 re-confirm | Was `plan ¥88,000 − ¥3,980`; plan now ¥75,900. Awaiting Accounting. |
 
 ### How Reference Prices Are Stored
 
@@ -231,17 +239,19 @@ Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change wi
 ```php
 // Seeder data
 [
-    // CAP
-    ['project_code' => 'cap', 'product_id' => 10021, 'reference_price' => 3980,
+    // CAP  (App product_id = 10022, changed from 10021 on 2026-08-19)
+    ['project_code' => 'cap', 'product_id' => 10022, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
     ['project_code' => 'cap', 'product_id' => 10005, 'reference_price' => 19800,
      'effective_from' => '2026-01-01', 'effective_to' => null],
     ['project_code' => 'cap', 'product_id' => 10015, 'reference_price' => 39600,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    // CIP
-    ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
+    // CIP  (App = 10022; Coaching Intensive = 10025, both changed 2026-08-19)
+    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 84020,
+    // ⚠️ CIP Coaching Intensive reference_price PENDING (O-5 reopened) — plan now ¥75,900, not ¥88,000.
+    //    Value below (84020) is STALE. Likely ¥71,920 (= 75,900 − 3,980) but awaiting Accounting.
+    ['project_code' => 'cip', 'product_id' => 10025, 'reference_price' => 84020, // 🔴 STALE — confirm via O-5
      'effective_from' => '2026-01-01', 'effective_to' => null],
 ]
 ```
@@ -273,11 +283,13 @@ Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change wi
 
 | plan_id | Plan Name | Coaching Product |
 |---|---|---|
-| 1028 | Solo Coaching Intensive | 10022 |
-| 1029 | L25 + FVP + Coaching Intensive + App | 10022 |
-| 1030 | L50 + FVP + Coaching Intensive + App | 10022 |
-| 1031 | L75 + FVP + Coaching Intensive + App | 10022 |
-| 1032 | L100 + FVP + Coaching Intensive + App | 10022 |
+| 1028 | Coaching Intensive (Solo) | 10025 |
+| 1029 | 1L + FVP + Coaching Intensive | 10025 |
+| 1030 | 2L + FVP + Coaching Intensive | 10025 |
+| 1031 | 3L + FVP + Coaching Intensive | 10025 |
+| 1032 | 4L + FVP + Coaching Intensive | 10025 |
+
+> **product_id 10025** (was 10022) per 2026-08-19 change. Plans 1029–1032 also bundle Online Lesson (1L–4L) + FVP — see O-8 (2-way vs 3-way split) in §15.
 
 **Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are brand new, same as CAP).
 
@@ -461,7 +473,7 @@ try {
 }
 ```
 
-The `allocateForCharge()` method detects if this charge is part of a CAP/CIP bundle (by product_id 10021), finds its coaching pair in the log, computes P, and updates — same logic as the full `allocate()` but scoped to one charge.
+The `allocateForCharge()` method detects if this charge is part of a CAP/CIP bundle (by App product_id 10022 — was 10021), finds its coaching pair in the log, computes P, and updates — same logic as the full `allocate()` but scoped to one charge.
 
 ### Failure Isolation
 
@@ -540,8 +552,8 @@ class RevenueAllocationService
 private function detectBundles(string $table, string $targetYm): Collection
 {
     // Find coaching AND app charges that belong to CAP/CIP plans
-    // Anchor detection on product_id 10021 (App) — guaranteed stable
-    // Coaching product_id may change (CAP team considering new product_id — see open item P-3)
+    // Anchor detection on the App product_id — now 10022 (was 10021 before the 2026-08-19 change)
+    // CIP Coaching Intensive is now 10025 (was 10022)
     return DB::table($table . ' as log')
         ->join('trn_charge as c', 'log.charge_id', '=', 'c.id')
         ->where('log.target_ym', $targetYm)
@@ -551,7 +563,7 @@ private function detectBundles(string $table, string $targetYm): Collection
                   $q2->whereIn('c.plan_id', CoachingIntensivePlanEnum::toArray());
               });
         })
-        ->whereIn('c.product_id', [10005, 10015, 10022, 10021])  // TODO: update if CAP gets new coaching product_id
+        ->whereIn('c.product_id', [10005, 10015, 10025, 10022])  // 10005/10015 = CAP coaching, 10025 = CIP coaching intensive, 10022 = App (all NEW ids per 2026-08-19)
         ->select('log.id', 'log.charge_id', 'log.paid_price', 'c.product_id',
                  'c.plan_id', 'c.student_id', 'c.order_no', 'log.target_ym')
         ->get()
@@ -574,8 +586,8 @@ Each `order_no` represents one billing unit. Charges sharing the same `order_no`
 
 | # | Item | Status | Impact |
 |---|---|---|---|
-| P-3 | CAP team may create new coaching product_id (replacing 10005/10015 for CAP plans) | ⚠️ Confirm with CAP team | Detection `whereIn` needs updating if confirmed. Also affects Freee item mapping. |
-| — | Plan 1028 (Solo CIP) includes App (10021) per seeder | ✅ Verified in REF-CIP-03 §9 | $appRow will not be null for Solo plans |
+| O-7 | Product ids changed (2026-08-19, FINAL): App 10021→10022, CIP coaching 10022→10025 | ✅ Confirmed by Go-san | Detection `whereIn` = [10005, 10015, 10025, 10022]. Freee mapping must use new App id 10022. |
+| — | Plan 1028 (Solo CIP) includes App (10022) per seeder | ✅ Verified in REF-CIP-03 §9 | $appRow will not be null for Solo plans |
 | — | CIP L_coaching is a dependent value (plan_price − L_app) | Noted | Must recalculate if plan_price changes |
 
 ### Compute Allocations — Uses ΣN (Group Total)
@@ -585,8 +597,8 @@ private function computeAllocations(Collection $bundles): Collection
 {
     // Each $bundle is a group of rows sharing (student_id, order_no)
     return $bundles->map(function ($bundleRows) {
-        $coachingRow = $bundleRows->firstWhere('product_id', '!=', 10021);
-        $appRow = $bundleRows->firstWhere('product_id', 10021);
+        $coachingRow = $bundleRows->firstWhere('product_id', '!=', 10022);  // App is now 10022 (was 10021)
+        $appRow = $bundleRows->firstWhere('product_id', 10022);              // App = 10022 (new id)
 
         if (!$coachingRow || !$appRow) {
             Log::warning('[ASC_ALLOC] Incomplete bundle — skipping', [
@@ -696,7 +708,7 @@ try {
 #### Current Behavior (Before Allocation)
 
 ```
-trn_charge (product_id=10021, paid_price=0, plan_id=1018)
+trn_charge (product_id=10022, paid_price=0, plan_id=1018)   // App — id now 10022 (was 10021)
     │
     ▼ getTrnChargeList() — fetches it (no price filter)
     ▼ getContractDateInfoList(paid_price=0) — prorates 0 → produces 0
@@ -1144,8 +1156,10 @@ ls-database-migrations/
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
 | O-3 | Table prefix | Engineering team | ✅ **Resolved (2026-08-17)** — `log_alloc_*` for batch-generated, `mst_alloc_*` for reference prices. Approved by Kuroda-san. | — |
-| O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥84,020 (= plan ¥88,000 − L_app ¥3,980). Confirmed by Kuroda-san + Accounting 2026-08-17. | — |
-| P-3 | CAP new coaching product_id | CAP team | ⚠️ Open — CAP team may create replica coaching product under new ID. Affects detection whereIn + Freee mapping. Non-blocking (detection anchored on product 10021 + plan_id). | Detection logic (config update only) |
+| O-5 | CIP coaching reference price | Business + Accounting | 🔴 **REOPENED (2026-08-28)** — was ¥84,020 (from plan ¥88,000). Plan is now ¥75,900 (REF-CIP-04). New L_coaching likely ¥71,920 (= 75,900 − 3,980) but UNCONFIRMED. Awaiting Kuroda-san/Accounting. | ASCI reference price seeder |
+| O-7 | Product ID changes (2026-08-19) | Business (Go-san, done) | ✅ **Confirmed FINAL** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Detection whereIn + reference-price product_id + Freee mapping must use new ids. | Detection + seeder + Freee mapping |
+| O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ⚠️ **Open** — CIP plans 1029–1032 bundle Lesson + Coaching Intensive + App (3 products). CAP is 2-way. Confirm whether ASCI splits across 3 products or Lesson is handled separately (2-way). Affects ASCI scope + effort. | ASCI design |
+| ~~P-3~~ | ~~CAP new coaching product_id~~ | — | ✅ Superseded by O-7 — the actual change was the App id (10021→10022), not the CAP coaching id. CAP coaching stays 10005/10015. | — |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
 | — | Option 1 vs 2 final confirmation | Kuroda-san | ✅ **Confirmed** — Option 1 (Overwrite) agreed. | — |
