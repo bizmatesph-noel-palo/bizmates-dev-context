@@ -488,75 +488,19 @@ ASCM Refactor → Regression gate + Spec Prep (parallel) → Foundation → ASCA
 
 ---
 
-## Spec-Driven Development Workflow
+## Sign-Off Gates (Schedule View)
 
-### Overview
+Each phase runs through 3 mandatory gates. Full gate definitions, JIRA structure, branch strategy, and roles live in the **development workflow doc** — this section shows only *when* each gate falls in the schedule.
 
-Each phase (Foundation, CAP Integration, CIP Integration) follows a spec-driven lifecycle with mandatory gates. This ensures Kuroda-san has visibility into progress and the team executes against approved scope.
+**→ Full workflow: `projects/asca/documentation/asca-development-workflow.md`**
 
-```
-┌───────────────────────────────────────────────────────────────────────────────┐
-│                                                                               │
-│  SCAFFOLD        SPECIFY           DESIGN &            TASK        QA &       │
-│  (one-time)      (per spec)        TASK GEN            EXECUTION   DEPLOY     │
-│                                    (per spec)          (per spec)             │
-│  Lead Dev        Lead Dev          Lead Dev            Dev + AI    Lead + QA  │
-│  ────────        ────────          ────────            ──────────  ─────────  │
-│  Steering files  requirements.md   design.md           Execute     DEV04 →    │
-│  (Phase 0.5)     → PM sign-off    tasks.md            tasks.md    Staging →  │
-│                  ═══ GATE 1 ═══    → Lead + Dev        → Lead PR   Prod      │
-│                                    review              review                 │
-│                                    ═══ GATE 2 ═══      ═══ GATE 3 ═══        │
-│                                                                               │
-└───────────────────────────────────────────────────────────────────────────────┘
-```
+| Gate | Who Approves | What's Approved |
+|---|---|---|
+| **G1** | PM (Kuroda-san) | Requirements — scope, formula, reference prices, plan detection |
+| **G2** | Lead + Dev | Design & tasks — architecture sound, task list executable |
+| **G3** | Lead | Code review — correct, follows standards, no regressions |
 
-### Sign-Off Gates
-
-There are **3 mandatory gates** where work cannot proceed without approval:
-
-| # | Gate | Who Approves | What's Being Approved | Happens Between |
-|---|------|-------------|----------------------|-----------------|
-| **G1** | Requirements Sign-Off | PM (Kuroda-san) | Business rules, scope, allocation formula, reference prices, plan detection | Specify → Design |
-| **G2** | Design & Tasks Approval | Lead Dev + Dev | Architecture is sound, task breakdown is clear and executable | Design → Task Execution |
-| **G3** | Code Review | Lead Dev | Code is correct, follows steering standards, no regressions | Task Execution → Merge |
-
-### What Happens If a Gate Fails
-
-| Gate | If rejected | Who resolves | Timeline impact |
-|------|-------------|-------------|-----------------|
-| G1 | PM requests scope changes | Lead Dev revises requirements, resubmits | 1–2 days slip |
-| G2 | Design has flaws or tasks unclear | Lead Dev revises design/tasks | 0.5–1 day |
-| G3 | Code doesn't meet standards | Dev addresses feedback, re-requests review | 0.5 day per round |
-
-### ASCA/ASCI Spec Structure
-
-| Spec | Repo(s) | Phase | What it delivers |
-|---|---|---|---|
-| **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | Phase 1 (W2–W5) | DB schema (10 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
-| **ASCA Spec 02: CAP Integration** ⚠️ | `accounting_related_system_for_freee` | Phase 2 (W6–W9) | CommonUtil injection, CAP detection strategy, AllocationDetail CSV, DataCorrectionLogic allocation call, refund allocation |
-| **ASCI Spec 01: CIP Integration** ⚠️ | `accounting_related_system_for_freee` | Phase 3 (W10–W11) | CIP detection strategy (plans 1028–1032), CIP reference prices (L_coaching = ¥84,020) |
-
-⚠️ = Preliminary scope. May split into smaller specs during requirements generation if scope exceeds 15 tasks or 3-page design threshold. See Spec Overview note in Development Gantt section for probable split boundaries.
-
-### Multi-Repo Coordination (ASCA Spec 01)
-
-ASCA Spec 01 spans two repos. Execution order matters:
-
-```
-ls-database-migrations                    accounting_related_system_for_freee
-──────────────────────                    ──────────────────────────────────
-1. Create migration files (10 tables)     (can write model code in parallel)
-2. Run migrations on dev DB               
-3. Generate structure tests               
-4. PR → merge                            3. Create models, enums, services
-                                          4. Integration test against real tables
-                                          5. PR → merge
-```
-
-**Rule:** ls-db migrations must be merged and run BEFORE accounting repo models can be integration-tested. Model code CAN be written in parallel.
-
-### Gate Timeline (Mapped to Weeks)
+### Gate Timing (Mapped to Weeks)
 
 ```
 W1:  ┣━━━━ Steering + Spec 01 requirements → ══ G1: PM Sign-Off ══
@@ -569,71 +513,7 @@ W10: ┣━━━━ ASCI Spec 01 requirements → ══ G1 ══ → design �
 W11: ┣━━━━ All ASCI PRs → ══ G3 ══ → CIP Integration complete → Dev done
 ```
 
-**Note:** For ASCA Spec 02 and ASCI Spec 01, the gate cycle (G1→G2) is faster because:
-- Requirements are smaller (building on established foundation)
-- PM already approved the allocation formula and reference prices in Spec 01 G1
-- Design decisions (injection point, detection strategy) are documented in the technical design
-
-### JIRA Ticket Structure
-
-Each spec = 1 Epic with standard stories:
-
-```
-Epic: ASCA Spec 01 — Foundation
-├── Story: Requirements + Sign-off         → Assigned: PM (Kuroda-san)
-├── Story: Architecture (Design + Tasks)   → Assigned: Lead (Noel)
-├── Story: Coding (ls-db migrations)       → Assigned: Dev (Throy)
-├── Story: Coding (accounting application) → Assigned: Dev (Throy)
-├── Story: Code Review                     → Assigned: Lead (Noel)
-├── Story: Dev/Manual Testing              → Assigned: Lead (Noel)
-└── Story: QA Testing                      → Assigned: QA (Miko)
-
-Epic: ASCA Spec 02 — CAP Integration
-├── Story: Requirements + Sign-off         → Assigned: PM (Kuroda-san)
-├── Story: Architecture (Design + Tasks)   → Assigned: Lead (Noel)
-├── Story: Coding                          → Assigned: Dev (Throy)
-├── Story: Code Review                     → Assigned: Lead (Noel)
-├── Story: Dev/Manual Testing              → Assigned: Lead (Noel)
-└── Story: QA Testing                      → Assigned: QA (Miko)
-
-Epic: ASCI Spec 01 — CIP Integration
-├── Story: Requirements + Sign-off         → Assigned: PM (Kuroda-san)
-├── Story: Architecture (Design + Tasks)   → Assigned: Lead (Noel)
-├── Story: Coding                          → Assigned: Dev (Orlino or Cristoff)
-├── Story: Code Review                     → Assigned: Lead (Noel)
-├── Story: Dev/Manual Testing              → Assigned: Lead (Noel)
-└── Story: QA Testing                      → Assigned: QA (Glenn)
-```
-
-### Branch Strategy
-
-```
-accounting_related_system_for_freee:
-main
-└── feature/ASCA/ASCA-master (long-lived feature branch)
-    ├── feature/ASCA/asca-foundation         (Spec 01 → PR to ASCA-master)
-    ├── feature/ASCA/asca-cap-integration    (Spec 02 → PR to ASCA-master)
-    ├── feature/ASCI/asci-cip-integration    (ASCI Spec 01 → PR to ASCA-master)
-    ├── release/ASCA/dev04                   (deploy for QA)
-    └── release/ASCA/prod                    (production release)
-
-ls-database-migrations:
-main
-└── feature/ASCA/ASCA-master (long-lived feature branch)
-    └── feature/ASCA/asca-database-migrations (Spec 01a → PR to ASCA-master)
-```
-
-### Role Summary
-
-| Role | Person | What they do in this workflow |
-|---|---|---|
-| **PM** | Kuroda-san | Reviews requirements at G1, approves scope, resolves open business items |
-| **SDM** | Patrick-san | Manages JIRA epics/stories, tracks progress, presents to business |
-| **Lead** | Noel | Steering files, requirements, design, tasks, PR review, deployment |
-| **Dev 1** | Throy | Executes ASCA tasks with AI agent, creates PRs |
-| **Dev 2** | Orlino/Cristoff | Executes ASCI tasks with AI agent, creates PRs |
-| **QA (CAP)** | Miko | Tests ASCA CAP scenarios (10 cases) |
-| **QA (CIP)** | Glenn | Tests ASCI CIP scenarios (11 cases) |
+**Gate failure impact:** G1 rejection = 1–2 days slip. G2 = 0.5–1 day. G3 = 0.5 day per round. All absorbed by the W12–W15 buffer.
 
 ---
 
@@ -745,6 +625,7 @@ ASC is NOT blocked by upstream timelines:
 | Document | What it covers |
 |---|---|
 | `projects/asca/documentation/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
+| `projects/asca/documentation/asca-development-workflow.md` | **Development workflow** — spec lifecycle, gates, JIRA structure, branch strategy, roles |
 | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Historical — original Scenario D proposal (timeline now consolidated here) |
 | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` prefix |
 | `docs/asc-cap-cip-combined-estimate-20260808.md` | Historical — Scenario C estimate (superseded) |
