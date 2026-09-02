@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR) · 2026-09-01 (product_id changes 10021→10022 App, 10022→10025 CIP; O-5 reopened; O-7/O-8 added) |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -1009,7 +1009,7 @@ accounting_related_system_for_freee/
 │   ├── Enums/RevenueAllocation/
 │   │   ├── CoachingAndAppPlanEnum.php   # CAP plan_ids 1016–1027
 │   │   ├── CoachingIntensivePlanEnum.php # CIP plan_ids 1028–1032
-│   │   ├── ProjectCode.php          # 'cap', 'cip'
+│   │   ├── BundleType.php           # 'cap', 'cip' — bundle family (was ProjectCode; maps to bundle_type column, rename pending Kuroda-san)
 │   │   ├── RunType.php              # Preview, Final
 │   │   └── RunStatus.php            # Creating, Completed, Failed
 │   │
@@ -1159,6 +1159,7 @@ ls-database-migrations/
 | O-5 | CIP coaching reference price | Business + Accounting | 🔴 **REOPENED (2026-08-28)** — was ¥84,020 (from plan ¥88,000). Plan is now ¥75,900 (REF-CIP-04). New L_coaching likely ¥71,920 (= 75,900 − 3,980) but UNCONFIRMED. Awaiting Kuroda-san/Accounting. | ASCI reference price seeder |
 | O-7 | Product ID changes (2026-08-19) | Business (Go-san, done) | ✅ **Confirmed FINAL** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Detection whereIn + reference-price product_id + Freee mapping must use new ids. | Detection + seeder + Freee mapping |
 | O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ✅ **Resolved (2026-08-28)** — **2-way (Coaching + App only)**, even for plans 1029–1032. Online Lesson handled separately by existing daily-rate logic. Same split as CAP → ASCI stays a config addition. [Kuroda-san Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | — |
+| O-9 | `project_code` → `bundle_type` rename | Kuroda-san (DB design owner) | ⚠️ **Proposed** — rename the CAP/CIP discriminator column (in 6 tables) to reflect data category, not project ownership (same reasoning as the table-prefix ADR). Values stay `'cap'`/`'cip'`. Awaiting Kuroda-san's OK. | Migrations (Spec 01a) |
 | ~~P-3~~ | ~~CAP new coaching product_id~~ | — | ✅ Superseded by O-7 — the actual change was the App id (10021→10022), not the CAP coaching id. CAP coaching stays 10005/10015. | — |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |

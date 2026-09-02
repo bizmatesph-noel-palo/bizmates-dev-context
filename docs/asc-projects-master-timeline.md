@@ -631,6 +631,7 @@ ASC is NOT blocked by upstream timelines:
 | Document | What it covers |
 |---|---|
 | `projects/asca/documentation/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
+| `projects/asca/documentation/asc-alloc-db-schema.md` | **DB schema reference** — full field list, types, descriptions for all 10 tables + view |
 | `projects/asca/documentation/asca-development-workflow.md` | **Development workflow** — spec lifecycle, gates, JIRA structure, branch strategy, roles |
 | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Historical — original Scenario D proposal (timeline now consolidated here) |
 | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` prefix |
