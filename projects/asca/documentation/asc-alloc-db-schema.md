@@ -278,11 +278,23 @@ WHERE r.run_type = 1        -- Final
 
 ## Entity Relationships
 
+**Diagram source:** [`diagrams/erd/asc-alloc-schema.puml`](diagrams/erd/asc-alloc-schema.puml)
+
+![ASC Allocation ERD](diagrams/erd/asc-alloc-schema.png)
+
+<!-- To regenerate the image:
+     1. Open diagrams/erd/asc-alloc-schema.puml
+     2. Render via PlantUML (IDE plugin, or plantuml.com server, or `plantuml asc-alloc-schema.puml`)
+     3. Export the PNG as diagrams/erd/asc-alloc-schema.png (same folder)
+-->
+
+**Text summary (fallback):**
+
 ```
 log_alloc_calculation_runs (1)
 ├──< log_alloc_source_documents      (snapshot per charge)
 ├──< log_alloc_bundles (1)
-│     └──< log_alloc_bundle_charges  (2 per bundle: coaching + app)
+│     ├──< log_alloc_bundle_charges  (2 per bundle: coaching + app)
 │     └──< log_alloc_groups (1)
 │           └──< log_alloc_prorations (2 per group: coaching + app)
 ├──< log_alloc_sum_calculation (1)
