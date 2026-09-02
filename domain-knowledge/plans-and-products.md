@@ -1,8 +1,17 @@
 # Plans & Products — System Reference
 
-**Last updated:** 2026-08-14  
-**Source:** Database queries (dev04), confirmed against ls-database-migrations schema  
-**Scope:** All plan and product data relevant to the accounting system (ASC)
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | Domain Knowledge (system reference) |
+| **Date** | 2026-08-14 (Created) · 2026-08-28 (product_id changes: App 10021→10022, CIP coaching 10022→10025; CIP prices updated per REF-CIP-04) |
+| **Author** | Noel Palo |
+| **Assisted by** | Kiro |
+| **Status** | Active |
+| **Audience** | Dev team (all ASC projects), PM, SDM |
+| **Source** | Database queries (dev04), confirmed against `ls-database-migrations` schema; CAP/CIP updates from `research/CAP/` and `research/CIP/REF-CIP-04` |
+| **Scope** | All plan and product data relevant to the accounting system (ASC) |
 
 ---
 
@@ -22,13 +31,14 @@ trn_charge (all charges)
 │    → SKIP daily proration (NotDailyCalculationProductType)
 │    → Writes full amount at start_date
 │
-├─── product_id = 10021 (App) with plan_id IN CAP/CIP plans
+├─── product_id = 10022 (App — new id, was 10021) with plan_id IN CAP/CIP plans
 │    → Daily rate (writes ¥0)
 │    → ★ ASC Allocation overwrites 0 → P_app
 │
-├─── product_id IN (10005, 10015, 10022) with plan_id IN CAP/CIP plans
+├─── product_id IN (10005, 10015, 10025) with plan_id IN CAP/CIP plans
 │    → Daily rate (writes N = full coaching amount)
 │    → ★ ASC Allocation overwrites N → P_coaching
+│    (10005/10015 = CAP coaching, 10025 = CIP coaching intensive — new id, was 10022)
 │
 └─── Everything else
      → CommonUtil::createDailyRateCalculation()
@@ -45,8 +55,8 @@ trn_charge (all charges)
 | 1 | Online Lesson | 1, 2, 3, 4, 16–23, 27–29 | Daily (1–4) or Monthly (16–29) |
 | 5 | Full Video Package (FVP) | 10011 | Daily (always ¥0 companion) |
 | 8 | Bizmates Test | (various) | Excluded from daily proration |
-| 9 | Coaching | 10005, 10015, 10022 | Daily rate |
-| 100 | App | 10012, 10021 | Daily rate (¥0 for CAP/CIP, allocated) |
+| 9 | Coaching | 10005, 10015, 10025 | Daily rate (10025 = CIP intensive, new id) |
+| 100 | App | 10012, 10022 | Daily rate (¥0 for CAP/CIP, allocated). 10022 = new App id (was 10021) |
 
 ---
 
@@ -73,8 +83,8 @@ trn_charge (all charges)
 | 10011 | Full Video Package | 5 | FVP | Always ¥0 companion |
 | 10012 | Bizmates App 標準コース | 100 | App (Legacy) | Standalone App — retained untouched |
 | 10015 | Bizmates Coaching 30分 | 9 | Coaching | 30-minute sessions |
-| 10021 | Bizmates Appプレミアム | 100 | App (CAP/CIP) | New — ¥0 companion in bundles |
-| 10022 | Bizmates Coaching 30分 短期集中プラン | 9 | Coaching Intensive | New — CIP product, ¥88,000 |
+| 10022 | Bizmates Appプレミアム | 100 | App (CAP/CIP) | New — ¥0 companion in bundles. **id changed 10021→10022 (2026-08-19, Go-san)** |
+| 10025 | Bizmates Coaching 30分 短期集中プラン | 9 | Coaching Intensive | New — CIP product. **id changed 10022→10025 (2026-08-19)**. Solo plan ¥75,900 tax-incl (was ¥88,000) |
 
 ---
 
@@ -144,18 +154,20 @@ New plans bundling Coaching + App. App charges at ¥0 (companion). **ASC allocat
 
 | plan_id | Name | package_price | Products | Coaching | App |
 |---|---|---|---|---|---|
-| 1016 | Solo C15 + App | ¥22,550 | 10005 + 10021 | 15min | ¥0 |
-| 1017 | Solo C30 + App | ¥42,350 | 10015 + 10021 | 30min | ¥0 |
-| 1018 | L25 + FVP + C15 + App | ¥37,400 | 1 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1019 | L50 + FVP + C15 + App | ¥44,000 | 2 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1020 | L75 + FVP + C15 + App | ¥53,900 | 3 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1021 | L100 + FVP + C15 + App | ¥63,800 | 4 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1022 | L25 + FVP + C30 + App | ¥57,200 | 1 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1023 | L50 + FVP + C30 + App | ¥63,800 | 2 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1024 | L75 + FVP + C30 + App | ¥73,700 | 3 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1025 | L100 + FVP + C30 + App | ¥83,600 | 4 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1026 | L15mo + FVP + C15 + App | ¥37,400 | 29 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1027 | L15mo + FVP + C30 + App | ¥57,200 | 29 + 10011 + 10015 + 10021 | 30min | ¥0 |
+| 1016 | Solo C15 + App | ¥22,550 | 10005 + 10022 | 15min | ¥0 |
+| 1017 | Solo C30 + App | ¥42,350 | 10015 + 10022 | 30min | ¥0 |
+| 1018 | L25 + FVP + C15 + App | ¥37,400 | 1 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1019 | L50 + FVP + C15 + App | ¥44,000 | 2 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1020 | L75 + FVP + C15 + App | ¥53,900 | 3 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1021 | L100 + FVP + C15 + App | ¥63,800 | 4 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1022 | L25 + FVP + C30 + App | ¥57,200 | 1 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1023 | L50 + FVP + C30 + App | ¥63,800 | 2 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1024 | L75 + FVP + C30 + App | ¥73,700 | 3 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1025 | L100 + FVP + C30 + App | ¥83,600 | 4 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1026 | L15mo + FVP + C15 + App | ¥37,400 | 29 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1027 | L15mo + FVP + C30 + App | ¥57,200 | 29 + 10011 + 10015 + 10022 | 30min | ¥0 |
+
+> **App product_id = 10022** (changed from 10021 on 2026-08-19, Go-san approved). CAP plan package prices above are pre-change figures — verify against latest CAP price matrix.
 
 **Upstream project:** CAP (Coaching and App Plan)  
 **ASC project:** ASC-CAP  
@@ -168,11 +180,14 @@ New premium coaching product. **ASC allocation required.**
 
 | plan_id | Name | package_price (tax-excl) | Products | Coaching | App |
 |---|---|---|---|---|---|
-| 1028 | Coaching Intensive Solo | ¥88,000 | 10022 + 10021 | Intensive | ¥0 |
-| 1029 | L25 + FVP + Coaching Intensive + App | ¥102,850 | 1 + 10011 + 10022 + 10021 | Intensive | ¥0 |
-| 1030 | L50 + FVP + Coaching Intensive + App | ¥109,450 | 2 + 10011 + 10022 + 10021 | Intensive | ¥0 |
-| 1031 | L75 + FVP + Coaching Intensive + App | ¥119,350 | 3 + 10011 + 10022 + 10021 | Intensive | ¥0 |
-| 1032 | L100 + FVP + Coaching Intensive + App | ¥129,250 | 4 + 10011 + 10022 + 10021 | Intensive | ¥0 |
+| 1028 | Coaching Intensive (Solo) | ¥75,900 | 10025 + 10022 | Intensive | ¥0 |
+| 1029 | 1L + FVP + Coaching Intensive | ¥90,750 | 1 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+| 1030 | 2L + FVP + Coaching Intensive | ¥97,350 | 2 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+| 1031 | 3L + FVP + Coaching Intensive | ¥107,250 | 3 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+| 1032 | 4L + FVP + Coaching Intensive | ¥117,150 | 4 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+
+> **Updated 2026-08-24 (REF-CIP-04):** Coaching Intensive product_id = **10025** (was 10022). App = **10022** (was 10021). Prices are tax-incl full price per Jefferson's matrix (Solo ¥75,900, was ¥88,000). Base formula: ¥69,000 pre-tax (Coaching Intensive + App) + Online Lesson.
+> **⚠️ O-8:** Plans 1029–1032 bundle Lesson + Coaching Intensive + App (3 products) — confirm whether allocation is 2-way (Coaching+App) or 3-way before ASCI.
 
 **Upstream project:** CIP (Coaching Intensive Plan)  
 **ASC project:** ASC-CIP  
@@ -218,11 +233,11 @@ For charges that go through ASC allocation (CAP/CIP plans only):
 
 | Project | Product | product_id | L (reference price, tax-incl) | Used as |
 |---|---|---|---|---|
-| ASC-CAP | App Premium | 10021 | ¥3,980 | Numerator weight |
+| ASC-CAP | App Premium | **10022** (was 10021) | ¥3,980 | Numerator weight |
 | ASC-CAP | Coaching 15min | 10005 | ¥19,800 | Denominator component |
 | ASC-CAP | Coaching 30min | 10015 | ¥39,600 | Denominator component |
-| ASC-CIP | App Premium | 10021 | ¥3,980 | Numerator weight |
-| ASC-CIP | Coaching Intensive | 10022 | ¥84,020 | Denominator component |
+| ASC-CIP | App Premium | **10022** (was 10021) | ¥3,980 | Numerator weight |
+| ASC-CIP | Coaching Intensive | **10025** (was 10022) | 🔴 ¥84,020 STALE — O-5 reopened (plan now ¥75,900; new L_coaching pending) | Denominator component |
 
 Formula: `P_app = floor(N × L_app / (L_coaching + L_app))`
 
@@ -234,15 +249,15 @@ Formula: `P_app = floor(N × L_app / (L_coaching + L_app))`
 |---|---|---|
 | Monthly plans | `BizmatesMonthlyPlanEnum::exists($productId)` | CommonUtil line 401 (skip in daily rate) |
 | Zipan monthly | `ZipanMonthlyPlanEnum::exists($productId)` | ZipanUtil (skip in daily rate) |
-| CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` or `product_id = 10021` | RevenueAllocationService (new) |
-| CIP bundles | `CoachingIntensivePlanEnum::exists($planId)` or `product_id = 10021` | RevenueAllocationService (new) |
+| CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` or `product_id = 10022` | RevenueAllocationService (new) |
+| CIP bundles | `CoachingIntensivePlanEnum::exists($planId)` or `product_id = 10022` | RevenueAllocationService (new) |
 | Excluded from proration | `NotDailyCalculationProductType` config (product_type 8) | CommonUtil (full amount at start_date) |
 
 ---
 
 ## Key Rules
 
-1. **product_id determines the ASC pipeline** — not plan_id. Monthly plan enum checks product_id. Allocation detects by product_id 10021.
+1. **product_id determines the ASC pipeline** — not plan_id. Monthly plan enum checks product_id. Allocation detects by App product_id 10022 (changed from 10021 on 2026-08-19).
 2. **plan_id determines bundle membership** — for distinguishing CAP vs CIP vs existing coaching.
 3. **Zipan never has coaching or App** — CAP/CIP allocation is Bizmates-only.
 4. **¥0 companions (FVP, App) still create log rows** — they're not filtered out by any price check in getTrnChargeList() or getContractDateInfoList().
