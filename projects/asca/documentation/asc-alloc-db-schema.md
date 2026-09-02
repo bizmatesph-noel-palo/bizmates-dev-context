@@ -23,16 +23,22 @@ The complete field-level schema for the 10 allocation tables + 1 view. REF-CAP-0
 - **Connection:** `mysql` (Bizmates) at runtime; `bizmates_mysql` in migrations. Bizmates-only — no Zipan.
 - **Table prefixes (per ADR 2026-08-17):** `log_alloc_*` = batch-generated, `mst_alloc_*` = master data, `v_alloc_*` = view.
 - **Money types:** reference prices (L) and paid amounts (N, P) = `INT` (yen), matching the existing `paid_price` column. Ratio = `DECIMAL(8,6)`.
+- **Enum columns:** all `TINYINT`, mapped to int-backed PHP enums (`bundle_type`, `run_type`, `status`, `product_role`, `channel`, etc.). Values are `1`-based (`0` = unset). Human-readable strings come from the enum's `label()` method — never stored. Consistent with the existing accounting-system convention (status/type columns are int).
 - **Standard columns:** every table has `id BIGINT UNSIGNED AUTO_INCREMENT PK`, `created_at`, `updated_at`. `deleted_at` only where soft-delete is needed.
 - **Physical FKs:** allocation tables use real foreign keys between themselves (differs from the older `log_*` tables which have none).
 
 ---
 
-## ⚠️ Naming proposal: `project_code` → `bundle_type`
+## ⚠️ Proposal: `project_code` (VARCHAR) → `bundle_type` (TINYINT)
 
-REF-CAP-04 named the CAP/CIP discriminator column `project_code`. **This doc proposes renaming it to `bundle_type`** (pending Kuroda-san's OK), for the same reason the ADR renamed the table prefixes: the column should reflect **what the data IS** (a CAP-type or CIP-type bundle), not **which project created it**. Projects are temporary; the bundle family is permanent. Values stay `'cap'` / `'cip'`.
+REF-CAP-04 named the CAP/CIP discriminator column `project_code`. **This doc proposes two changes** (pending Kuroda-san's OK):
 
-Until Kuroda-san confirms, this doc uses **`bundle_type`** and notes the original name inline.
+1. **Rename** `project_code` → `bundle_type` — the column should reflect **what the data IS** (a CAP-type or CIP-type bundle), not **which project created it** (same principle as the table-prefix ADR).
+2. **Retype** VARCHAR → **TINYINT** — for schema consistency with the other enum columns (`run_type`, `run_status`, etc. are all TINYINT). Stored as int (`1`=CAP, `2`=CIP); human-readable `'cap'`/`'cip'` comes from the `BundleType` enum's `label()` method for CSV/Metabase.
+
+Until Kuroda-san confirms, this doc uses **`bundle_type` TINYINT** and notes the original (`project_code` VARCHAR) inline.
+
+**Enum mapping:** `BundleType: int { CAP = 1; CIP = 2; }` with `label()` → `'cap'`/`'cip'`.
 
 ---
 
@@ -61,7 +67,7 @@ Run management. One row per batch execution. Persists even if the calculation fa
 | Column | Type | Null | Description |
 |---|---|---|---|
 | `id` | BIGINT UNSIGNED | NO | PK |
-| `bundle_type` | VARCHAR(10) | NO | `'cap'` or `'cip'` — which bundle family this run processed. *(was `project_code` in REF-CAP-04 — rename pending Kuroda-san)* |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP — which bundle family this run processed. *(was `project_code` VARCHAR in REF-CAP-04 — rename+retype pending Kuroda-san)* |
 | `target_ym` | CHAR(6) | NO | Target year-month, `YYYYMM` (e.g. `202701`) |
 | `run_type` | TINYINT | NO | Enum `RunType`: 0=Preview, 1=Final |
 | `status` | TINYINT | NO | Enum `RunStatus`: 0=Creating, 1=Completed, 2=Failed |
@@ -101,7 +107,7 @@ Bundle header — one row per detected Coaching+App pair per run.
 |---|---|---|---|
 | `id` | BIGINT UNSIGNED | NO | PK |
 | `run_id` | BIGINT UNSIGNED | NO | FK → `log_alloc_calculation_runs.id` |
-| `bundle_type` | VARCHAR(10) | NO | `'cap'` / `'cip'` *(was `project_code`)* |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `student_id` | BIGINT UNSIGNED | NO | Student who owns the bundle |
 | `order_no` | VARCHAR(64) | YES | Order number — part of the bundle grouping key |
 | `plan_id` | INT | NO | The CAP/CIP plan_id (1016–1027 or 1028–1032) |
@@ -157,7 +163,7 @@ One row per product per group. Stores the reference price (L), the ratio, the or
 | `id` | BIGINT UNSIGNED | NO | PK |
 | `group_id` | BIGINT UNSIGNED | NO | FK → `log_alloc_groups.id` |
 | `run_id` | BIGINT UNSIGNED | NO | FK → `log_alloc_calculation_runs.id` |
-| `bundle_type` | VARCHAR(10) | NO | `'cap'` / `'cip'` *(was `project_code`)* |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `charge_id` | BIGINT UNSIGNED | NO | The charge this proration is for |
 | `product_id` | INT | NO | Coaching or App product |
 | `product_type` | INT | NO | Freee product_type (9=Coaching, 100=App) |
@@ -184,7 +190,7 @@ Effective-dated allocation weights (L). Configurable without code changes.
 | Column | Type | Null | Description |
 |---|---|---|---|
 | `id` | BIGINT UNSIGNED | NO | PK |
-| `bundle_type` | VARCHAR(10) | NO | `'cap'` / `'cip'` *(was `project_code`)* |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `product_id` | INT | NO | The product this price applies to |
 | `reference_price` | INT | NO | L value (yen, tax-inclusive) |
 | `effective_from` | DATE | NO | Start of validity |
@@ -195,11 +201,11 @@ Effective-dated allocation weights (L). Configurable without code changes.
 
 | bundle_type | product_id | reference_price | Note |
 |---|---|---|---|
-| cap | 10022 (App) | 3980 | |
-| cap | 10005 (Coaching 15min) | 19800 | |
-| cap | 10015 (Coaching 30min) | 39600 | |
-| cip | 10022 (App) | 3980 | |
-| cip | 10025 (Coaching Intensive) | 🔴 PENDING (O-5) | was 84020; plan repriced ¥88,000→¥75,900 |
+| 1 (cap) | 10022 (App) | 3980 | |
+| 1 (cap) | 10005 (Coaching 15min) | 19800 | |
+| 1 (cap) | 10015 (Coaching 30min) | 39600 | |
+| 2 (cip) | 10022 (App) | 3980 | |
+| 2 (cip) | 10025 (Coaching Intensive) | 🔴 PENDING (O-5) | was 84020; plan repriced ¥88,000→¥75,900 |
 
 **Invariant V-4:** all applied reference-price rows must be effective for the target date, or the run cannot finalize.
 
@@ -213,7 +219,7 @@ Freee-level aggregation — what gets reflected in Freee journals (via the exist
 |---|---|---|---|
 | `id` | BIGINT UNSIGNED | NO | PK |
 | `run_id` | BIGINT UNSIGNED | NO | FK → `log_alloc_calculation_runs.id` |
-| `bundle_type` | VARCHAR(10) | NO | `'cap'` / `'cip'` *(was `project_code`)* |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `target_ym` | CHAR(6) | NO | Year-month |
 | `product_type` | INT | NO | Freee product_type |
 | `contract_type` | TINYINT | YES | Contract type |
@@ -313,7 +319,7 @@ v_alloc_prorations_active   (view over prorations + runs)
 |---|---|---|
 | O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting |
 | O-7 | product_ids in seeds + `product_id` columns (App 10022, CIP coaching 10025) | ✅ Confirmed |
-| `bundle_type` rename | Column name across 6 tables (was `project_code`) | ⚠️ Proposed — pending Kuroda-san |
+| O-9: `bundle_type` rename + retype | Column across 6 tables: `project_code` VARCHAR → `bundle_type` TINYINT (1=CAP, 2=CIP) | ⚠️ Proposed — pending Kuroda-san |
 
 ---
 

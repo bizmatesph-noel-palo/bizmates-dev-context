@@ -18,7 +18,7 @@ skinparam arrow {
 entity "log_alloc_calculation_runs" as runs {
     * id : bigint <<PK>>
     --
-    bundle_type : varchar(10)  [cap / cip]
+    bundle_type : tinyint  [1=CAP / 2=CIP]
     target_ym : char(6)  [YYYYMM]
     run_type : tinyint  [0=Preview / 1=Final]
     status : tinyint  [0=Creating / 1=Completed / 2=Failed]
@@ -54,7 +54,7 @@ entity "log_alloc_bundles" as bundles {
     * id : bigint <<PK>>
     --
     * run_id : bigint <<FK>>
-    bundle_type : varchar(10)  [cap / cip]
+    bundle_type : tinyint  [1=CAP / 2=CIP]
     student_id : bigint
     order_no : varchar(64)
     plan_id : int
@@ -98,7 +98,7 @@ entity "log_alloc_prorations" as prorations {
     --
     * group_id : bigint <<FK>>
     * run_id : bigint <<FK>>
-    bundle_type : varchar(10)  [cap / cip]
+    bundle_type : tinyint  [1=CAP / 2=CIP]
     charge_id : bigint
     product_id : int
     product_type : int  [9=Coaching / 100=App]
@@ -123,7 +123,7 @@ entity "log_alloc_prorations" as prorations {
 entity "mst_alloc_reference_prices" as ref_prices {
     * id : bigint <<PK>>
     --
-    bundle_type : varchar(10)  [cap / cip]
+    bundle_type : tinyint  [1=CAP / 2=CIP]
     product_id : int
     reference_price : int  [L, tax-incl]
     effective_from : date
@@ -140,7 +140,7 @@ entity "log_alloc_sum_calculation" as sum_calc {
     * id : bigint <<PK>>
     --
     * run_id : bigint <<FK>>
-    bundle_type : varchar(10)  [cap / cip]
+    bundle_type : tinyint  [1=CAP / 2=CIP]
     target_ym : char(6)
     product_type : int
     contract_type : tinyint
