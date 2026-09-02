@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated, references aligned) |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated, references aligned) · 2026-09-01 (§11 table names synced with ADR) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -984,6 +984,13 @@ The order_no-level breakdown will show:
 
 ## 11. New Code Structure
 
+> **⚠️ Table-prefix update (2026-08-17):** This section was written 2026-08-13, before the table-prefix ADR was approved. The ADR (`ASCA-ADR-20260817-table-prefix-decision.md`) renamed the tables:
+> - `asc_alloc_*` → **`log_alloc_*`** (batch-generated tables)
+> - `asc_alloc_reference_prices` → **`mst_alloc_reference_prices`** (master data)
+> - `v_asc_alloc_prorations_active` → **`v_alloc_prorations_active`** (view)
+>
+> The **migration filenames and table names below have been updated** to match the ADR. The `AscAlloc*` **model names and `AscAlloc/` namespace are unchanged** — models are grouped by domain (allocation feature), not by table prefix. This is a deliberate split: table prefix reflects data category (`log_`/`mst_`), model namespace reflects feature ownership (`AscAlloc`). Confirm this convention at Spec 01 design (G2).
+
 ```
 accounting_related_system_for_freee/
 ├── app/
@@ -1021,21 +1028,21 @@ accounting_related_system_for_freee/
     └── AllocationFormulaTest.php
 
 ls-database-migrations/
-├── database/migrations/
-│   ├── YYYY_MM_DD_create_asc_alloc_calculation_runs_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_source_documents_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_bundles_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_bundle_charges_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_groups_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_prorations_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_reference_prices_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_sum_calculation_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_sum_calculation_history_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_deliveries_table.php
-│   └── YYYY_MM_DD_create_v_asc_alloc_prorations_active_view.php
+├── database/migrations/          # table names per ADR (log_alloc_* / mst_alloc_* / v_alloc_*)
+│   ├── YYYY_MM_DD_create_log_alloc_calculation_runs_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_source_documents_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_bundles_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_bundle_charges_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_groups_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_prorations_table.php
+│   ├── YYYY_MM_DD_create_mst_alloc_reference_prices_table.php   # mst_ — master data
+│   ├── YYYY_MM_DD_create_log_alloc_sum_calculation_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_sum_calculation_history_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_deliveries_table.php
+│   └── YYYY_MM_DD_create_v_alloc_prorations_active_view.php
 │
 └── database/seeders/
-    └── Bizmates/AscAllocReferencePriceSeeder.php
+    └── Bizmates/AscAllocReferencePriceSeeder.php   # seeds mst_alloc_reference_prices
 ```
 
 ---
