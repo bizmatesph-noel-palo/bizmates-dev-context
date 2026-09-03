@@ -36,7 +36,7 @@ inclusion: auto
 
 ## Allocation Terms (ASCA / ASCI)
 
-The ASCA formula is **single-stage** — split N between Coaching and App by reference-price weight (no O-then-P proration chain and no adjustment delta; those were ASCH concepts and do not apply). Formula, worked examples, and idempotency proof: [asc-allocation-framework-technical-design.md](../../documentation/asc-allocation-framework-technical-design.md) §4.
+The ASCA formula is **single-stage** — split N between Coaching and App by reference-price weight (no O-then-P proration chain and no adjustment delta; those were ASCH concepts and do not apply). Formula, worked examples, and idempotency proof (§4): `projects/asca/documentation/asc-allocation-framework-technical-design.md`
 
 | Term | Meaning |
 |---|---|
@@ -83,5 +83,3 @@ The ASCA formula is **single-stage** — split N between Coaching and App by ref
 | Journal entry | Accounting record (debit + credit) submitted to the Freee API. |
 | ASCA & Freee | ASCA sends **no journals of its own**. Because the App log row is overwritten from ¥0 to P_app, it passes the existing `paid_price != 0` gate in `sendFreeeJournals2()` and flows through the normal journal path automatically. |
 | Account / segment mapping | Freee dimensions resolved via `mst_code_change` (product_type → freee_code) and `mst_rule_for_journals`. App (product_type 100) mappings must exist before go-live (data check, not code). |
-</content>
-</invoke>
