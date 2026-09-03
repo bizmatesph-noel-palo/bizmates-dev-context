@@ -51,7 +51,7 @@ The ASCA formula is **single-stage** — split N between Coaching and App by ref
 | Idempotency | Re-running produces the same result because N = ΣN is invariant and `snapshotSourceData()` skips already-snapshotted (charge_id, target_ym). |
 | Run | One allocation execution (`log_alloc_calculation_runs`). Persists even on failure so it's auditable. |
 | Run lifecycle | createRun (own commit) → finalizeRun / markFailed. See `coding-standards.md` → Error Handling. |
-| `bundle_type` | CAP/CIP discriminator column. Int-backed enum `BundleType` (1=CAP, 2=CIP), `label()` → `'cap'`/`'cip'`. ⚠️ Name+type pending Kuroda-san (was `project_code` VARCHAR — O-9). |
+| `bundle_type` | CAP/CIP discriminator column. Int-backed enum `BundleType` (1=CAP, 2=CIP), `label()` → `'cap'`/`'cip'`. Renamed+retyped from `project_code` VARCHAR (O-9 — confirmed by Kuroda-san 2026-09-02). |
 | `allocate()` | Full-month allocation — all CAP/CIP bundles for a target_ym. Called from CommonUtil. |
 | `allocateForCharge()` | Scoped allocation — only the bundle containing one corrected charge. Called from DataCorrectionLogic. Not a full-month rebuild. |
 | Failure isolation | Allocation is wrapped in try/catch. On failure the log keeps N (today's behavior) — no revenue lost, batch continues, run marked Failed. |

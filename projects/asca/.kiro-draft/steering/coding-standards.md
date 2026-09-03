@@ -100,7 +100,7 @@ app/
 │   └── RevenueAllocation/
 │       ├── CoachingAndAppPlanEnum.php  # CAP plan_ids 1016–1027
 │       ├── CoachingIntensivePlanEnum.php # CIP plan_ids 1028–1032
-│       ├── BundleType.php              # int-backed: CAP=1, CIP=2 (label() → 'cap'/'cip'). ⚠️ Name+type pending Kuroda-san (was ProjectCode/VARCHAR; rename+retype proposed — O-9)
+│       ├── BundleType.php              # int-backed: CAP=1, CIP=2 (label() → 'cap'/'cip'). Renamed+retyped from ProjectCode/VARCHAR (O-9 — confirmed by Kuroda-san 2026-09-02)
 │       ├── RunType.php                 # Preview, Final
 │       └── RunStatus.php               # Creating, Completed, Failed
 └── Traits/
@@ -125,7 +125,7 @@ Migrations live in the **`ls-database-migrations`** repo, NOT here. See `databas
 |---|---|---|
 | Service | `RevenueAllocationService` (in `Libs/RevenueAllocation/`) | `RevenueAllocationService` |
 | Models | Match the table name — `log_alloc_*` → `LogAlloc*`, `mst_alloc_*` → `MstAlloc*` (in `Models/RevenueAllocation/`) | `LogAllocProration`, `MstAllocReferencePrice` |
-| Enums | `{Concept}Enum` for plan sets (matches existing `BizmatesMonthlyPlanEnum`); `RunType` / `RunStatus` for state; `BundleType` for the cap/cip discriminator (⚠️ name pending Kuroda-san — O-9) | `CoachingAndAppPlanEnum`, `RunType`, `BundleType` |
+| Enums | `{Concept}Enum` for plan sets (matches existing `BizmatesMonthlyPlanEnum`); `RunType` / `RunStatus` for state; `BundleType` for the cap/cip discriminator (O-9 — confirmed by Kuroda-san 2026-09-02) | `CoachingAndAppPlanEnum`, `RunType`, `BundleType` |
 | Batch-generated tables | `log_alloc_*` prefix, snake_case | `log_alloc_calculation_runs` |
 | Master-data tables | `mst_alloc_*` prefix | `mst_alloc_reference_prices` |
 | Views | `v_alloc_*` prefix | `v_alloc_prorations_active` |
@@ -187,7 +187,7 @@ declare(strict_types=1);
 
 namespace App\Enums\RevenueAllocation;
 
-// ⚠️ Name + int-mapping pending Kuroda-san — was ProjectCode; maps to the `bundle_type` TINYINT column (rename + retype proposed, O-9)
+// Maps to the `bundle_type` TINYINT column — renamed+retyped from ProjectCode/VARCHAR (O-9 — confirmed by Kuroda-san 2026-09-02)
 enum BundleType: int
 {
     case CAP = 1;
