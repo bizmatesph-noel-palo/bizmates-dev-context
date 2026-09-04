@@ -1,10 +1,16 @@
 # ASC Allocation Framework — Technical Design Document
 
-**Date:** 2026-08-13  
-**Author:** Noel Palo, Lead Developer  
-**Assisted by:** Kiro (AI-assisted code analysis and document generation)  
-**Status:** REFERENCE — consolidated technical design for ASC-CAP and ASC-CIP  
-**Audience:** Development team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM)
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | Technical Design |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) |
+| **Author** | Noel Palo, Lead Developer |
+| **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
+| **Status** | Active |
+| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM) |
+| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
 
 ---
 
@@ -55,7 +61,7 @@ When a student purchases a CAP or CIP plan, they pay a single amount that covers
 ```
 Student buys plan 1018 (L25 + Coaching 15 + App):
   trn_charge for Coaching (product 10005): paid_price = ¥22,550 (includes App fee)
-  trn_charge for App (product 10021):      paid_price = ¥0      (companion)
+  trn_charge for App (product 10022):      paid_price = ¥0      (companion — App id now 10022, was 10021)
 ```
 
 Existing ASC calculates daily rate for the Coaching charge and books the full ¥22,550 as Coaching revenue. But accounting standards require the revenue to be split:
@@ -137,8 +143,8 @@ The formula works identically regardless of month or proration — it just split
 | **N** | Bundle group total | Σ(paid_price) of coaching + app rows | Computed at allocation time | The sum of all rows in the bundle for a given target_ym. Using the group total (not coaching row alone) makes allocation idempotent — N is invariant across re-runs. |
 | **P_coaching** | Allocated coaching amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten) | N minus App's share. What Freee should book as Coaching revenue. |
 | **P_app** | Allocated app amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten from 0) | App's proportional share. What Freee should book as App revenue. |
-| **L_app** | App reference price | `asc_alloc_reference_prices` | Config / DB | ¥3,980 tax-inclusive. Standalone selling price of App. |
-| **L_coaching** | Coaching reference price | `asc_alloc_reference_prices` | Config / DB | ¥19,800 (15min) or ¥39,600 (30min) tax-inclusive. |
+| **L_app** | App reference price | `mst_alloc_reference_prices` | Config / DB | ¥3,980 tax-inclusive. Standalone selling price of App. |
+| **L_coaching** | Coaching reference price | `mst_alloc_reference_prices` | Config / DB | ¥19,800 (15min) or ¥39,600 (30min) tax-inclusive. |
 
 ### Data Flow: Source → Calculation → Output
 
@@ -190,16 +196,16 @@ AGGREGATION (feeds Freee + CSVs)
 
 AUDIT TABLES (new — allocation detail)
 ┌─────────────────────────────────────────────────────┐
-│ asc_alloc_calculation_runs                          │
+│ log_alloc_calculation_runs                          │
 │   • run_id, project_code, target_ym, run_type     │
 │   • status (creating/completed/failed)             │
 │                                                     │
-│ asc_alloc_prorations                                │
+│ log_alloc_prorations                                │
 │   • charge_id, product_id, reference_price (L)     │
 │   • original_amount (N), allocated_amount (P)      │
 │   • ratio                                           │
 │                                                     │
-│ asc_alloc_source_documents                          │
+│ log_alloc_source_documents                          │
 │   • Immutable snapshot of N values before overwrite│
 └─────────────────────────────────────────────────────┘
 ```
@@ -210,32 +216,42 @@ AUDIT TABLES (new — allocation detail)
 
 ### Confirmed Values
 
-| Project | Product | product_id | L (reference price, tax-incl) | Source |
+> **🔴 PRODUCT ID CHANGE (2026-08-19, approved by Go-san — FINAL):** Two product_ids changed upstream (Soli-san, CIP Slack). **All `10021`/`10022` references below and elsewhere in this doc reflect the OLD ids** and are being reconciled. The authoritative mapping is:
+> - **CAP Bizmates App: `10021` → `10022`** (this is the detection anchor — was 10021, now 10022)
+> - **CIP Coaching Intensive: `10022` → `10025`**
+>
+> ⚠️ Note the collision: `10022` now means **App** (CAP), but older text uses `10022` to mean **Coaching Intensive** (CIP). When reading any `10022` below, check context. See `research/CIP/REF-CIP-04-Product-Plan-IDs-And-Price-Matrix-20260824.md`.
+>
+> **🟡 PRICE PENDING (O-5 reopened):** CIP Solo (1028) is now ¥75,900 tax-incl (was ¥88,000), bundling Coaching Intensive + App. `L_coaching = ¥84,020` below is stale. Awaiting Kuroda-san/Accounting confirmation of the new L_coaching (likely ¥71,920 = 75,900 − 3,980, unconfirmed).
+
+| Project | Product | product_id (NEW) | L (reference price, tax-incl) | Source |
 |---|---|---|---|---|
-| CAP | App Premium | 10021 | ¥3,980 | REF-CAP-05 (Kuroda-san confirmed) |
+| CAP | App Premium | **10022** (was 10021) | ¥3,980 | REF-CAP-05 · id change REF-CIP-04 |
 | CAP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
 | CAP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
-| CIP | App Premium | 10021 | ¥3,980 | Same product as CAP |
-| CIP | Coaching Intensive | 10022 | ¥84,020 | L_coaching = plan_price − L_app = 88,000 − 3,980. Confirmed by Kuroda-san + Accounting (2026-08-17). |
+| CIP | App Premium | **10022** (was 10021) | ¥3,980 | Same product as CAP |
+| CIP | Coaching Intensive | **10025** (was 10022) | ⚠️ ¥84,020 STALE — pending O-5 re-confirm | Was `plan ¥88,000 − ¥3,980`; plan now ¥75,900. Awaiting Accounting. |
 
 ### How Reference Prices Are Stored
 
-Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change without code changes):
+Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change without code changes):
 
 ```php
 // Seeder data
 [
-    // CAP
-    ['project_code' => 'cap', 'product_id' => 10021, 'reference_price' => 3980,
+    // CAP  (App product_id = 10022, changed from 10021 on 2026-08-19)
+    ['project_code' => 'cap', 'product_id' => 10022, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
     ['project_code' => 'cap', 'product_id' => 10005, 'reference_price' => 19800,
      'effective_from' => '2026-01-01', 'effective_to' => null],
     ['project_code' => 'cap', 'product_id' => 10015, 'reference_price' => 39600,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    // CIP
-    ['project_code' => 'cip', 'product_id' => 10021, 'reference_price' => 3980,
+    // CIP  (App = 10022; Coaching Intensive = 10025, both changed 2026-08-19)
+    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 3980,
      'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 84020,
+    // ⚠️ CIP Coaching Intensive reference_price PENDING (O-5 reopened) — plan now ¥75,900, not ¥88,000.
+    //    Value below (84020) is STALE. Likely ¥71,920 (= 75,900 − 3,980) but awaiting Accounting.
+    ['project_code' => 'cip', 'product_id' => 10025, 'reference_price' => 84020, // 🔴 STALE — confirm via O-5
      'effective_from' => '2026-01-01', 'effective_to' => null],
 ]
 ```
@@ -267,11 +283,13 @@ Stored in `asc_alloc_reference_prices` (effective-dated, so prices can change wi
 
 | plan_id | Plan Name | Coaching Product |
 |---|---|---|
-| 1028 | Solo Coaching Intensive | 10022 |
-| 1029 | L25 + FVP + Coaching Intensive + App | 10022 |
-| 1030 | L50 + FVP + Coaching Intensive + App | 10022 |
-| 1031 | L75 + FVP + Coaching Intensive + App | 10022 |
-| 1032 | L100 + FVP + Coaching Intensive + App | 10022 |
+| 1028 | Coaching Intensive (Solo) | 10025 |
+| 1029 | 1L + FVP + Coaching Intensive | 10025 |
+| 1030 | 2L + FVP + Coaching Intensive | 10025 |
+| 1031 | 3L + FVP + Coaching Intensive | 10025 |
+| 1032 | 4L + FVP + Coaching Intensive | 10025 |
+
+> **product_id 10025** (was 10022) per 2026-08-19 change. Plans 1029–1032 also bundle Online Lesson (1L–4L) + FVP — see O-8 (2-way vs 3-way split) in §15.
 
 **Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are brand new, same as CAP).
 
@@ -336,7 +354,7 @@ public static function createDailyRateCalculation(
     // Step [b]: ★ NEW — ASC Allocation (Overwrite N → P) ★
     // ═══════════════════════════════════════════════════════════════
     try {
-        app(AscAllocationService::class)->allocate($targetYm, $preFlg);
+        app(RevenueAllocationService::class)->allocate($targetYm, $preFlg);
     } catch (\Throwable $e) {
         Log::error('[ASC_ALLOC] Allocation failed: ' . $e->getMessage());
         Log::error($e->getTraceAsString());
@@ -400,7 +418,7 @@ private function createDailyRateCalculation($data)
     // ═══════════════════════════════════════════════════════════════
     try {
         $targetYm = CommonUtil::getTargetYm();
-        app(AscAllocationService::class)->allocate($targetYm, preFlg: false);
+        app(RevenueAllocationService::class)->allocate($targetYm, preFlg: false);
     } catch (\Throwable $e) {
         Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
     }
@@ -420,7 +438,7 @@ private function createDailyRateCalculation($data)
 - Effort: 0.5–1 day
 
 **Phase 2 (ASC-CAP):** Add allocation call to DataCorrectionLogic:
-- Add `AscAllocationService::allocateForCharge($chargeId, $targetYm)` method to the service (targeted single-charge allocation, not full-month rebuild)
+- Add `RevenueAllocationService::allocateForCharge($chargeId, $targetYm)` method to the service (targeted single-charge allocation, not full-month rebuild)
 - Call it from DataCorrectionLogic after the INSERT loop
 - Effort: included in allocation service design (~5 lines at call site)
 
@@ -449,13 +467,13 @@ foreach ($ContractDateLists as $key => $value) {
 // ★ Phase 2 (ASC-CAP): Allocate this specific charge ★
 try {
     $targetYm = array_key_first($ContractDateLists);  // target_ym from the first period
-    app(AscAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
+    app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
 } catch (\Throwable $e) {
     Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
 }
 ```
 
-The `allocateForCharge()` method detects if this charge is part of a CAP/CIP bundle (by product_id 10021), finds its coaching pair in the log, computes P, and updates — same logic as the full `allocate()` but scoped to one charge.
+The `allocateForCharge()` method detects if this charge is part of a CAP/CIP bundle (by App product_id 10022 — was 10021), finds its coaching pair in the log, computes P, and updates — same logic as the full `allocate()` but scoped to one charge.
 
 ### Failure Isolation
 
@@ -468,7 +486,7 @@ CommonUtil::createDailyRateCalculation()
 │       Log error                                  - log table still has N
 │       Mark run as failed                         - system behaves as today
 │       Continue to step [c]                       - no revenue lost
-│   }                                              - visible in asc_alloc_calculation_runs
+│   }                                              - visible in log_alloc_calculation_runs
 │
 └── Step [c]: Build sum from log table         ← Works with N or P (either way valid)
 ```
@@ -479,10 +497,10 @@ CommonUtil::createDailyRateCalculation()
 
 ## 9. The Allocation Service — Internal Design
 
-### AscAllocationService::allocate()
+### RevenueAllocationService::allocate()
 
 ```php
-class AscAllocationService
+class RevenueAllocationService
 {
     public function allocate(string $targetYm, bool $preFlg): void
     {
@@ -513,7 +531,7 @@ class AscAllocationService
             // 5. UPDATE log_daily_rate_calculation with P values
             $this->overwriteLogTable($table, $allocations);
 
-            // 6. Write asc_alloc_* tables (detailed audit)
+            // 6. Write log_alloc_* / mst_alloc_* tables (detailed audit)
             $this->persistAllocationDetail($run->id, $allocations);
 
             // 7. Finalize run
@@ -534,8 +552,8 @@ class AscAllocationService
 private function detectBundles(string $table, string $targetYm): Collection
 {
     // Find coaching AND app charges that belong to CAP/CIP plans
-    // Anchor detection on product_id 10021 (App) — guaranteed stable
-    // Coaching product_id may change (CAP team considering new product_id — see open item P-3)
+    // Anchor detection on the App product_id — now 10022 (was 10021 before the 2026-08-19 change)
+    // CIP Coaching Intensive is now 10025 (was 10022)
     return DB::table($table . ' as log')
         ->join('trn_charge as c', 'log.charge_id', '=', 'c.id')
         ->where('log.target_ym', $targetYm)
@@ -545,7 +563,7 @@ private function detectBundles(string $table, string $targetYm): Collection
                   $q2->whereIn('c.plan_id', CoachingIntensivePlanEnum::toArray());
               });
         })
-        ->whereIn('c.product_id', [10005, 10015, 10022, 10021])  // TODO: update if CAP gets new coaching product_id
+        ->whereIn('c.product_id', [10005, 10015, 10025, 10022])  // 10005/10015 = CAP coaching, 10025 = CIP coaching intensive, 10022 = App (all NEW ids per 2026-08-19)
         ->select('log.id', 'log.charge_id', 'log.paid_price', 'c.product_id',
                  'c.plan_id', 'c.student_id', 'c.order_no', 'log.target_ym')
         ->get()
@@ -568,8 +586,8 @@ Each `order_no` represents one billing unit. Charges sharing the same `order_no`
 
 | # | Item | Status | Impact |
 |---|---|---|---|
-| P-3 | CAP team may create new coaching product_id (replacing 10005/10015 for CAP plans) | ⚠️ Confirm with CAP team | Detection `whereIn` needs updating if confirmed. Also affects Freee item mapping. |
-| — | Plan 1028 (Solo CIP) includes App (10021) per seeder | ✅ Verified in REF-CIP-03 §9 | $appRow will not be null for Solo plans |
+| O-7 | Product ids changed (2026-08-19, FINAL): App 10021→10022, CIP coaching 10022→10025 | ✅ Confirmed by Go-san | Detection `whereIn` = [10005, 10015, 10025, 10022]. Freee mapping must use new App id 10022. |
+| — | Plan 1028 (Solo CIP) includes App (10022) per seeder | ✅ Verified in REF-CIP-03 §9 | $appRow will not be null for Solo plans |
 | — | CIP L_coaching is a dependent value (plan_price − L_app) | Noted | Must recalculate if plan_price changes |
 
 ### Compute Allocations — Uses ΣN (Group Total)
@@ -579,8 +597,8 @@ private function computeAllocations(Collection $bundles): Collection
 {
     // Each $bundle is a group of rows sharing (student_id, order_no)
     return $bundles->map(function ($bundleRows) {
-        $coachingRow = $bundleRows->firstWhere('product_id', '!=', 10021);
-        $appRow = $bundleRows->firstWhere('product_id', 10021);
+        $coachingRow = $bundleRows->firstWhere('product_id', '!=', 10022);  // App is now 10022 (was 10021)
+        $appRow = $bundleRows->firstWhere('product_id', 10022);              // App = 10022 (new id)
 
         if (!$coachingRow || !$appRow) {
             Log::warning('[ASC_ALLOC] Incomplete bundle — skipping', [
@@ -649,12 +667,12 @@ private function snapshotSourceData(int $runId, Collection $bundles, string $tab
 {
     foreach ($bundles->flatten() as $row) {
         // Skip if already snapshotted (prevents audit corruption on re-run)
-        $exists = AscAllocSourceDocument::where('charge_id', $row->charge_id)
+        $exists = LogAllocSourceDocument::where('charge_id', $row->charge_id)
             ->where('target_ym', $row->target_ym)
             ->exists();
 
         if (!$exists) {
-            AscAllocSourceDocument::create([
+            LogAllocSourceDocument::create([
                 'run_id' => $runId,
                 'charge_id' => $row->charge_id,
                 'target_ym' => $row->target_ym,
@@ -673,7 +691,7 @@ For `addDaily`, allocate ONLY the charge being added, not the entire target_ym:
 ```php
 // After INSERT in DataCorrectionLogic::createDailyRateCalculation()
 try {
-    app(AscAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
+    app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
 } catch (\Throwable $e) {
     Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
 }
@@ -690,7 +708,7 @@ try {
 #### Current Behavior (Before Allocation)
 
 ```
-trn_charge (product_id=10021, paid_price=0, plan_id=1018)
+trn_charge (product_id=10022, paid_price=0, plan_id=1018)   // App — id now 10022 (was 10021)
     │
     ▼ getTrnChargeList() — fetches it (no price filter)
     ▼ getContractDateInfoList(paid_price=0) — prorates 0 → produces 0
@@ -735,9 +753,9 @@ Kuroda-san confirmed with Accounting:
 
 **Decision:** Provide both:
 - **CSV in the existing zip:** AllocationDetail CSV with breakdown — included in monthly email for archival (~30 lines of code)
-- **Metabase:** A saved query on `asc_alloc_prorations` joined with charge details — created post-deployment for ad-hoc checks between batch runs
+- **Metabase:** A saved query on `log_alloc_prorations` joined with charge details — created post-deployment for ad-hoc checks between batch runs
 
-Since `asc_alloc_prorations` already stores: original N, allocated P, reference prices L, ratio, project_code, charge_id, product_id — both outputs read from the same source table.
+Since `log_alloc_prorations` already stores: original N, allocated P, reference prices L, ratio, project_code, charge_id, product_id — both outputs read from the same source table.
 
 #### What Needs to Be Added (if CSV is required)
 
@@ -778,8 +796,8 @@ public static function createAllocationDetailFile(string $targetYm, bool $preFlg
 {
     [$fileName, $name, $headerTitle] = CommonUtil::getCsvFileInfo('allocationDetailFile');
 
-    // Read from asc_alloc_prorations for the target month
-    $rows = AscAllocProration::getForTargetYm($targetYm, $preFlg);
+    // Read from log_alloc_prorations for the target month
+    $rows = LogAllocProration::getForTargetYm($targetYm, $preFlg);
 
     $detailDataLists = [];
     foreach ($rows as $row) {
@@ -813,8 +831,8 @@ public static function createAllocationDetailFile(string $targetYm, bool $preFlg
 // In createSendMailAttacheFile(), after existing CSVs:
 
 // ASC Allocation Detail CSV (only if allocation ran successfully)
-if (AscAllocCalculationRun::hasCompletedRun($targetYm)) {
-    [$fileName, $name] = AscAllocationCsvService::createAllocationDetailFile($targetYm, false);
+if (LogAllocCalculationRun::hasCompletedRun($targetYm)) {
+    [$fileName, $name] = RevenueAllocationCsvService::createAllocationDetailFile($targetYm, false);
     $fileNameList[$fileName] = $name;
 }
 ```
@@ -978,58 +996,65 @@ The order_no-level breakdown will show:
 
 ## 11. New Code Structure
 
+> **⚠️ Table-prefix update (2026-08-17):** This section was written 2026-08-13, before the table-prefix ADR was approved. The ADR (`ASCA-ADR-20260817-table-prefix-decision.md`) renamed the tables:
+> - `asc_alloc_*` → **`log_alloc_*`** (batch-generated tables)
+> - `asc_alloc_reference_prices` → **`mst_alloc_reference_prices`** (master data)
+> - `v_asc_alloc_prorations_active` → **`v_alloc_prorations_active`** (view)
+>
+> The **migration filenames and table names below have been updated** to match the ADR. The **PHP namespace was renamed** from the earlier `AscAlloc` to **`RevenueAllocation`** (2026-09-01) — a descriptive domain name, consistent with the ADR's principle that structure should reflect what the code IS (revenue allocation), not which project built it (ASC). **Model class names follow the existing table→model convention** (`log_alloc_*` → `LogAlloc*`, `mst_alloc_*` → `MstAlloc*`), so a model name predictably maps to its table. Feature grouping comes from the `RevenueAllocation` namespace/folder, not from the class-name prefix.
+
 ```
 accounting_related_system_for_freee/
 ├── app/
-│   ├── Enums/AscAlloc/
+│   ├── Enums/RevenueAllocation/
 │   │   ├── CoachingAndAppPlanEnum.php   # CAP plan_ids 1016–1027
 │   │   ├── CoachingIntensivePlanEnum.php # CIP plan_ids 1028–1032
-│   │   ├── ProjectCode.php          # 'cap', 'cip'
+│   │   ├── BundleType.php           # 'cap', 'cip' — bundle family (was ProjectCode; maps to bundle_type column, rename pending Kuroda-san)
 │   │   ├── RunType.php              # Preview, Final
 │   │   └── RunStatus.php            # Creating, Completed, Failed
 │   │
-│   ├── Libs/AscAllocation/
-│   │   └── AscAllocationService.php # Main orchestrator (allocate method)
+│   ├── Libs/RevenueAllocation/
+│   │   └── RevenueAllocationService.php # Main orchestrator (allocate method)
 │   │
-│   ├── Models/AscAlloc/
-│   │   ├── AscAllocCalculationRun.php
-│   │   ├── AscAllocSourceDocument.php
-│   │   ├── AscAllocBundle.php
-│   │   ├── AscAllocBundleCharge.php
-│   │   ├── AscAllocGroup.php
-│   │   ├── AscAllocProration.php
-│   │   ├── AscAllocReferencePrice.php
-│   │   ├── AscAllocSumCalculation.php
-│   │   ├── AscAllocSumCalculationHistory.php
-│   │   └── AscAllocDelivery.php
+│   ├── Models/RevenueAllocation/    # models named after their table (LogAlloc* / MstAlloc*)
+│   │   ├── LogAllocCalculationRun.php      → log_alloc_calculation_runs
+│   │   ├── LogAllocSourceDocument.php      → log_alloc_source_documents
+│   │   ├── LogAllocBundle.php              → log_alloc_bundles
+│   │   ├── LogAllocBundleCharge.php        → log_alloc_bundle_charges
+│   │   ├── LogAllocGroup.php               → log_alloc_groups
+│   │   ├── LogAllocProration.php           → log_alloc_prorations
+│   │   ├── MstAllocReferencePrice.php      → mst_alloc_reference_prices
+│   │   ├── LogAllocSumCalculation.php      → log_alloc_sum_calculation
+│   │   ├── LogAllocSumCalculationHistory.php → log_alloc_sum_calculation_history
+│   │   └── LogAllocDelivery.php            → log_alloc_deliveries
 │   │
 │   └── Traits/
 │       └── HasEnumHelperTrait.php   # Already exists — reused by new enums
 │
 ├── config/
-│   └── asc_alloc.php                # NEW: allocation config (launch dates, feature flags)
+│   └── revenue_allocation.php       # NEW: allocation config (launch dates, feature flags)
 │
-└── tests/Unit/AscAllocation/
-    ├── AscAllocationServiceTest.php
+└── tests/Unit/RevenueAllocation/
+    ├── RevenueAllocationServiceTest.php
     ├── CoachingAndAppPlanEnumTest.php
     └── AllocationFormulaTest.php
 
 ls-database-migrations/
-├── database/migrations/
-│   ├── YYYY_MM_DD_create_asc_alloc_calculation_runs_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_source_documents_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_bundles_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_bundle_charges_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_groups_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_prorations_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_reference_prices_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_sum_calculation_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_sum_calculation_history_table.php
-│   ├── YYYY_MM_DD_create_asc_alloc_deliveries_table.php
-│   └── YYYY_MM_DD_create_v_asc_alloc_prorations_active_view.php
+├── database/migrations/          # table names per ADR (log_alloc_* / mst_alloc_* / v_alloc_*)
+│   ├── YYYY_MM_DD_create_log_alloc_calculation_runs_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_source_documents_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_bundles_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_bundle_charges_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_groups_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_prorations_table.php
+│   ├── YYYY_MM_DD_create_mst_alloc_reference_prices_table.php   # mst_ — master data
+│   ├── YYYY_MM_DD_create_log_alloc_sum_calculation_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_sum_calculation_history_table.php
+│   ├── YYYY_MM_DD_create_log_alloc_deliveries_table.php
+│   └── YYYY_MM_DD_create_v_alloc_prorations_active_view.php
 │
 └── database/seeders/
-    └── Bizmates/AscAllocReferencePriceSeeder.php
+    └── Bizmates/AscAllocReferencePriceSeeder.php   # seeds mst_alloc_reference_prices
 ```
 
 ---
@@ -1038,10 +1063,10 @@ ls-database-migrations/
 
 | File | Change | Lines Added | Risk |
 |---|---|---|---|
-| `app/Libs/CommonUtil.php` | Add `AscAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
+| `app/Libs/CommonUtil.php` | Add `RevenueAllocationService::allocate()` call between step [a] and [c] | ~8 | LOW — additive, wrapped in try/catch |
 | `app/Libs/DataCorrectionLogic.php` | ASCM Prep: add monthly plan skip + missing fields (fix drift). ASC-CAP: add `allocateForCharge()` call after "addDaily" INSERT | ~20 | LOW-MED — tested via correction batch smoke test |
 | `config/const.php` | Add CSV header definitions for AllocationDetail | ~20 | ZERO — config only |
-| `config/asc_alloc.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
+| `config/revenue_allocation.php` | New config file for allocation settings (launch dates, feature flags) | ~30 | ZERO — new file |
 
 **Everything else is new code** — no modifications to existing logic.
 
@@ -1065,10 +1090,10 @@ ls-database-migrations/
 |---|---|---|
 | `CommonUtil::createDailyRateCalculation()` | Add allocation service call between [a] and [c] | ~8 lines |
 | `DataCorrectionLogic::createDailyRateCalculation()` | ASCM Prep: fix drift (add skip + missing fields). ASC-CAP: add `allocateForCharge()` call | ~20 lines |
-| `AscAllocationService` (NEW) | Main orchestrator — detect, compute, overwrite, persist | 1 new class |
+| `RevenueAllocationService` (NEW) | Main orchestrator — detect, compute, overwrite, persist | 1 new class |
 | `CoachingAndAppPlanEnum` / `CoachingIntensivePlanEnum` (NEW) | Plan ID enums for detection | 2 new files |
-| `AscAlloc*` models (NEW) | Eloquent models for audit tables | 8–10 new files |
-| `config/asc_alloc.php` (NEW) | Config for launch dates, feature flags | 1 new file |
+| `LogAlloc*` / `MstAlloc*` models (NEW) | Eloquent models for audit tables (in `App\Models\RevenueAllocation\`) | 8–10 new files |
+| `config/revenue_allocation.php` (NEW) | Config for launch dates, feature flags | 1 new file |
 | `config/const.php` | CSV header definition for AllocationDetail | ~20 lines |
 | `createSendMailAttacheFile()` | Add AllocationDetail CSV to file list | ~5 lines |
 | Migrations (ls-database-migrations) | 10 tables + 1 view | 11 files |
@@ -1111,7 +1136,7 @@ ls-database-migrations/
 | 4 | Detection | plan_id enum | product_id check | product_id 10005/10015 is shared with non-CAP plans. plan_id is unique. |
 | 5 | CIP guard | ~~Date filter~~ → Not needed (new plan_ids) | Date filter (historical charges) | CIP has brand new plan_ids (1028–1032) with zero history. Same detection as CAP. |
 | 6 | Rounding | floor() on App, remainder to Coaching | Round both | Guarantees P_coaching + P_app = N exactly. No ¥1 gaps. |
-| 7 | N preservation | asc_alloc_source_documents | Keep N in log table | Option 1 overwrites log. Source_documents provides audit trail. |
+| 7 | N preservation | log_alloc_source_documents | Keep N in log table | Option 1 overwrites log. Source_documents provides audit trail. |
 | 8 | Tenant scope | Bizmates only | Both tenants | Coaching/App don't exist on Zipan. ZipanUtil untouched. |
 | 9 | Pre/Final | Single service with preFlg parameter | Separate classes | Avoids duplication (KB #14 lesson). |
 | 10 | CAP first | CAP builds foundation, CIP reuses | CIP first | CAP requirements more concrete. Same total effort either way. |
@@ -1122,15 +1147,24 @@ ls-database-migrations/
 
 ## 15. Open Items
 
+> **Note on table & code names:** Older code examples in this document may still show `asc_alloc_*` (the original DB design from Kuroda-san). The authoritative naming is:
+> - **Tables:** `log_alloc_*` (batch-generated) / `mst_alloc_*` (reference prices) / `v_alloc_*` (view) — per O-3 ADR (2026-08-17). See `ASCA-ADR-20260817-table-prefix-decision.md`.
+> - **PHP namespace:** `RevenueAllocation` (renamed from `AscAlloc` on 2026-09-01) — `App\Models\RevenueAllocation\`, `App\Libs\RevenueAllocation\`, `App\Enums\RevenueAllocation\`, `config/revenue_allocation.php`.
+> - **Model class names:** follow the table→model convention — `log_alloc_*` → `LogAlloc*`, `mst_alloc_*` → `MstAlloc*` (e.g., `LogAllocProration`, `MstAllocReferencePrice`).
+> - **Service:** `RevenueAllocationService`.
+
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
-| O-3 | Table prefix (`asc_alloc_*`) | Engineering team | ⚠️ Open | Step 1 (migrations) |
-| O-5 | CIP coaching reference price | Business + Accounting | ✅ **Resolved** — ¥84,020 (= plan ¥88,000 − L_app ¥3,980). Confirmed by Kuroda-san + Accounting 2026-08-17. | — |
-| P-3 | CAP new coaching product_id | CAP team | ⚠️ Open — CAP team may create replica coaching product under new ID. Affects detection whereIn + Freee mapping. | Detection logic |
+| O-3 | Table prefix | Engineering team | ✅ **Resolved (2026-08-17)** — `log_alloc_*` for batch-generated, `mst_alloc_*` for reference prices. Approved by Kuroda-san. | — |
+| O-5 | CIP coaching reference price | Business + Accounting | 🔴 **REOPENED (2026-08-28)** — was ¥84,020 (from plan ¥88,000). Plan is now ¥75,900 (REF-CIP-04). New L_coaching likely ¥71,920 (= 75,900 − 3,980) but UNCONFIRMED. Awaiting Kuroda-san/Accounting. | ASCI reference price seeder |
+| O-7 | Product ID changes (2026-08-19) | Business (Go-san, done) | ✅ **Confirmed FINAL** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Detection whereIn + reference-price product_id + Freee mapping must use new ids. | Detection + seeder + Freee mapping |
+| O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ✅ **Resolved (2026-08-28)** — **2-way (Coaching + App only)**, even for plans 1029–1032. Online Lesson handled separately by existing daily-rate logic. Same split as CAP → ASCI stays a config addition. [Kuroda-san Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | — |
+| O-9 | `project_code` → `bundle_type` rename + retype | Kuroda-san (DB design owner) | ⚠️ **Proposed** — (a) rename the CAP/CIP discriminator column (6 tables) to reflect data category not project ownership (same reasoning as the table-prefix ADR); (b) retype VARCHAR → TINYINT for enum-column consistency (`BundleType`: 1=CAP, 2=CIP, `label()`→'cap'/'cip'). Awaiting Kuroda-san's OK. | Migrations (Spec 01a) |
+| ~~P-3~~ | ~~CAP new coaching product_id~~ | — | ✅ Superseded by O-7 — the actual change was the App id (10021→10022), not the CAP coaching id. CAP coaching stays 10005/10015. | — |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
-| — | Option 1 vs 2 final confirmation | Kuroda-san | ⚠️ Pending our response sent | — |
-| — | Scenario C vs D final decision | Patrick-san / Kuroda-san | ⚠️ Pending | — |
+| — | Option 1 vs 2 final confirmation | Kuroda-san | ✅ **Confirmed** — Option 1 (Overwrite) agreed. | — |
+| — | Scenario C vs D final decision | Patrick-san / Kuroda-san | ✅ **Confirmed** — Scenario D (injection) agreed. | — |
 
 ---
 
@@ -1138,7 +1172,9 @@ ls-database-migrations/
 
 | Document | Location | What it covers |
 |---|---|---|
-| Scenario D timeline | `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` | Full Gantt, calendar mapping, team assignments |
+| **Master timeline** | **`docs/asc-projects-master-timeline.md`** | **Authoritative timeline — Gantt, calendar mapping, team assignments, QA schedule** |
+| Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Original proposal — rationale, Scenario C vs D comparison, lead dev assessment |
+| Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` / `mst_alloc_*` prefix |
 | Discussion notes | `projects/asch/documentation/asc-alloc-integration-discussion-notes-20260811.md` | Decisions, scope assessment, refactoring discussion |
 | Process flow diagram | `projects/asch/documentation/diagrams/asc-alloc-injection-process-flow.md` | Visual flow diagrams |
 | Kuroda-san DB design | `projects/asch/technical-notes/research/CAP/REF-CAP-04-ASC-Alloc-Framework-DB-Design-20260810.md` | 10 tables + 1 view |
@@ -1148,4 +1184,3 @@ ls-database-migrations/
 | CIP campaigns reference | `projects/asch/technical-notes/research/CIP/REF-CIP-02-Coaching-Campaigns-Reference-20260812.md` | CIP plan_ids, campaign tiers |
 | ASCM knowledge base | `projects/ascm/knowledge-base/00-index.md` | Lessons learned (what NOT to repeat) |
 | Engineering standards | `projects/asch/documentation/asch-engineering-standards.md` | Patterns, naming, coding standards |
-| Master timeline | `docs/asc-projects-master-timeline.md` | Overall schedule, teams, blockers |

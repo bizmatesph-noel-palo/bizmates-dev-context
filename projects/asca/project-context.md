@@ -34,33 +34,34 @@
 
 ---
 
-## ASCM Prep Phase (DEVOPS-6415)
+## ASCM Refactor (DEVOPS-6415)
 
 Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 - **Epic:** [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415)
 - **Link ticket:** [ASCA-7](https://bizmates.atlassian.net/browse/ASCA-7)
-- **Effort:** 5–7 days (no blockers — can start immediately)
+- **Effort:** 3–5 days (no blockers — can start immediately)
 - **Commits go under:** Sub-tickets/stories of DEVOPS-6415
 
-### Scope
+### Scope (DEVOPS-6415 only — refactoring existing code)
 
 | Task | Why (feeds into ASCA) |
 |---|---|
-| Extract BatchReportDeliveryService from DailyRateCalcPre + SendJournals | Enables conditional CSV inclusion for AllocationDetail |
+| Extract ArchiverService + MailerService from DailyRateCalcPre + SendJournals + DataCorrection | Refactor existing duplication — shared services reused by ASCA/ASCI |
 | Fix DataCorrectionLogic drift: add BizmatesMonthlyPlanEnum skip | Fix latent bug — monthly plans shouldn't enter daily log via correction |
 | Fix DataCorrectionLogic drift: add missing fields (tax_free, country_id, gross_amount) | Align with CommonUtil schema |
 | Unit test extracted service + corrected DataCorrectionLogic | Verify no regression |
 | Smoke test all 3 batches on DEV04 (baseline) | Establish "before" state |
 | Document baseline CSV file list | Know what's in the zip today |
-| Create test data seeder for CAP/CIP charges | Mock upstream data for ASCA development |
+
+**NOT in DEVOPS-6415 (belongs in ASCA Spec 01):** DB migrations, models, enums, test data seeder, reference price seeder — these are new features, not maintenance.
 
 ---
 
 ## What ASCA Builds
 
-1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract BatchReportDeliveryService
-2. **Shared Foundation:** DB migrations (`log_alloc_*` or `asc_alloc_*` — O-3 pending), models, enums, run lifecycle, allocation engine
+1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract ArchiverService + MailerService
+2. **Shared Foundation:** DB migrations (`log_alloc_*` for batch tables, `mst_alloc_*` for reference prices — O-3 resolved), models, enums, run lifecycle, allocation engine
 3. **CAP-specific:** Detection for plans 1016–1027, reference prices (App ¥3,980, Coaching ¥19,800/¥39,600), AllocationDetail CSV
 4. **Injection:** Allocation call in `CommonUtil::createDailyRateCalculation()` + `DataCorrectionLogic`
 
@@ -81,9 +82,10 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 | Document | Location |
 |---|---|
-| Technical design (authoritative) | `docs/asc-allocation-framework-technical-design.md` |
-| Master timeline | `docs/asc-projects-master-timeline.md` |
-| Scenario D timeline + Gantt | `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` |
+| Technical design (authoritative) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
+| **Master timeline (authoritative schedule)** | **`docs/asc-projects-master-timeline.md`** |
+| Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
+| Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` |
 | Upstream CAP research | `research/CAP/` |
 | Base system context (ASCM) | `projects/ascm/project-context.md` |
 | ASCM knowledge base | `projects/ascm/knowledge-base/` |
