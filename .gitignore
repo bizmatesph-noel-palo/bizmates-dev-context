@@ -9,6 +9,9 @@ Thumbs.db
 *.swp
 *.swo
 
+# Exclude kiro settiongs
+.kiro/settings/*.json
+
 # Generated files — batch output CSVs (never commit raw data)
 projects/*/technical-notes/investigation/*/*.csv
 projects/*/technical-notes/investigation/*/generated-files/*.csv
