@@ -46,7 +46,7 @@ The ASCA formula is **single-stage** — split N between Coaching and App by ref
 | P_app | Allocated App amount = `floor(N × L_app / (L_coaching + L_app))`. Overwrites the App log row (was ¥0). |
 | P_coaching | Allocated Coaching amount = `N − P_app`. Overwrites the Coaching log row. Absorbs the rounding remainder so `P_coaching + P_app = N` always holds. |
 | Bundle | One detected Coaching + App pair for a contract. Both CAP and CIP split **2-way**. |
-| Bundle grouping key | `student_id + order_no` — isolates each contract (handles cancel+repurchase, simultaneous CAP+CIP, multiple billing cycles). |
+| Bundle grouping key | `student_id + order_no + plan_id` — isolates each contract. ⚠️ `order_no` alone is too loose (nullable for B2C, non-unique, and the existing system aggregates across products sharing one order_no — G1 investigation 2026-09-04); `plan_id` is required in the key and ambiguous groups (>1 coaching candidate) are skipped. Final key **pending CAP-team confirmation (O-8)**. |
 | Detection anchor | App `product_id` **10022** (changed from 10021 on 2026-08-19) + plan_id enums. |
 | Idempotency | Re-running produces the same result because N = ΣN is invariant and `snapshotSourceData()` skips already-snapshotted (charge_id, target_ym). |
 | Run | One allocation execution (`log_alloc_calculation_runs`). Persists even on failure so it's auditable. |
@@ -74,7 +74,7 @@ The ASCA formula is **single-stage** — split N between Coaching and App by ref
 | B2B | Corporate-sponsored (contract_type = 1). |
 | B2B2C | Individual pays, linked to company (contract_type = 2). |
 | Partner | Partner channel (contract_type = 3). |
-| order_no | Order number — part of the bundle grouping key. Nullable for some B2C. |
+| order_no | Order number — part of the bundle grouping key (with `student_id` + `plan_id`). Nullable for B2C, non-unique, and shared across products — so it must NOT be the sole grouping key (see Bundle grouping key above, G1 2026-09-04). |
 
 ## Freee Terms
 
