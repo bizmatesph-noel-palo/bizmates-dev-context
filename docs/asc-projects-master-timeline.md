@@ -169,7 +169,7 @@ Scope: Refactoring and fixing EXISTING code only. No new features, no new tables
 
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
-| 1 | **Steering** | Lead | Create `accounting_related_system_for_freee/.kiro/steering/` files | Codify patterns from technical design: file structure (`AscAlloc/` dirs), naming conventions, enum pattern (int-backed + `HasEnumHelperTrait`), log prefix `[ASC_ALLOC]`, error handling (3-transaction model), testing expectations. Scoped to new `AscAlloc` code only — existing code untouched. |
+| 1 | **Steering** | Lead | Create `accounting_related_system_for_freee/.kiro/steering/` files | Codify patterns from technical design: file structure (`RevenueAllocation/` dirs), naming conventions, enum pattern (int-backed + `HasEnumHelperTrait`), log tag `[REVENUE_ALLOCATION]` (ASCM UPPER_SNAKE style), error handling, testing expectations. Scoped to new `RevenueAllocation` code only — existing code untouched. |
 | 2 | **Spec** | Lead | ASCA Spec 01: requirements.md | Formalize Foundation requirements from the technical design doc. Covers: DB schema (10 tables + 1 view), models, enums, allocation service, run lifecycle, reference prices, test data seeder. |
 | 3 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves scope, allocation formula, reference prices, plan detection before design begins. |
 | 4 | **Spec** | Lead | ASCA Spec 01: design.md | Technical design decisions specific to implementation — class responsibilities, method signatures, injection points, validation invariants, DTO shapes (if needed). References the authoritative technical design doc. Starts after G1 pass (can spill into early W2). |

@@ -356,7 +356,8 @@ public static function createDailyRateCalculation(
     try {
         app(RevenueAllocationService::class)->allocate($targetYm, $preFlg);
     } catch (\Throwable $e) {
-        Log::error('[ASC_ALLOC] Allocation failed: ' . $e->getMessage());
+        Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED!');
+        Log::error($e->getMessage());
         Log::error($e->getTraceAsString());
         // Fallback: log table still has N — today's behavior, nothing lost
     }
@@ -420,7 +421,8 @@ private function createDailyRateCalculation($data)
         $targetYm = CommonUtil::getTargetYm();
         app(RevenueAllocationService::class)->allocate($targetYm, preFlg: false);
     } catch (\Throwable $e) {
-        Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+        Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)');
+        Log::error($e->getMessage());
     }
 }
 ```
@@ -469,7 +471,8 @@ try {
     $targetYm = array_key_first($ContractDateLists);  // target_ym from the first period
     app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
 } catch (\Throwable $e) {
-    Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+    Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)');
+    Log::error($e->getMessage());
 }
 ```
 
@@ -504,7 +507,7 @@ class RevenueAllocationService
 {
     public function allocate(string $targetYm, bool $preFlg): void
     {
-        Log::info('[ASC_ALLOC] Allocation started', ['target_ym' => $targetYm, 'pre' => $preFlg]);
+        Log::info('[REVENUE_ALLOCATION] - STARTED', ['target_ym' => $targetYm, 'pre' => $preFlg]);
 
         $table = $preFlg ? 'log_daily_rate_calculation_pre' : 'log_daily_rate_calculation';
         $runType = $preFlg ? RunType::Preview : RunType::Final;
@@ -518,7 +521,7 @@ class RevenueAllocationService
 
             if ($bundles->isEmpty()) {
                 $this->runLifecycle->finalizeRun($run->id, recordCount: 0);
-                Log::info('[ASC_ALLOC] No bundles found, skipping');
+                Log::info('[REVENUE_ALLOCATION] No bundles found, skipping');
                 return;
             }
 
@@ -537,7 +540,7 @@ class RevenueAllocationService
             // 7. Finalize run
             $this->runLifecycle->finalizeRun($run->id, recordCount: $allocations->count());
 
-            Log::info('[ASC_ALLOC] Allocation completed', ['records' => $allocations->count()]);
+            Log::info('[REVENUE_ALLOCATION] - END', ['records' => $allocations->count()]);
         } catch (\Throwable $e) {
             $this->runLifecycle->markFailed($run->id, $e->getMessage());
             throw $e;  // re-thrown to outer try/catch in CommonUtil
@@ -601,7 +604,7 @@ private function computeAllocations(Collection $bundles): Collection
         $appRow = $bundleRows->firstWhere('product_id', 10022);              // App = 10022 (new id)
 
         if (!$coachingRow || !$appRow) {
-            Log::warning('[ASC_ALLOC] Incomplete bundle — skipping', [
+            Log::warning('[REVENUE_ALLOCATION] Incomplete bundle — skipping', [
                 'student_id' => $bundleRows->first()->student_id,
                 'order_no' => $bundleRows->first()->order_no,
             ]);
@@ -693,7 +696,8 @@ For `addDaily`, allocate ONLY the charge being added, not the entire target_ym:
 try {
     app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm);
 } catch (\Throwable $e) {
-    Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+    Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)');
+    Log::error($e->getMessage());
 }
 ```
 
