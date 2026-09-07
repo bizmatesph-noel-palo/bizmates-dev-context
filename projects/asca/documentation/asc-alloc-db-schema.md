@@ -29,14 +29,14 @@ The complete field-level schema for the 10 allocation tables + 1 view. REF-CAP-0
 
 ---
 
-## ⚠️ Proposal: `project_code` (VARCHAR) → `bundle_type` (TINYINT)
+## ✅ Confirmed: `project_code` (VARCHAR) → `bundle_type` (TINYINT)
 
-REF-CAP-04 named the CAP/CIP discriminator column `project_code`. **This doc proposes two changes** (pending Kuroda-san's OK):
+REF-CAP-04 named the CAP/CIP discriminator column `project_code`. **This was changed** (O-9 — confirmed by Kuroda-san 2026-09-02):
 
-1. **Rename** `project_code` → `bundle_type` — the column should reflect **what the data IS** (a CAP-type or CIP-type bundle), not **which project created it** (same principle as the table-prefix ADR).
+1. **Rename** `project_code` → `bundle_type` — the column reflects **what the data IS** (a CAP-type or CIP-type bundle), not **which project created it** (same principle as the table-prefix ADR).
 2. **Retype** VARCHAR → **TINYINT** — for schema consistency with the other enum columns (`run_type`, `run_status`, etc. are all TINYINT). Stored as int (`1`=CAP, `2`=CIP); human-readable `'cap'`/`'cip'` comes from the `BundleType` enum's `label()` method for CSV/Metabase.
 
-Until Kuroda-san confirms, this doc uses **`bundle_type` TINYINT** and notes the original (`project_code` VARCHAR) inline.
+This doc uses **`bundle_type` TINYINT** throughout and notes the original (`project_code` VARCHAR) inline for traceability against REF-CAP-04.
 
 **Enum mapping:** `BundleType: int { CAP = 1; CIP = 2; }` with `label()` → `'cap'`/`'cip'`.
 
@@ -319,7 +319,7 @@ v_alloc_prorations_active   (view over prorations + runs)
 |---|---|---|
 | O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting |
 | O-7 | product_ids in seeds + `product_id` columns (App 10022, CIP coaching 10025) | ✅ Confirmed |
-| O-9: `bundle_type` rename + retype | Column across 6 tables: `project_code` VARCHAR → `bundle_type` TINYINT (1=CAP, 2=CIP) | ⚠️ Proposed — pending Kuroda-san |
+| O-9: `bundle_type` rename + retype | Column across 6 tables: `project_code` VARCHAR → `bundle_type` TINYINT (1=CAP, 2=CIP) | ✅ Confirmed by Kuroda-san 2026-09-02 |
 
 ---
 

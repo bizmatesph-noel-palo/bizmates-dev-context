@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -570,20 +570,29 @@ private function detectBundles(string $table, string $targetYm): Collection
         ->select('log.id', 'log.charge_id', 'log.paid_price', 'c.product_id',
                  'c.plan_id', 'c.student_id', 'c.order_no', 'log.target_ym')
         ->get()
-        ->groupBy(fn ($row) => $row->student_id . '|' . ($row->order_no ?? 'null'));
-        // Group by student_id + order_no to isolate each contract
+        // Group by student_id + order_no + plan_id (G1 2026-09-04 — order_no alone
+        // is nullable/non-unique and shared across products; plan_id disambiguates).
+        // Skip ambiguous groups (>1 coaching candidate). Final key pending O-8.
+        ->groupBy(fn ($row) => $row->student_id . '|' . ($row->order_no ?? 'null') . '|' . $row->plan_id);
         // Handles: cancel+repurchase, CAP+CIP simultaneous, multiple billing cycles
 }
 ```
 
-**Grouping key: `student_id + order_no`** (not student_id alone)
+**Grouping key: `student_id + order_no + plan_id`** (not `student_id + order_no` alone, and not `student_id` alone)
 
 A student can have multiple active contracts in the same month:
 - Cancel and repurchase (two order_nos for same student)
 - CAP and CIP simultaneously (different plans, different order_nos)
 - B2B with multiple orders
 
-Each `order_no` represents one billing unit. Charges sharing the same `order_no` belong to the same bundle. This matches the DB design (validation V-1 is ΣP = ΣN at bundle level, keyed on order_no).
+> ⚠️ **Updated by the G1 code investigation (2026-09-04).** The earlier `student_id + order_no` key is **too loose**, confirmed against the code:
+> - `trn_charge.order_no` is **nullable** (NULL for B2C) and **non-unique** (no unique constraint; comment: B2B/B2B2C only).
+> - The existing system already aggregates **across** products/charges sharing one `order_no` (`getTrnChargeForOrderNo()` SUMs by order_no; `getPaidPriceSumList()` groups by order_no + product_type). So "two different plans under one order_no" is plausible and would mis-pair.
+> - `plan_id` is **dropped before `log_daily_rate_calculation`**, so detection must join back to `trn_charge` for it (already required by the query above).
+>
+> **Rule:** key on `student_id + order_no + plan_id`, and **skip ambiguous groups** (more than one coaching candidate). The final key is **pending the CAP-team answer (O-8)** on whether one `order_no` can hold multiple plans and how to key B2C (NULL order_no). See `technical-notes/investigation/20260904-g1-open-questions-code-investigation.md`.
+
+Validation V-1 (ΣP = ΣN) still holds at the bundle level regardless of the exact key.
 
 **Open considerations (from Kuroda-san, 2026-08-17):**
 
@@ -1144,7 +1153,7 @@ ls-database-migrations/
 | 8 | Tenant scope | Bizmates only | Both tenants | Coaching/App don't exist on Zipan. ZipanUtil untouched. |
 | 9 | Pre/Final | Single service with preFlg parameter | Separate classes | Avoids duplication (KB #14 lesson). |
 | 10 | CAP first | CAP builds foundation, CIP reuses | CIP first | CAP requirements more concrete. Same total effort either way. |
-| 11 | Bundle grouping key | student_id + order_no | student_id alone | Handles cancel+repurchase, simultaneous CAP+CIP, B2B multi-order. One order_no = one billing unit. (Kuroda-san, 2026-08-17) |
+| 11 | Bundle grouping key | student_id + order_no + plan_id | student_id + order_no; or student_id alone | order_no alone is nullable/non-unique and shared across products (G1 2026-09-04) — plan_id disambiguates, skip ambiguous groups. Final key pending O-8. (Kuroda-san 2026-08-17; revised per G1 2026-09-04) |
 | 12 | CIP L_coaching | ¥84,020 (plan − L_app) | ¥88,000 (plan price directly) | CIP has no standalone coaching price. Coaching = residual. ΣL = plan price. Full month → App gets exactly ¥3,980. (Kuroda-san + Accounting, 2026-08-17) |
 
 ---
@@ -1163,7 +1172,7 @@ ls-database-migrations/
 | O-5 | CIP coaching reference price | Business + Accounting | 🔴 **REOPENED (2026-08-28)** — was ¥84,020 (from plan ¥88,000). Plan is now ¥75,900 (REF-CIP-04). New L_coaching likely ¥71,920 (= 75,900 − 3,980) but UNCONFIRMED. Awaiting Kuroda-san/Accounting. | ASCI reference price seeder |
 | O-7 | Product ID changes (2026-08-19) | Business (Go-san, done) | ✅ **Confirmed FINAL** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Detection whereIn + reference-price product_id + Freee mapping must use new ids. | Detection + seeder + Freee mapping |
 | O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ✅ **Resolved (2026-08-28)** — **2-way (Coaching + App only)**, even for plans 1029–1032. Online Lesson handled separately by existing daily-rate logic. Same split as CAP → ASCI stays a config addition. [Kuroda-san Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | — |
-| O-9 | `project_code` → `bundle_type` rename + retype | Kuroda-san (DB design owner) | ⚠️ **Proposed** — (a) rename the CAP/CIP discriminator column (6 tables) to reflect data category not project ownership (same reasoning as the table-prefix ADR); (b) retype VARCHAR → TINYINT for enum-column consistency (`BundleType`: 1=CAP, 2=CIP, `label()`→'cap'/'cip'). Awaiting Kuroda-san's OK. | Migrations (Spec 01a) |
+| O-9 | `project_code` → `bundle_type` rename + retype | Kuroda-san (DB design owner) | ✅ **Confirmed (2026-09-02)** — (a) renamed the CAP/CIP discriminator column (6 tables) to reflect data category not project ownership (same reasoning as the table-prefix ADR); (b) retyped VARCHAR → TINYINT for enum-column consistency (`BundleType`: 1=CAP, 2=CIP, `label()`→'cap'/'cip'). | Migrations (Spec 01a) |
 | ~~P-3~~ | ~~CAP new coaching product_id~~ | — | ✅ Superseded by O-7 — the actual change was the App id (10021→10022), not the CAP coaching id. CAP coaching stays 10005/10015. | — |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
 | — | ~~CIP launch date~~ | ~~CIP upstream team~~ | ✅ No longer needed — CIP has new plan_ids (1028–1032), no historical data | — |
