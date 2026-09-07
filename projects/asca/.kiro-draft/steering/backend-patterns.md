@@ -109,7 +109,12 @@ DB::table($table . ' as log')
     ->whereIn('c.plan_id', CoachingAndAppPlanEnum::toArray())
     ->whereIn('c.product_id', [10005, 10015, 10025, 10022])
     ->get()
-    ->groupBy(fn ($r) => $r->student_id . '|' . ($r->order_no ?? 'null'));
+    // ⚠️ Grouping key includes plan_id — NOT student_id+order_no alone.
+    // G1 investigation (2026-09-04) found order_no is nullable (NULL for B2C) and
+    // non-unique, and the existing system aggregates ACROSS products sharing one
+    // order_no — so (student_id, order_no) mis-pairs. Key on plan_id too, and skip
+    // ambiguous groups (>1 coaching candidate). Final key pending CAP-team answer (O-8).
+    ->groupBy(fn ($r) => $r->student_id . '|' . ($r->order_no ?? 'null') . '|' . $r->plan_id);
 
 // overwrite (N → P in place)
 DB::table($table)->where('id', $coachingLogId)->update(['paid_price' => $pCoaching]);
