@@ -67,6 +67,15 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 ---
 
+## JIRA Tickets Created
+
+| Key | Type | Parent | Summary | Notes |
+|---|---|---|---|---|
+| [ASCA-9](https://bizmates.atlassian.net/browse/ASCA-9) | Epic | — | ASCA — Project Scaffolding | Created 2026-09-07 via Atlassian MCP. Slim non-spec epic. First ticket created through the MCP integration. |
+| [ASCA-10](https://bizmates.atlassian.net/browse/ASCA-10) | Story | ASCA-9 | Steering files (ASCA — adapted from ASCH) | Created 2026-09-07. Unassigned. The **only** story under ASCA-9 — the originally-planned "Branch setup" story was dropped. |
+
+---
+
 ## Related Projects
 
 | Code | JIRA | Relationship |
