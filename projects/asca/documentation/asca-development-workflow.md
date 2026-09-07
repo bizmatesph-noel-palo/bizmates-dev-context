@@ -88,9 +88,9 @@ Three mandatory gates where work cannot proceed without approval:
 Epic: DEVOPS-6415 — ASCM Prep (refactor — did NOT run the spec workflow)
 └── (all work committed directly under the epic — no per-story spec breakdown)
 
-Epic: ASCA — Project Scaffolding (one-time — NOT a spec; excluded from the Spec story template)
-├── Story: Steering files (ASCA — adapted from ASCH)   → Lead (Noel)
-└── Story: Branch setup                                → Lead (Noel)
+Epic: ASCA-9 — Project Scaffolding (one-time — NOT a spec; excluded from the Spec story template)
+└── Story: ASCA-10 — Steering files (ASCA — adapted from ASCH)   → Lead (Noel)
+    (Branch setup was originally planned as a second story but was dropped — this epic carries a single story.)
 
 Epic: ASCA Spec 01 — Foundation (8 stories — Coding spans 2 repos)
 ├── Story: Requirements + Sign-off             → PM (Kuroda-san)
@@ -118,7 +118,7 @@ Epic: ASCI Spec 01 — CIP Integration (7 stories — single repo)
 └── Story: QA Testing                          → QA (Glenn)
 ```
 
-**Note on Scaffolding:** This epic intentionally carries only 1–2 stories and does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). Steering-file and branch setup are project setup, not spec dev work. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a slim non-spec epic is expected and does not distort measurement.
+**Note on Scaffolding:** This epic (ASCA-9) intentionally carries a single story (ASCA-10, steering files) and does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). Steering-file setup is project setup, not spec dev work. The originally-planned "Branch setup" story was dropped. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a slim non-spec epic is expected and does not distort measurement.
 
 **Note on ASCM Prep (DEVOPS-6415):** The refactor (ArchiverService/MailerService extraction + DataCorrectionLogic drift fix) is billed under [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415), not ASCA. It was **originally scoped with the same story set as Spec 01 — Foundation**, but in practice it did **not** run the spec-driven workflow — all work was committed directly under the epic without the per-story (Requirements → Architecture → Coding → Review → Testing → QA) breakdown. Recorded here so the KPI/history reflects what actually happened. See its own epic doc.
 
