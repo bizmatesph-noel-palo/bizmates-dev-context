@@ -53,7 +53,7 @@ Revenue **allocation** for bundled Coaching + App plans. Splits the Coaching cha
 - **Formula:** `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`
   - `N` = Σ(paid_price) across the bundle (coaching + app) — makes allocation idempotent
   - `L_app` = ¥3,980; `L_coaching` = ¥19,800 (CAP 15min) / ¥39,600 (CAP 30min) / CIP pending (O-5 reopened — plan repriced ¥88,000→¥75,900)
-- **Bundle grouping:** `student_id + order_no` — handles cancel+repurchase and simultaneous plans
+- **Bundle grouping:** `student_id + order_no + plan_id` — handles cancel+repurchase and simultaneous plans. ⚠️ `order_no` alone is too loose (nullable/non-unique; G1 2026-09-04) — `plan_id` is required in the key; final key pending CAP-team confirmation (O-8)
 - **Detection:** plan_id enums (`CoachingAndAppPlanEnum` for CAP, `CoachingIntensivePlanEnum` for CIP) + App product_id 10022 (changed from 10021 on 2026-08-19). CIP coaching product_id is 10025 (changed from 10022). Both CAP and CIP split **2-way** (Coaching + App).
 - **Failure isolation:** allocation is wrapped in try/catch. If it fails, the log table keeps N (today's behavior) — no revenue lost, batch continues.
 - **Audit:** new `log_alloc_*` tables (batch-generated) + `mst_alloc_reference_prices` (master data) record the run lifecycle, source snapshots, and per-product allocation detail.
