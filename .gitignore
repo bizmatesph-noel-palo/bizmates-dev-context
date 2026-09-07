@@ -12,6 +12,11 @@ Thumbs.db
 # Exclude kiro settiongs
 .kiro/settings/*.json
 
+# Secrets — MCP env files (tokens live here, never commit)
+*.env
+.env
+.kiro/settings/*.env
+
 # Generated files — batch output CSVs (never commit raw data)
 projects/*/technical-notes/investigation/*/*.csv
 projects/*/technical-notes/investigation/*/generated-files/*.csv
