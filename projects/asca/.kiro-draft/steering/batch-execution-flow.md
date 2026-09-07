@@ -95,9 +95,9 @@ Allocation is re-run safe on its own too: N = Σ(paid_price) across the bundle i
 ```bash
 make php-root
 php artisan command:DailyRateCalculationPreCommand {exeDate}
-tail -50 storage/logs/laravel.log | grep -E "ASC_ALLOC|ERROR|FAILED|COMPLETED"
+tail -50 storage/logs/laravel.log | grep -E "REVENUE_ALLOCATION|ERROR|FAILED|COMPLETED"
 ```
 
-- **Pass:** `[ASC_ALLOC] Allocation completed` and no ERROR/FAILED lines.
-- **Allocation skipped:** `[ASC_ALLOC] No bundles found` — expected when the month has no CAP/CIP charges (use the test-data seeder on DEV04).
-- **Fail:** `[ASC_ALLOC] Allocation failed` — check the run row in `log_alloc_calculation_runs` for `error_message`.
+- **Pass:** `[REVENUE_ALLOCATION] - END` with no `EXECUTION FAILED!` / ERROR lines.
+- **Allocation skipped:** `[REVENUE_ALLOCATION] No bundles found` — expected when the month has no CAP/CIP charges (use the test-data seeder on DEV04).
+- **Fail:** `[REVENUE_ALLOCATION] EXECUTION FAILED!` — check the run row in `log_alloc_calculation_runs` for `error_message`.

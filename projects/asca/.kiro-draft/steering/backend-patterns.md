@@ -24,7 +24,8 @@ Allocation is a **service injected into existing code at two points** — it doe
 try {
     app(RevenueAllocationService::class)->allocate($targetYm, $preFlg);
 } catch (\Throwable $e) {
-    Log::error('[ASC_ALLOC] Allocation failed: ' . $e->getMessage());
+    Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED!');
+    Log::error($e->getMessage());
     // Fallback: log table keeps N — today's behavior, nothing lost
 }
 
@@ -32,7 +33,8 @@ try {
 try {
     app(RevenueAllocationService::class)->allocateForCharge($chargeId, $targetYm);
 } catch (\Throwable $e) {
-    Log::error('[ASC_ALLOC] Allocation failed in DataCorrection: ' . $e->getMessage());
+    Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)');
+    Log::error($e->getMessage());
 }
 ```
 
@@ -87,7 +89,8 @@ try {
     DB::connection('mysql')->commit();
 } catch (\Throwable $e) {
     DB::connection('mysql')->rollBack();
-    Log::error('[ASC_ALLOC] ' . $e->getMessage());
+    Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED!');
+    Log::error($e->getMessage());
     throw $e;
 }
 ```

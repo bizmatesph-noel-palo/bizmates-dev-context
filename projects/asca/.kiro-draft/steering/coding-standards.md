@@ -48,7 +48,8 @@ The allocation call is wrapped so a failure never breaks the existing batch:
 try {
     app(RevenueAllocationService::class)->allocate($targetYm, $preFlg);
 } catch (\Throwable $e) {
-    Log::error('[ASC_ALLOC] Allocation failed: ' . $e->getMessage());
+    Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED!');
+    Log::error($e->getMessage());
     Log::error($e->getTraceAsString());
     // Fallback: log table still has N — today's behavior, nothing lost
 }
@@ -71,9 +72,12 @@ Never use `exit()`. Always log before re-throwing.
 
 ## Logging
 
-- Prefix all allocation logs with `[ASC_ALLOC]`
-- Start/end markers: `[ASC_ALLOC] Allocation started` / `Allocation completed`
-- Include structured context: `['target_ym' => $targetYm, 'pre' => $preFlg, 'records' => $count]`
+Follow the recent ASCM convention (`MonthlyRateCalculationLogic`): an UPPER_SNAKE bracket tag naming the process, `- STARTED` / `- END` markers, and the standard success/failure lines.
+
+- Tag all allocation logs with `[REVENUE_ALLOCATION]` (descriptive domain name, matching the `RevenueAllocation` namespace — not the project code).
+- Start/end markers: `Log::info('[REVENUE_ALLOCATION] - STARTED')` / `Log::info('[REVENUE_ALLOCATION] - END')`.
+- Detail lines carry context inline, matching ASCM style: `Log::info("[REVENUE_ALLOCATION] target_ym={$targetYm}, pre=" . ($preFlg ? '1' : '0'))`, `Log::info('[REVENUE_ALLOCATION] Allocated ' . $count . ' bundles')`.
+- On failure, mirror ASCM: `Log::error('[REVENUE_ALLOCATION] EXECUTION FAILED!')`, then `Log::error($e->getMessage())` and `Log::error($e->getTraceAsString())`.
 
 ## File Organization
 
@@ -131,7 +135,7 @@ Migrations live in the **`ls-database-migrations`** repo, NOT here. See `databas
 | Views | `v_alloc_*` prefix | `v_alloc_prorations_active` |
 | Migration files | `create_{table_name}_table.php` (uses the actual table name) | `create_log_alloc_calculation_runs_table.php` |
 | Config keys | `revenue_allocation.*` namespace | `config('revenue_allocation.launch_date')` |
-| Log prefix | `[ASC_ALLOC]` | `Log::info('[ASC_ALLOC] Allocation started')` |
+| Log tag | `[REVENUE_ALLOCATION]` (ASCM UPPER_SNAKE style) | `Log::info('[REVENUE_ALLOCATION] - STARTED')` |
 
 ### Namespace vs table naming (two axes)
 

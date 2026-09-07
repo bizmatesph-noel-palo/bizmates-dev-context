@@ -50,7 +50,7 @@ Full naming rules (models, enums, service, config, log prefix) are in `coding-st
 | Service | `RevenueAllocationService` | — |
 | Enums | `{Concept}Enum` / `RunType` / `RunStatus` / `BundleType` | `CoachingAndAppPlanEnum` |
 | Config keys | `revenue_allocation.*` | `config('revenue_allocation.launch_date')` |
-| Log prefix | `[ASC_ALLOC]` | `Log::info('[ASC_ALLOC] Allocation started')` |
+| Log tag | `[REVENUE_ALLOCATION]` (ASCM UPPER_SNAKE style) | `Log::info('[REVENUE_ALLOCATION] - STARTED')` |
 
 ASCA adds **no** artisan command and **no** Logic class — so there are no `Asca…Command` / `Asca…Logic` names.
 
