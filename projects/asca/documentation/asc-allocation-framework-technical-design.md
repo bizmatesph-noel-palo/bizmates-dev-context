@@ -604,24 +604,33 @@ Validation V-1 (ΣP = ΣN) still holds at the bundle level regardless of the exa
 
 ### Compute Allocations — Uses ΣN (Group Total)
 
+> ⚠️ **Bundle is 2–4 products, not always 2** (confirmed from CAP/CIP `mst_plan_content`, 2026-09-08). CAP 1016/1017 and CIP 1028 are 2-product (Coaching + App); CAP 1018–1027 and CIP 1029–1032 also include Online Lesson (product_id 1–4) + FVP (10011). The split is **2-way only** (Coaching + App per O-8) — Lesson and FVP are handled by the existing daily-rate logic and are **excluded** from the allocation. So extraction must **explicitly pick the Coaching and App rows by product_id**, never "the non-App row" (that could grab the Lesson row), and N sums **only** the Coaching + App pair.
+
 ```php
+private const COACHING_PRODUCT_IDS = [10005, 10015, 10025]; // CAP 15/30min + CIP intensive
+private const APP_PRODUCT_ID = 10022;
+
 private function computeAllocations(Collection $bundles): Collection
 {
-    // Each $bundle is a group of rows sharing (student_id, order_no)
+    // Each $bundle is a group of rows sharing (student_id, order_no, plan_id).
+    // A bundle may contain 2–4 products; select ONLY the coaching + app rows.
     return $bundles->map(function ($bundleRows) {
-        $coachingRow = $bundleRows->firstWhere('product_id', '!=', 10022);  // App is now 10022 (was 10021)
-        $appRow = $bundleRows->firstWhere('product_id', 10022);              // App = 10022 (new id)
+        $coachingRow = $bundleRows->firstWhere(
+            fn ($r) => in_array($r->product_id, self::COACHING_PRODUCT_IDS, true)
+        );
+        $appRow = $bundleRows->firstWhere('product_id', self::APP_PRODUCT_ID);
 
         if (!$coachingRow || !$appRow) {
-            Log::warning('[REVENUE_ALLOCATION] Incomplete bundle — skipping', [
+            Log::warning('[REVENUE_ALLOCATION] Incomplete bundle (missing coaching or app) — skipping', [
                 'student_id' => $bundleRows->first()->student_id,
                 'order_no' => $bundleRows->first()->order_no,
+                'plan_id' => $bundleRows->first()->plan_id,
             ]);
             return null;
         }
 
-        // N = GROUP TOTAL (coaching + app), NOT coaching row alone
-        // This makes allocation idempotent — ΣN is invariant across re-runs
+        // N = the COACHING + APP pair only (Lesson/FVP rows excluded — they are not in the split).
+        // Group total over the pair keeps allocation idempotent — ΣN invariant across re-runs.
         $n = $coachingRow->paid_price + $appRow->paid_price;
 
         $lApp = $this->getReferencePrice($appRow->product_id, 'cip_or_cap');
@@ -904,6 +913,8 @@ foreach ($sumLists as $sumList) {
 - `product_type = 100` flows through `MstCodeChange` to get `freeeProductType`
 - `freeeProductType` flows through `getContractTypeInfo()` to get segment mapping
 - `MstRuleForJournals` resolves the journal rules
+
+> ⚠️ **UPDATE (2026-09-08):** This section was written for the **existing** App product_type `100` (product `10012`, unchanged in the DB). CAP/CIP add **new** products (`10022` App, `10025` CIP coaching) whose product_type is **UNRESOLVED (O-10)** — CAP proposal says `10022=618 / 10025=469`; CIP's actual local DB (Jefferson-san) says `10022=100 / 10025=9`. Same product_id can't hold two types; the **final CAP/CIP migration** decides. Allocation reads `product_type` from `mst_product` at runtime, so it adapts. The Freee-mapping checks below must be re-verified against the reconciled values once the final migration lands — do not assume `100`.
 
 #### Potential Issue: Does product_type 100 Have Freee Mappings?
 

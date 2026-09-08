@@ -166,7 +166,7 @@ One row per product per group. Stores the reference price (L), the ratio, the or
 | `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `charge_id` | BIGINT UNSIGNED | NO | The charge this proration is for |
 | `product_id` | INT | NO | Coaching or App product |
-| `product_type` | INT | NO | Freee product_type (9=Coaching, 100=App) |
+| `product_type` | INT | NO | Freee product_type. Existing: Coaching 10005/10015 = 9, App 10012 = 100. New (CAP/CIP): ⚠️ UNRESOLVED (O-10) — App 10022 = 618 (CAP) or 100 (CIP DB); CIP 10025 = 469 (CAP) or 9 (CIP DB). Final migration decides; ASC reads it at runtime. |
 | `reference_price` | INT | NO | L — the allocation weight (yen) from `mst_alloc_reference_prices` |
 | `ratio` | DECIMAL(8,6) | NO | This product's share of the weight total |
 | `original_amount` | INT | NO | N — pre-allocation paid_price (yen) |
