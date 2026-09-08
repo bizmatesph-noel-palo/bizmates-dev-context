@@ -25,17 +25,46 @@ The upstream **ZPR** project added a new Zipan **20-lesson monthly plan (`produc
 - Product 38 is `product_type = 1` (Skype), `lesson_type = 2` (monthly) → it belongs in the monthly-rate pipeline, same as 16/17/18.
 - Zipan-only. No Bizmates impact. Schema/pricing changes live upstream in `ls-database-migrations` seeders — not this repo.
 
-## Implementation
+## Implementation (reference for Cristoff-san — not yet applied)
 
-**1. Add the enum case** — `app/Enums/ZipanMonthlyPlanEnum.php`:
+> These are reference snippets for the assignee to apply in the code repo. No code has been changed yet.
+
+**1. Add the enum case** — `app/Enums/ZipanMonthlyPlanEnum.php`, after the 15L case:
 ```php
-case MONTHLY_PLAN_PRODUCT_20LPM_1LPD = 38; // 20 lessons per month, 1 lesson per day
+case MONTHLY_PLAN_PRODUCT_20LPM_1LPD = 38; // 20 lessons per month, 1 lesson per day (ZPR)
 ```
 
 **2. Update the test** — `tests/Unit/Enums/ZipanMonthlyPlanEnumTest.php`:
-- `test_enum_cases_have_correct_values`: assert `38` for the new case.
-- `test_exists_returns_correct_boolean`: `assertTrue(ZipanMonthlyPlanEnum::exists(38))`.
-- `test_to_array_returns_correct_mapping`: add the `MONTHLY_PLAN_PRODUCT_20LPM_1LPD => 38` mapping assertion.
+
+`test_enum_cases_have_correct_values()` — add:
+```php
+$this->assertSame(38, ZipanMonthlyPlanEnum::MONTHLY_PLAN_PRODUCT_20LPM_1LPD->value);
+```
+
+`test_exists_returns_correct_boolean()` — add (18 also worth asserting):
+```php
+$this->assertTrue(ZipanMonthlyPlanEnum::exists(18));
+$this->assertTrue(ZipanMonthlyPlanEnum::exists(38));
+```
+
+`test_to_array_returns_correct_mapping()` — the `assertCount(count(...cases()), ...)` line already covers the new case; optionally add:
+```php
+$this->assertEquals(38, $array['MONTHLY_PLAN_PRODUCT_20LPM_1LPD']);
+```
+
+## Running the tests (Docker + Laravel)
+
+Tests run **inside the Docker container** (not the host's `vendor/bin/phpunit`):
+
+```bash
+make php-root                                             # enter the PHP container
+php artisan test tests/Unit/Enums/ZipanMonthlyPlanEnumTest.php   # run this test file
+php artisan test --filter ZipanMonthlyPlanEnum                  # or filter by name
+php artisan test                                                # full suite before PR
+```
+
+- Run inside the container so DB connections/env match.
+- Do NOT run `vendor/bin/phpunit` on the host directly.
 
 ## Acceptance Criteria
 
