@@ -1,0 +1,220 @@
+@startuml erd_asc_alloc_schema
+title ASC Allocation Framework - Entity Relationship Diagram \n10 tables + 1 view (log_alloc_* / mst_alloc_* / v_alloc_*)
+
+skinparam linetype ortho
+skinparam entity {
+    BackgroundColor #FAFAFA
+    BorderColor #333333
+    FontSize 12
+}
+skinparam arrow {
+    Color #555555
+}
+
+' ─────────────────────────────────────────
+' RUN LIFECYCLE
+' ─────────────────────────────────────────
+
+entity "log_alloc_calculation_runs" as runs {
+    * id : bigint <<PK>>
+    --
+    bundle_type : tinyint  [1=CAP / 2=CIP]
+    target_ym : char(6)  [YYYYMM]
+    run_type : tinyint  [0=Preview / 1=Final]
+    status : tinyint  [0=Creating / 1=Completed / 2=Failed]
+    record_count : int
+    error_message : text
+    started_at : datetime
+    finalized_at : datetime
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' AUDIT SNAPSHOT
+' ─────────────────────────────────────────
+
+entity "log_alloc_source_documents" as source_docs {
+    * id : bigint <<PK>>
+    --
+    * run_id : bigint <<FK>>
+    charge_id : bigint
+    target_ym : char(6)
+    product_id : int
+    original_paid_price : int  [N before overwrite]
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' BUNDLE STRUCTURE
+' ─────────────────────────────────────────
+
+entity "log_alloc_bundles" as bundles {
+    * id : bigint <<PK>>
+    --
+    * run_id : bigint <<FK>>
+    bundle_type : tinyint  [1=CAP / 2=CIP]
+    student_id : bigint
+    order_no : varchar(64)
+    plan_id : int
+    primary_charge_id : bigint  [coaching anchor]
+    match_rule : varchar(32)
+    bundle_status : tinyint  [0=complete]
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "log_alloc_bundle_charges" as bundle_charges {
+    * id : bigint <<PK>>
+    --
+    * bundle_id : bigint <<FK>>
+    charge_id : bigint
+    product_id : int
+    product_role : tinyint  [0=coaching / 1=app]
+    log_daily_rate_calculation_id : bigint
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "log_alloc_groups" as groups {
+    * id : bigint <<PK>>
+    --
+    * bundle_id : bigint <<FK>>
+    target_ym : char(6)
+    sum_n : int  [Sigma N]
+    sum_p : int  [Sigma P]
+    is_balanced : tinyint  [V-1: sum_p == sum_n]
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' CORE RESULT
+' ─────────────────────────────────────────
+
+entity "log_alloc_prorations" as prorations {
+    * id : bigint <<PK>>
+    --
+    * group_id : bigint <<FK>>
+    * run_id : bigint <<FK>>
+    bundle_type : tinyint  [1=CAP / 2=CIP]
+    charge_id : bigint
+    product_id : int
+    product_type : int  [9=Coaching / 100=App]
+    reference_price : int  [L]
+    ratio : decimal(8,6)
+    original_amount : int  [N]
+    allocated_amount : int  [P]
+    contract_type : tinyint
+    department_id : int
+    order_no : varchar(64)
+    asc_source_table : varchar(64)
+    asc_source_id : bigint
+    paid_at : date
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' MASTER DATA
+' ─────────────────────────────────────────
+
+entity "mst_alloc_reference_prices" as ref_prices {
+    * id : bigint <<PK>>
+    --
+    bundle_type : tinyint  [1=CAP / 2=CIP]
+    product_id : int
+    reference_price : int  [L, tax-incl]
+    effective_from : date
+    effective_to : date  [null = open]
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' FREEE AGGREGATION
+' ─────────────────────────────────────────
+
+entity "log_alloc_sum_calculation" as sum_calc {
+    * id : bigint <<PK>>
+    --
+    * run_id : bigint <<FK>>
+    bundle_type : tinyint  [1=CAP / 2=CIP]
+    target_ym : char(6)
+    product_type : int
+    contract_type : tinyint
+    department_id : int
+    partner_id : bigint
+    order_no : varchar(64)
+    allocated_amount : int  [aggregated P]
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+entity "log_alloc_sum_calculation_history" as sum_history {
+    * id : bigint <<PK>>
+    --
+    * sum_calculation_id : bigint <<FK>>
+    * proration_id : bigint <<FK>>
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' DELIVERY TRACKING
+' ─────────────────────────────────────────
+
+entity "log_alloc_deliveries" as deliveries {
+    * id : bigint <<PK>>
+    --
+    * run_id : bigint <<FK>>
+    channel : tinyint  [0=Freee / 1=CSV / 2=Email]
+    status : tinyint  [0=Pending / 1=Delivered / 2=Failed]
+    attempts : int
+    detail : text
+    delivered_at : datetime
+    created_at : timestamp
+    updated_at : timestamp
+}
+
+' ─────────────────────────────────────────
+' VIEW
+' ─────────────────────────────────────────
+
+entity "v_alloc_prorations_active" as v_active <<view>> {
+    (prorations from the active final run only)
+    --
+    joins log_alloc_prorations
+    with  log_alloc_calculation_runs
+    where run_type=Final AND status=Completed
+      AND latest run per (bundle_type, target_ym)
+}
+
+' ─────────────────────────────────────────
+' RELATIONSHIPS
+' ─────────────────────────────────────────
+
+' runs is the root of each execution
+runs        ||--o{ source_docs    : "run_id"
+runs        ||--o{ bundles        : "run_id"
+runs        ||--o{ prorations     : "run_id"
+runs        ||--o{ sum_calc       : "run_id"
+runs        ||--o{ deliveries     : "run_id"
+
+' bundle structure
+bundles     ||--o{ bundle_charges : "bundle_id"
+bundles     ||--o{ groups         : "bundle_id"
+groups      ||--o{ prorations     : "group_id"
+
+' freee aggregation trace
+sum_calc    ||--o{ sum_history    : "sum_calculation_id"
+prorations  ||--o{ sum_history    : "proration_id"
+
+' master data is read by the engine (no physical FK)
+ref_prices  ..>   prorations      : "supplies L (read)"
+
+' view over prorations + runs
+prorations  ..>   v_active        : "active final run"
+
+@enduml

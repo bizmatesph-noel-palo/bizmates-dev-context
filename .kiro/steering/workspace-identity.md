@@ -102,6 +102,17 @@ Every project directory follows this structure:
 - Exceptions: `README.md`
 - Numbered prefixes: `NN-` for ordered sequences (e.g., `01-system-overview.md`)
 
+## JIRA (Atlassian MCP)
+
+This workspace connects to JIRA via the `mcp-atlassian` MCP server (Jira + Confluence share this one server).
+
+- **Config:** `.kiro/settings/mcp.json` (gitignored). Launches via `wsl.exe -d Ubuntu-20.04 -- /home/bizdev/.local/bin/uvx mcp-atlassian --env-file .../mcp-jira.env` (Windows Kiro → WSL binary).
+- **Secrets:** `.kiro/settings/mcp-jira.env` (gitignored — `*.env`). Holds `JIRA_*` creds, commented `CONFLUENCE_*` placeholders, and `READ_ONLY_MODE`.
+- **Safety default:** keep `READ_ONLY_MODE=true`; flip to `false` only when creating/updating tickets, then reconnect the server. `autoApprove` only skips prompts — it does not enforce read-only.
+- **Setup/troubleshooting:** see `agentic-toolkit/knowledge/tooling-setup.md` → MCP Server Setup (Windows+WSL launch, `--env-file`, read-only, reconnect gotchas).
+
+Verified working 2026-09-07 (created ASCA-9 as the first MCP-created ticket).
+
 ## Dependencies
 
 Full methodology rules (knowledge resolution, git safety, report standards, documentation standards) auto-load from `agentic-toolkit/.kiro/steering/` when the toolkit repo is included in the workspace. If the toolkit is not present, this workspace is still functional but behavioral enforcement is reduced — only the conventions documented inline (READMEs, project-context files) apply.
