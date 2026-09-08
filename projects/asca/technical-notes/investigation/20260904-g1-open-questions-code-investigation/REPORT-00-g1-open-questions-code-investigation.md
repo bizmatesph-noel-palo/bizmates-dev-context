@@ -24,9 +24,9 @@ Answers Kuroda-san's G1 open items (2)-7 (product_type) and (2)-8 (bundle pairin
 | # | Question | Result |
 |---|---|---|
 | 1 | contract_type code values | ✅ **Confirmed** from `config/const.php` |
-| 2 | product_type Coaching=9 / App=100 | 🟡 **Partially confirmed (DB)** — Coaching 10005/10015 = 9 ✅; App 10022 & CIP 10025 have no row yet (CAP/CIP seeders not run) |
-| 3 | order_no structure & grouping | ⚠️ **Important finding** — order_no is nullable, non-unique; existing code groups by **order_no alone** and explicitly handles multiple charges sharing one order_no |
-| 4 | App ¥0 companion charge pattern | 🟡 Schema supports it; **not enforced in code** — needs data/spec confirmation |
+| 2 | product_type values | 🟡 Existing confirmed (Coaching=9, App 10012=100). ⚠️ **New products conflict (O-10): CAP says 10022=618/10025=469; CIP DB says 10022=100/10025=9.** Final migration decides. |
+| 3 | order_no structure & grouping | ⚠️ order_no nullable/non-unique; key needs `plan_id`. **B2B product-sets have no plan_id** (plan_id=0) — flag for B2B detection |
+| 4 | bundle composition | ✅ **Confirmed (CAP+CIP data)** — bundle is **2–4 products**, not always 2. App 10022 in every plan (¥0). Split stays 2-way; detection must pick Coaching+App, skip Lesson/FVP |
 | 5 | plan_id availability in pipeline | ✅ **Confirmed** — `plan_id` is on `trn_charge` and fetched, but **dropped before `log_daily_rate_calculation`** |
 
 **Two decisions this drives:**
@@ -66,14 +66,26 @@ Per-question findings from the code trace. Each marks confidence (✅ confirmed 
 SELECT product_id, product_type FROM mst_product WHERE product_id IN (10005,10015,10025,10022);
 ```
 
-| product_id | product_type | Status |
-|---|---|---|
-| 10005 (Coaching 15min) | 9 | ✅ Confirmed |
-| 10015 (Coaching 30min) | 9 | ✅ Confirmed |
-| 10025 (CIP Coaching Intensive) | — | ⏳ No row yet (CIP seeder not run) |
-| 10022 (App) | — | ⏳ No row yet (CAP seeder not run) |
+| product_id | product_type | Source | Status |
+|---|---|---|---|
+| 10005 (Coaching 15min) | 9 | our local DB | ✅ Confirmed |
+| 10015 (Coaching 30min) | 9 | our local DB | ✅ Confirmed |
+| 10012 (App, existing) | 100 | prod logs (DEVOPS-6287) | ✅ Confirmed |
+| 10022 (App, new) | **618** | CAP proposal (Terry-san) | ⚠️ conflicts with CIP |
+| 10022 (App, new) | **100** | CIP local DB (Jefferson-san) | ⚠️ conflicts with CAP |
+| 10025 (CIP coaching, new) | **469** | CAP proposal (Terry-san) | ⚠️ conflicts with CIP |
+| 10025 (CIP coaching, new) | **9** | CIP local DB (Jefferson-san) | ⚠️ conflicts with CAP |
 
-**Conclusion:** Coaching = **9 confirmed**. App = **100 still unverified** — product 10022 doesn't exist in the local DB until the CAP seeder runs. Re-run this query on DEV04 after CAP/CIP data lands to confirm 10022=100 and 10025=9.
+**⚠️ OPEN CONFLICT (O-10) — CAP and CIP disagree on the new product_types:**
+
+| product | CAP (Terry-san, proposal) | CIP (Jefferson-san, actual local DB) |
+|---|---|---|
+| 10022 (new App) | 618 | 100 |
+| 10025 (CIP coaching) | 469 | 9 |
+
+Same product_id cannot hold two product_types. This is **data, not a code blocker** — the value that ships in the **final CAP/CIP migration** is authoritative, and if the upstream teams reconcile it, it reflects there. ASC allocation reads `product_type` from `mst_product` at runtime, so it adapts to whatever the final data is. **Action:** confirm the reconciled values with Terry/Jefferson; re-verify on DEV04 after the final migrations land.
+
+**Existing vs new.** Existing products are unchanged: Coaching 10005/10015 = 9, existing App 10012 = 100. The *new* CAP/CIP products (10022, 10025) have the conflicting values above pending reconciliation.
 
 ### Q3 — order_no ⚠️ KEY FINDING (drives (2)-8)
 
@@ -85,17 +97,27 @@ Existing code groups by **order_no alone**, and is explicitly built to handle mu
 - `SendJournalsDataLogic` accumulates journals keyed by order_no and has explicit "same order_no gets overwritten/added" handling (T3 wash logic)
 
 **Implications:**
-- **`(student_id, order_no)` is too loose** — confirmed. For B2C, `order_no` is NULL (so grouping collapses many B2C students'... no — grouped with student_id, but order_no NULL means the key is `student_id|null`, which is fine for a single B2C contract but breaks if a B2C student has two contracts in a month).
-- More importantly, the existing system's own vocabulary treats one order_no as potentially spanning multiple products/charges — so a CAP bundle under one order_no is plausible, but so is "two different plans under one order_no," which would mis-pair.
-- **Detection needs `plan_id` in the key** (and possibly charge-level linkage / contract period) — not order_no alone.
+- **`(student_id, order_no)` is too loose** — confirmed. For B2C, `order_no` is NULL, so the key `student_id|null` breaks if a B2C student has two contracts in a month.
+- The existing system treats one order_no as potentially spanning multiple products/charges — so "two different plans under one order_no" would mis-pair.
+- **Detection needs `plan_id` in the key** — not order_no alone.
+- **B2B product-sets have NO plan_id** (CAP data, Terry-san): the 8L/10L B2B-only sets have `plan_id = 0`. Detection keyed on plan_id would miss these — flag for B2B handling (may need product-set detection). Their arity is still Coaching + App for the split.
 
-### Q4 — App ¥0 companion pattern 🟡 SCHEMA-SUPPORTED, NOT ENFORCED
+### Q4 — bundle composition ✅ CONFIRMED (CAP + CIP `mst_plan_content`)
 
-- No code encodes "coaching paid + companion App ¥0." No 10021/10022 references.
-- `mst_plan_content` (plan_id → product_id, one-to-many) makes a plan bundling coaching + App structurally possible; a bundle appears as **multiple `trn_charge` rows** (same student, same `plan_id`, per-product, each with own `paid_price`; App row can be 0 since default is 0).
-- `getTrnChargeList` fetches all rows with `trn_charge.*` (plan_id present) but does **not** pair coaching+App.
+Confirmed against real `mst_plan_content` data (Terry-san CAP, Jefferson-san CIP). **A bundle is NOT always 2 products** — it ranges 2–4:
 
-**Conclusion:** the ¥0-App-companion assumption is **representable but unverified**. Confirm against `mst_plan_content` for CAP plans (1016–1027) + sample `trn_charge` data, or with the CAP team.
+| Plan(s) | Products | Count |
+|---|---|---|
+| CAP 1016, 1017 | Coaching + App (10005/10015 + 10022) | 2 |
+| CAP 1018–1027 | Lesson + FVP + Coaching + App (1–4 + 10011 + 10005/10015 + 10022) | 3–4 |
+| CIP 1028 | Coaching + App (10025 + 10022) | 2 |
+| CIP 1029–1032 | Lesson + FVP + Coaching + App (1–4 + 10011 + 10025 + 10022) | 4 |
+
+- **App 10022 present in every CAP and CIP plan** ✅ — good detection anchor.
+- App charges at **¥0** (companion) — the ¥0-App assumption holds ✅.
+- **Split stays 2-way** (Coaching + App) per O-8. Lesson (product_type 1) and FVP (10011) are NOT part of the allocation split — the existing daily-rate logic handles them.
+
+**Conclusion:** the design's "always exactly 2 `trn_charge` rows" assumption is **wrong**. Detection must **pick the Coaching + App rows out of a 2–4 product bundle**, ignoring Lesson/FVP — not assume a 2-row pair.
 
 ### Q5 — plan_id in the pipeline ✅ CONFIRMED (schema gap)
 
