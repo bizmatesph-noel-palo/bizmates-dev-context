@@ -68,8 +68,8 @@ The ASCA formula is **single-stage** — split N between Coaching and App by ref
 | Coaching 15min | product_id **10005** — L = ¥19,800. |
 | Coaching 30min | product_id **10015** — L = ¥39,600. |
 | Coaching Intensive | product_id **10025** (changed from 10022 on 2026-08-19) — CIP coaching, L 🔴 pending (O-5). |
-| App | product_id **10022** (changed from 10021 on 2026-08-19). ¥0 to the student; carries allocated revenue after overwrite. product_type = 100. |
-| product_type | Coaching-side vs App (100) — used for Freee mapping and CSV. |
+| App | product_id **10022** (changed from 10021 on 2026-08-19). ¥0 to the student; carries allocated revenue after overwrite. product_type ⚠️ UNRESOLVED (O-10): 618 (CAP) or 100 (CIP DB). Distinct from existing App 10012. |
+| product_type | Existing: Coaching 10005/10015 = 9, App 10012 = 100. New (CAP/CIP) ⚠️ UNRESOLVED (O-10): App 10022 = 618 (CAP) or 100 (CIP DB); CIP 10025 = 469 (CAP) or 9 (CIP DB). Read from `mst_product` at runtime — final migration decides. |
 | B2C | Individual student (contract_type = 0). |
 | B2B | Corporate-sponsored (contract_type = 1). |
 | B2B2C | Individual pays, linked to company (contract_type = 2). |
