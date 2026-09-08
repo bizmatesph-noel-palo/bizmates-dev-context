@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -27,6 +27,39 @@
 | ASCH | ASC Honki Set (cancelled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
 | **ASCA** | **ASC for CAP** (active — builds foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) |
 | **ASCI** | **ASC for CIP** (active — reuses foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
+| DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
+| DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | — | — |
+
+---
+
+## ⚠️ Status / Actuals (as of 2026-09-08)
+
+> The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Where we actually are
+
+| Baseline expectation (by W2, Sep 7) | Actual (2026-09-08) |
+|---|---|
+| Foundation (Spec 01) coding started | **Not started** — still pre-Foundation |
+| ASCA Spec 01 requirements signed off (G1) | **Not done** — requirements.md not yet written/approved |
+| Steering files done | ✅ Done (promoted to accounting repo) |
+| Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
+| JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
+
+**Net:** ~1+ week behind the Foundation-start baseline. Critical-path next action: ASCA Spec 01 `requirements.md` → G1.
+
+### Scope growth (not just delay)
+
+New requirements landed after the baseline was set — these expand scope, so the slip is partly re-baseline territory, not pure delay:
+
+| Change | Source | Impact |
+|---|---|---|
+| **Refund allocation** (negative amounts, same pipeline, true floor toward −∞) | REF-CAP-09 (Kuroda-san, 2026-09-08) | Expands ASCA Spec 02 (refund) — was already the split-candidate sub-spec |
+| **CIP 1029–1032 now 3-way** (Lesson : Coaching : App = 13,500 : 66,500 : 3,618, tax-excl) | REF-CAP-09 R-16 (2026-09-08) | **Reverses O-8 (2-way).** ASCI is **no longer config-only** — needs 3-way split logic. Bigger ASCI. |
+| Tax-**exclusive** weights (App 3,618, Coaching 66,500) | REF-CAP-09 | Reconcile against earlier tax-incl figures (¥3,980 / ¥19,800) in design/schema |
+| product_type conflict (O-10): CAP 618/469 vs CIP DB 100/9 | Terry/Jefferson data | Data, not code blocker — final migration decides |
+
+**Recommendation:** re-baseline ASCA Spec 02 + ASCI with Kuroda-san given R-16 (3-way CIP) and refund scope. Foundation (Spec 01) is unaffected and can start now.
 
 **Note:** "ASC" is the JIRA code for ASCM. The original project was named just "ASC" before subsequent projects (ASCH, ASCA, ASCI) were created.
 
@@ -37,6 +70,7 @@
 ```
 ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
 ASCM Refactor (DEVOPS-6415):         Aug 24–28 (W0) — prep + regression
+ZPR (DEVOPS, Cristoff):              Sep 9–18 — Zipan 20L enum add; ★ release before Oct 1 (PRE batch)
 Spec Preparation (Lead):             Aug 31–Sep 5 (W1) — steering files + spec session (parallel with QA)
 ASCM QA Verification:                Aug 31–Sep 5 (W1) — gate to Foundation
 ASCA (Foundation + CAP Integration): Sep 7–Oct 30 (W2–W9) — shared framework + CAP logic
@@ -65,8 +99,10 @@ First real batch:                    Jan 1, 2027
 | **CIP** | Coaching Intensive Plan | Upstream project — creates new product **10025** with plans 1028–1032 in MBTI_backend | CIP team (Jefferson) |
 | **ASCA** | ASC for CAP | Our project — allocates CAP coaching charge revenue | Noel's team |
 | **ASCI** | ASC for CIP | Our project — allocates CIP coaching charge revenue | Noel's team |
+| **ZPR** | Zipan Price Revision | Upstream project (already in prod) — added Zipan plans incl. new 20-lesson plan (`product_id 38`) | Zipan/shared-platform team |
+| **ZPR (accounting)** | — | Our change — add product 38 to `ZipanMonthlyPlanEnum` so the new plan routes through the existing monthly-rate pipeline. Billed under DEVOPS (like ASCM refactor). Zipan-only, no computation change. | Cristoff (Noel lead) |
 
-**The upstream projects create the charges. Our projects allocate the revenue.**
+**The upstream projects create the charges. Our projects allocate the revenue.** (ZPR is the exception — it only needs a Zipan enum addition; no allocation.)
 
 ---
 
@@ -156,6 +192,35 @@ Scope: Refactoring and fixing EXISTING code only. No new features, no new tables
 - Baseline documentation (CSV list, smoke test results)
 - All 3 commands verified working on DEV04 after changes
 - QA manual verification sign-off
+
+---
+
+### Phase 0.1: ZPR — Zipan Price Revision (accounting change) — Sep 9–18
+
+**Billed under:** DEVOPS (like the ASCM refactor — no ASC project). **Assignee:** Cristoff-san (via Patrick-san). **Lead:** Noel.
+
+**Scope (accounting system only):** add the new Zipan 20-lesson plan (`product_id = 38`) to `ZipanMonthlyPlanEnum` (+ unit test). No computation change (Wu-san via Harvey-san). Zipan-only. Upstream ZPR is already in production.
+
+**🔴 Hard deadline: released before Oct 1, 2026** — the **PRE batch runs Oct 1**. If product 38 isn't in the enum by then, that run mishandles the new plan's charges. This is the driving date.
+
+Runs in parallel with ASCA (different developer, isolated 1-file change) — does not consume ASCA/Foundation capacity.
+
+| # | Category | Owner | Task | Detail |
+|---|---|---|---|---|
+| 1 | **Dev** | Cristoff | Add `MONTHLY_PLAN_PRODUCT_20LPM_1LPD = 38` to `ZipanMonthlyPlanEnum` + update unit test | Reference snippets in the grooming ticket. Real work ≈ 1 day. |
+| 2 | **Verify** | Cristoff | Deploy to DEV04, run batch commands, recover reports for QA | Same flow as ASCM refactor. ~1 day. |
+| 3 | **QA** | QA Team | Verify reports + UAT | Confirm product 38 lands in monthly-rate (not daily); no Bizmates regression. |
+| 4 | **Release** | Lead | Release before Oct 1 | Ahead of the Oct 1 PRE batch. |
+
+**Box schedule:**
+
+| Box | Dates | Focus |
+|---|---|---|
+| Dev + DEV04 | **Sep 9–11** | Enum case + test; deploy DEV04; run commands; recover reports (≈1 day work + 1 day deploy/run) |
+| QA + UAT | **Sep 14–18** | QA verifies reports; UAT (generous box for a 1-line change) |
+| Buffer | **Sep 21–30** | Absorbs issues; release before Oct 1 |
+
+**Docs:** `projects/zpr/project-context.md`, `research/ZPR/REF-ZPR-01-project-spec-20260908.md`, grooming ticket `projects/zpr/technical-notes/jira/tickets/DEVOPS-XXX-add-zipan-20lesson-plan-to-enum.md`.
 
 ---
 
@@ -291,6 +356,7 @@ Upstream:                 ║═════════════════
 
 Dev Team:                 ║══════════════════════════════════════════════║
   ASCM Refactor           ║■■■■┓                                        ║
+  ZPR (Cristoff, DEVOPS)       ┃  ┣■■┓ → release before Oct 1            ║
   Spec Prep (Lead)             ┣■┓                                      ║
   QA Verification              ┣■┓                                      ║
   Foundation                     ┣━━━━━━━━━━━━━━━━┓                     ║
@@ -334,6 +400,8 @@ Dev Team:                 ║═════════════════
 | **ASCM Regression** | Lead | Smoke test Pre + Final + Correction on DEV04 | ■ | | | | | | | | | | | |
 | **ASCM Regression** | QA Team | Manual verification: compare reports | | ■ | | | | | | | | | | |
 | ══ **GATE** ══ | QA Team | **ASCM Regression gate pass** | | ■ | | | | | | | | | | |
+| **ZPR** (DEVOPS) | Cristoff | Add product 38 to Zipan enum + test; deploy DEV04 + run commands | | | ■ | | | | | | | | | |
+| **ZPR** (DEVOPS) | QA Team | ZPR QA + UAT (reports) — ★ release before Oct 1 (PRE batch) | | | | ■ | | | | | | | | |
 | **Spec Prep** | Lead | Create steering files for `accounting_related_system_for_freee` | | ■ | | | | | | | | | | |
 | **Spec Prep** | Lead | ASCA Spec 01 (Foundation): requirements.md | | ■ | | | | | | | | | | |
 | ══ **GATE 1** ══ | PM | **Requirements sign-off — Foundation scope, formula, reference prices** | | ■ | | | | | | | | | | |
@@ -377,6 +445,7 @@ Dev Team:                 ║═════════════════
 | Category | Owner | Task | W1 (Aug 31) | W2 (Sep 7) | W3 (Sep 14) | W4 (Sep 21) | W5 (Sep 28) | W6 (Oct 5) | W7 (Oct 12) | W8 (Oct 19) | W9 (Oct 26) | W10 (Nov 2)🔴 | W11 (Nov 9) | W12 (Nov 16) | W13 (Nov 23) | W14 (Nov 30)🔴 | W15 (Dec 7)🔴 |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
 | QA | QA Team | ASCM Refactor: Manual report verification | ■ | | | | | | | | | | | | | | |
+| QA | QA Team | **ZPR: report verification + UAT (Zipan 20L)** — ★ before Oct 1 | | | ■ | | | | | | | | | | | | |
 | QA | QA Team | Test planning + strategy | | ■ | ■ | | | | | | | | | | | | |
 | QA | QA Team | Test case creation + data prep (CAP + CIP) | | | ■ | ■ | ■ | | | | | | | | | | |
 | QA | Miko | Test execution: ASCA CAP scenarios (10 cases) | | | | | | | ■ | ■ | ■ | ■ | | | | | |
@@ -410,14 +479,16 @@ Dev Team:                 ║═════════════════
 
 ### Week-by-Week Calendar (Actual Dates)
 
-| Week | Dates | Workdays | Phase | Notes |
+> **Status column** added 2026-09-08 to track planned vs actual (see the Status/Actuals section at the top). ✅ done · 🔄 in progress · ⚠️ slipped/at risk · (blank) not yet reached.
+
+| Week | Dates | Workdays | Phase (planned) | Status (2026-09-08) |
 |---|---|---|---|---|
-| **W0** | Aug 24–28 | 5 | ASCM Refactor (DEVOPS-6415) | Start date. Full week. |
-| **W1** | Aug 31–Sep 5 | 4 | QA verification + Lead: steering files + spec session | 🔴 Aug 31 = National Heroes Day (Mon off). Lead prepares ASCA Spec 01 while QA runs regression gate. |
-| **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | |
-| **W3** | Sep 14–18 | 5 | Foundation: models, enums, run lifecycle | |
-| **W4** | Sep 21–25 | 5 | Foundation: reference prices, engine | |
-| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | |
+| **W0** | Aug 24–28 | 5 | ASCM Refactor (DEVOPS-6415) | ✅ Done |
+| **W1** | Aug 31–Sep 5 | 4 | QA verification + Lead: steering files + spec session | ✅ Steering done · investigations done · 🔴 Aug 31 holiday |
+| **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | ⚠️ **Foundation NOT started** — Spec 01 requirements not yet signed off (G1). **ZPR dev (Cristoff) Sep 9–11.** |
+| **W3** | Sep 14–18 | 5 | Foundation: models, enums, run lifecycle | ⚠️ Behind baseline. **ZPR QA+UAT Sep 14–18.** |
+| **W4** | Sep 21–25 | 5 | Foundation: reference prices, engine | ZPR buffer → ★ release before Oct 1 |
+| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | ⚠️ At risk given W2 slip + refund/R-16 scope growth (re-baseline pending) |
 | **W6** | Oct 5–9 | 5 | ASCA: injection + detection | |
 | **W7** | Oct 12–16 | 5 | ASCA: CSV, DataCorrection allocateForCharge | |
 | **W8** | Oct 19–23 | 5 | ASCA: refund allocation | |
@@ -451,12 +522,14 @@ Dev Team:                 ║═════════════════
 
 ## Milestones
 
-| Milestone | Week | Date | Notes |
-|---|---|---|---|
-| **Project starts** | **W0** | **Aug 24** | ASCM Refactor begins |
-| ASCM Refactor complete | W0 | Aug 28 | No blockers |
-| ASCM QA verification passes | W1 | Sep 5 | Gate to Foundation (1 day lost to holiday) |
-| ASC Shared Foundation complete | W5 | Oct 2 | All tables + engine ready |
+| Milestone | Week | Date | Notes | Status (2026-09-08) |
+|---|---|---|---|---|
+| **Project starts** | **W0** | **Aug 24** | ASCM Refactor begins | ✅ |
+| ASCM Refactor complete | W0 | Aug 28 | No blockers | ✅ |
+| ASCM QA verification passes | W1 | Sep 5 | Gate to Foundation (1 day lost to holiday) | ✅ |
+| **ZPR (Zipan 20L) released** | — | **before Oct 1** | ★ Hard deadline — Oct 1 PRE batch. Cristoff, DEVOPS. | 🔄 Dev Sep 9–11 |
+| ASCA Spec 01 requirements sign-off (G1) | W1–W2 | (baseline Sep 5) | Foundation requirements approved by Kuroda-san | ⚠️ Not done — critical path |
+| ASC Shared Foundation complete | W5 | Oct 2 | All tables + engine ready | ⚠️ At risk (Foundation not started; re-baseline pending) |
 | ASCA CAP dev complete | W9 | Oct 30 | Full pipeline tested on seeded data |
 | ASCI CIP dev complete | W11 | Nov 13 | CIP tested on seeded data |
 | QA active testing begins | W6 | Oct 5 | CAP scenarios (parallel with dev) |
@@ -539,13 +612,20 @@ ASC is NOT blocked by upstream timelines:
 | O-1 | CAP App product_id | CAP team | ✅ Resolved — was 10021; changed to **10022** on 2026-08-19 (see O-7) | — |
 | O-2 | Asymmetric discount (CIP RA-04) | Accounting | Low risk — if rejected, proration_basis returns | — |
 | O-4 | B2B App reversal logic | Accounting + CAP | Post-release (Phase 4) | — |
-| O-5 | CIP coaching reference price | Accounting | 🔴 **REOPENED (2026-08-28)** — plan price ¥88,000 → ¥75,900. ¥84,020 stale. New L_coaching pending (likely ¥71,920). | ASCI seeder |
+| O-5 | CIP coaching reference price | Accounting | 🟡 **Updated (REF-CAP-09, 2026-09-08)** — R-16 gives tax-excl weight **L_coaching = 66,500** (and App 3,618, Lesson 13,500). Reconcile against earlier ¥84,020/¥71,920 guesses and tax-incl figures. | ASCI seeder |
 | O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
 | O-7 | Product ID changes | Business (Go-san) | ✅ **Confirmed FINAL (2026-08-19)** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. | Detection + seeder + Freee mapping |
-| O-8 | CIP split arity | Accounting (Kuroda-san) | ✅ **Resolved (2026-08-28)** — **2-way (Coaching + App)**, even for 1029–1032. Lesson handled separately. Same as CAP → ASCI stays config-only. [Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | — |
+| O-8 | CIP split arity | Accounting (Kuroda-san) | ⚠️ **REVERSED by R-16 (2026-09-08)** — was 2-way; now **CIP 1029–1032 are 3-way (Lesson : Coaching : App = 13,500 : 66,500 : 3,618, tax-excl)**. 1028 stays 2-way. **ASCI is no longer config-only.** | ASCI scope + engine |
+| O-9 | `project_code` → `bundle_type` rename+retype | Kuroda-san | ✅ **Confirmed (2026-09-02)** — TINYINT enum (1=CAP, 2=CIP). | Migrations |
+| O-10 | New product_type conflict | CAP/CIP teams | ⚠️ **Open (2026-09-08)** — CAP proposal `10022=618 / 10025=469` vs CIP local DB `10022=100 / 10025=9`. Data, not code blocker — final migration decides; ASC reads at runtime. | — (verify on DEV04) |
+| R-16 | CIP 3-way allocation | Accounting (Kuroda-san) | ✅ **Decided (2026-09-08, REF-CAP-09)** — Plan A: lesson-included CIP plans split 3-way. Expands ASCI. | ASCI engine |
+| Refund | Refund allocation requirements | Accounting (Kuroda-san) | ✅ **Delivered (REF-CAP-09, 2026-09-08)** — same pipeline for +/−, true floor toward −∞, execution-month lump. Unblocks ASCA Spec 02 refund requirements. | ASCA Spec 02 (refund) |
 
-**Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic and unaffected by the CIP price question.
-**Blockers for ASCI:** O-5 (reference price) must resolve before ASCI design (W10). O-8 resolved (2-way).
+**Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic; unaffected by CIP price, refund, or O-10. Can start now.
+**Blockers for ASCA Spec 02:** refund requirements now delivered (REF-CAP-09) — unblocked.
+**Blockers for ASCI:** O-5/R-16 weights (66,500 : 3,618 : 13,500) to reconcile; **R-16 makes ASCI 3-way (not config-only)** — needs re-baseline. O-10 resolves via final migration.
+
+**ZPR (DEVOPS):** no blockers — 1-file enum add. Hard date: release before Oct 1 (PRE batch).
 
 ---
 
@@ -575,9 +655,17 @@ ASC is NOT blocked by upstream timelines:
 | 2026/08/17 | O-3/O-5/O-6 resolved. JIRA projects created. Bundle grouping (order_no). |
 | 2026/08/20 | Timeline consolidated. Kuroda-san directive: start ASAP. |
 | **2026/08/24** | **W0 — ASCM Refactor starts (DEVOPS-6415)** |
+| 2026/08/28 | O-8 resolved (2-way) — later reversed by R-16 |
 | 2026/08/31 | 🔴 National Heroes Day (W1 loses 1 day) |
-| ~2026/09/05 | ASCM QA verification passes → Foundation starts |
-| ~2026/10/02 | ASC Shared Foundation complete |
+| ~2026/09/05 | ASCM QA verification passes; steering files done |
+| 2026/09/02 | O-9 confirmed (`bundle_type` TINYINT) |
+| 2026/09/07 | JIRA + Atlassian MCP live; ASCA-9 (Scaffolding) + ASCA-10 (steering) created |
+| 2026/09/08 | CAP data (Terry) + CIP data (Jefferson) received & verified. **REF-CAP-09 refund requirements + R-16 (CIP 3-way) from Kuroda-san.** O-10 product_type conflict surfaced. ZPR (Zipan Price Revision) accounting change identified. |
+| **2026/09/09–11** | **ZPR dev + DEV04 (Cristoff, DEVOPS)** |
+| **2026/09/14–18** | **ZPR QA + UAT** |
+| ⚠️ (baseline ~Sep 7) | Foundation NOT started — behind baseline; Spec 01 G1 pending |
+| **★ before 2026/10/01** | **ZPR released — Oct 1 PRE batch deadline** |
+| ~2026/10/02 | ASC Shared Foundation complete (⚠️ at risk — re-baseline pending) |
 | ~2026/10/30 | ASCA CAP dev complete |
 | ~2026/11/02 | 🔴 All Souls' Day (W10 loses 1 day) |
 | ~2026/11/13 | ASCI CIP dev complete |
@@ -592,37 +680,44 @@ ASC is NOT blocked by upstream timelines:
 
 ## Current Status
 
-**Last updated:** 2026-08-27 (Thursday)  
-**Current week:** W0 (Aug 24–28) — ASCM Refactor (DEVOPS-6415)
+> **Current status has moved to the [Status / Actuals (as of 2026-09-08)](#-status--actuals-as-of-2026-09-08) section at the top of this document.** The W0 snapshot below is retained as history.
 
-| Item | Status |
+**Historical snapshot — 2026-08-27 (W0, ASCM Refactor):**
+
+| Item | Status (as of 2026-08-27) |
 |---|---|
 | DataCorrectionLogic drift fix | ✅ Complete — monthly plan skip + missing fields added |
 | ArchiverService + MailerService extraction | ✅ Complete — all 3 Logic files refactored |
 | Unit tests | ✅ Complete — ArchiverServiceTest + MailerServiceTest |
-| Smoke test on DEV04 | ⏳ Pending — deploy branch and run 3 commands |
-| QA manual verification (W1) | ⏳ Not started — blocked by smoke test |
-| P-3: Confirm coaching product_id with CAP team | ⏳ Open — non-blocking |
-| Throy availability for W2 | ⏳ Confirm with Patrick-san |
+| Smoke test on DEV04 | ✅ Done (W0) |
+| QA manual verification (W1) | ✅ Passed (W1) |
+
+*(For live status — Foundation not started, ZPR in flight, refund/R-16 scope growth — see the Status/Actuals section at the top.)*
 
 ---
 
 ## Reference: Confirmed Data
+
+> Aligned with `domain-knowledge/plans-and-products.md` (updated 2026-09-08). Where that doc and this differ, the domain-knowledge file is authoritative.
 
 | Item | CAP | CIP |
 |---|---|---|
 | Plan IDs | 1016–1027 (12 plans) | 1028–1032 (5 plans) |
 | Coaching product_id | 10005 (15min) / 10015 (30min) | **10025** (Intensive — changed from 10022 on 2026-08-19) |
 | App product_id | **10022** (changed from 10021 on 2026-08-19) | **10022** (same as CAP) |
-| L_coaching (reference) | ¥19,800 (15min) / ¥39,600 (30min) | 🔴 ¥84,020 STALE — O-5 reopened (plan now ¥75,900, new L_coaching pending) |
-| L_app (reference) | ¥3,980 | ¥3,980 |
-
-> **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. See `research/CIP/REF-CIP-04-*`. Note `10022` now = App (was CIP coaching).
-> **🔴 O-5 reopened:** CIP plan price dropped ¥88,000 → ¥75,900, so the ¥84,020 L_coaching is stale. Awaiting Kuroda-san/Accounting.
-> **✅ O-8 resolved (2026-08-28):** CIP is **2-way (Coaching + App)**, even for plans 1029–1032. Online Lesson handled separately by existing daily-rate logic. Same split as CAP.
+| product_type (new products) | ⚠️ **O-10 open** — App 10022 = 618 (CAP) or 100 (CIP DB); CIP 10025 = 469 (CAP) or 9 (CIP DB). Final migration decides. Existing: Coaching 9, App 10012 = 100. |
+| Bundle composition | 2 products (1016/1017) or 3–4 (1018–1027 add Lesson+FVP) | 2 products (1028) or 4 (1029–1032 add Lesson+FVP) |
+| Split arity | 2-way (Coaching + App) | **1028: 2-way. 1029–1032: 3-way (Lesson+Coaching+App) per R-16.** |
+| Allocation weights (tax-**excl**, per R-16) | Coaching / App (reconcile earlier tax-incl ¥19,800/¥39,600 & ¥3,980) | **Lesson 13,500 : Coaching 66,500 : App 3,618** |
 | App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
 | Date filter needed? | No (new plans) | No (new plans) |
 | Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
+
+> **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Note `10022` now = App (was CIP coaching).
+> **⚠️ O-10 (2026-09-08):** CAP vs CIP disagree on new product_types. Data, not code blocker — ASC reads `product_type` from `mst_product` at runtime; final migration is authoritative.
+> **⚠️ O-8 REVERSED by R-16 (2026-09-08):** CIP lesson plans (1029–1032) are now **3-way** (Lesson : Coaching : App). Only 1028 stays 2-way. ASCI is no longer config-only.
+> **🟡 O-5 (updated):** REF-CAP-09 gives tax-excl L_coaching = 66,500 for CIP; reconcile against the stale ¥84,020 and the tax-incl figures.
+> **Weights are tax-EXCLUSIVE** per REF-CAP-09 — earlier docs used tax-inclusive (¥3,980 / ¥19,800); reconcile in design/schema.
 
 ---
 
@@ -641,6 +736,12 @@ ASC is NOT blocked by upstream timelines:
 | `research/CAP/REF-CAP-06` | CAP price mechanism (Confluence) |
 | `research/CAP/REF-CAP-07` | Option 1 Overwrite (Confluence + verified) |
 | `research/CAP/REF-CAP-08` | CAP requirements decision log |
+| `research/CAP/REF-CAP-09-Refund-Allocation-Requirements-20260908.md` | **Refund allocation requirements + R-16 (CIP 3-way) — Kuroda-san, normative** |
 | `research/CIP/REF-CIP-03` | CIP project spec (Jefferson) |
-| `domain-knowledge/plans-and-products.md` | Full plan/product reference |
+| `research/CIP/REF-CIP-04` | CIP product_id + price updates |
+| `research/ZPR/REF-ZPR-01-project-spec-20260908.md` | **ZPR (Zipan Price Revision) upstream spec — verbatim** |
+| `projects/zpr/project-context.md` | ZPR accounting-scope context (add product 38 to enum) |
+| `projects/zpr/technical-notes/jira/tickets/DEVOPS-XXX-add-zipan-20lesson-plan-to-enum.md` | ZPR grooming ticket (for Cristoff) |
+| `projects/asca/technical-notes/investigation/20260904-g1-open-questions-code-investigation/` | G1 code investigation (bundle key, product_type, composition) |
+| `domain-knowledge/plans-and-products.md` | Full plan/product reference (authoritative — updated 2026-09-08) |
 | `projects/ascm/knowledge-base/` | ASCM lessons learned |
