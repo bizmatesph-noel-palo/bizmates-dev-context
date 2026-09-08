@@ -107,6 +107,8 @@ DB::table($table . ' as log')
     ->join('trn_charge as c', 'log.charge_id', '=', 'c.id')
     ->where('log.target_ym', $targetYm)
     ->whereIn('c.plan_id', CoachingAndAppPlanEnum::toArray())
+    // A plan bundles 2–4 products (CAP 1018–1027 / CIP 1029–1032 add Lesson 1–4 + FVP 10011).
+    // Filter to ONLY the coaching + app product_ids here so Lesson/FVP never enter the split (2-way, O-8).
     ->whereIn('c.product_id', [10005, 10015, 10025, 10022])
     ->get()
     // ⚠️ Grouping key includes plan_id — NOT student_id+order_no alone.
@@ -116,9 +118,14 @@ DB::table($table . ' as log')
     // ambiguous groups (>1 coaching candidate). Final key pending CAP-team answer (O-8).
     ->groupBy(fn ($r) => $r->student_id . '|' . ($r->order_no ?? 'null') . '|' . $r->plan_id);
 
+// Extraction: pick coaching + app BY product_id, never "the non-app row"
+// (a 3–4 product bundle also has a Lesson row). N = coaching + app pair only.
+$coachingRow = $group->firstWhere(fn ($r) => in_array($r->product_id, [10005, 10015, 10025], true));
+$appRow = $group->firstWhere('product_id', 10022);
+
 // overwrite (N → P in place)
-DB::table($table)->where('id', $coachingLogId)->update(['paid_price' => $pCoaching]);
-DB::table($table)->where('id', $appLogId)->update(['paid_price' => $pApp]);
+DB::table($table)->where('id', $coachingRow->id)->update(['paid_price' => $pCoaching]);
+DB::table($table)->where('id', $appRow->id)->update(['paid_price' => $pApp]);
 ```
 
 - **Alloc tables** (`log_alloc_*`, `mst_alloc_*`) use Eloquent models (see `coding-standards.md` → File Organization).
