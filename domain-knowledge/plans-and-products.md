@@ -55,8 +55,19 @@ trn_charge (all charges)
 | 1 | Online Lesson | 1, 2, 3, 4, 16–23, 27–29 | Daily (1–4) or Monthly (16–29) |
 | 5 | Full Video Package (FVP) | 10011 | Daily (always ¥0 companion) |
 | 8 | Bizmates Test | (various) | Excluded from daily proration |
-| 9 | Coaching | 10005, 10015, 10025 | Daily rate (10025 = CIP intensive, new id) |
-| 100 | App | 10012, 10022 | Daily rate (¥0 for CAP/CIP, allocated). 10022 = new App id (was 10021) |
+| 9 | Coaching (existing) | 10005, 10015 | Daily rate. Unchanged existing products |
+| 100 | App (existing) | 10012 | Existing standalone App. Unchanged |
+
+> **Existing vs new:** product_type **9** (Coaching) and **100** (App 10012) are the **existing** products, unchanged in the DB.
+>
+> ⚠️ **New CAP/CIP products — product_type UNRESOLVED (O-10).** CAP and CIP disagree:
+>
+> | product | CAP (Terry-san, proposal) | CIP (Jefferson-san, actual local DB) |
+> |---|---|---|
+> | 10022 (new App) | 618 | 100 |
+> | 10025 (CIP coaching) | 469 | 9 |
+>
+> Same product_id can't hold two types. This is **data, not a code blocker** — ASC reads `product_type` from `mst_product` at runtime, so it adapts to whatever the **final CAP/CIP migration** ships. Pending reconciliation between the upstream teams; re-verify on DEV04 after final migrations.
 
 ---
 
@@ -81,10 +92,10 @@ trn_charge (all charges)
 | 29 | 月15回プラン | 1 | Monthly (15L/month, 1/day) | `BizmatesMonthlyPlanEnum` — FLP |
 | 10005 | Bizmates Coaching 15分 | 9 | Coaching | 15-minute sessions |
 | 10011 | Full Video Package | 5 | FVP | Always ¥0 companion |
-| 10012 | Bizmates App 標準コース | 100 | App (Legacy) | Standalone App — retained untouched |
+| 10012 | Bizmates App 標準コース | 100 | App (existing) | Existing standalone App — unchanged. product_type 100 = existing App |
 | 10015 | Bizmates Coaching 30分 | 9 | Coaching | 30-minute sessions |
-| 10022 | Bizmates Appプレミアム | 100 | App (CAP/CIP) | New — ¥0 companion in bundles. **id changed 10021→10022 (2026-08-19, Go-san)** |
-| 10025 | Bizmates Coaching 30分 短期集中プラン | 9 | Coaching Intensive | New — CIP product. **id changed 10022→10025 (2026-08-19)**. Solo plan ¥75,900 tax-incl (was ¥88,000) |
+| 10022 | Bizmates Appプレミアム （自動付帯） | **618 or 100** ⚠️ | App (new, CAP/CIP) | New product — ¥0 companion in bundles. **id changed 10021→10022 (2026-08-19, Go-san)**. product_type UNRESOLVED (O-10): CAP proposal 618 vs CIP DB 100. |
+| 10025 | コーチング短期集中 | **469 or 9** ⚠️ | Coaching Intensive (new) | New CIP product. **id changed 10022→10025 (2026-08-19)**. product_type UNRESOLVED (O-10): CAP proposal 469 vs CIP DB 9. Solo plan ¥75,900 tax-incl (was ¥88,000) |
 
 ---
 
