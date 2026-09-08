@@ -24,7 +24,7 @@ Answers Kuroda-san's G1 open items (2)-7 (product_type) and (2)-8 (bundle pairin
 | # | Question | Result |
 |---|---|---|
 | 1 | contract_type code values | ✅ **Confirmed** from `config/const.php` |
-| 2 | product_type Coaching=9 / App=100 | 🔴 **Unconfirmed in code** — not an enum; lives in `mst_product` DB rows / spec, not code |
+| 2 | product_type Coaching=9 / App=100 | 🟡 **Partially confirmed (DB)** — Coaching 10005/10015 = 9 ✅; App 10022 & CIP 10025 have no row yet (CAP/CIP seeders not run) |
 | 3 | order_no structure & grouping | ⚠️ **Important finding** — order_no is nullable, non-unique; existing code groups by **order_no alone** and explicitly handles multiple charges sharing one order_no |
 | 4 | App ¥0 companion charge pattern | 🟡 Schema supports it; **not enforced in code** — needs data/spec confirmation |
 | 5 | plan_id availability in pipeline | ✅ **Confirmed** — `plan_id` is on `trn_charge` and fetched, but **dropped before `log_daily_rate_calculation`** |
@@ -54,13 +54,26 @@ Per-question findings from the code trace. Each marks confidence (✅ confirmed 
 - The DB column `trn_charge.contract_type` only ever stores **0/1/2** (migration comment `0=B2C/1=B2B/2=B2B2C`, default 0).
 - 3 and 4 are computed at journal time. **Implication for the spec:** our `contract_type` column on alloc tables holds 0/1/2 as read from the charge; Partner/B2B_App are Freee-mapping-time derivations (Spec 02), not stored values. TINYINT is fine.
 
-### Q2 — product_type 9 / 100 🔴 UNCONFIRMED IN CODE
+### Q2 — product_type 9 / 100 🟡 PARTIALLY CONFIRMED (DB)
 
 - `mst_product.product_type` is a plain `integer` column. Migration comment only documents `1=Skype, 2=Video`. Code special-cases `8` (Bizmates Test).
-- No constant/enum for `9` (Coaching) or `100` (App) anywhere in either repo. No grep hit for `10021`/`10022`/`Coaching`/`App` as product_type values.
+- No constant/enum for `9` (Coaching) or `100` (App) anywhere in either repo — they are **data facts in `mst_product` rows**, not code constants.
 - freee-facing types are separate master IDs in `config/code.php` (`bizmatesCoaching=191155067`, `BizmatesApp=236270504`) — NOT the internal product_type ints.
 
-**Conclusion:** Coaching=9 / App=100 are **data facts in `mst_product` rows** (or an upstream spec), not code constants. To confirm, query `mst_product` for the CAP/CIP product_ids (10005/10015/10025/10022) and read their `product_type`. **This is what to verify with the DB / CAP team for (2)-7** — the codebase can't answer it.
+**DB check (local, 2026-09-08 — CAP/CIP migrations & seeders NOT yet run):**
+
+```sql
+SELECT product_id, product_type FROM mst_product WHERE product_id IN (10005,10015,10025,10022);
+```
+
+| product_id | product_type | Status |
+|---|---|---|
+| 10005 (Coaching 15min) | 9 | ✅ Confirmed |
+| 10015 (Coaching 30min) | 9 | ✅ Confirmed |
+| 10025 (CIP Coaching Intensive) | — | ⏳ No row yet (CIP seeder not run) |
+| 10022 (App) | — | ⏳ No row yet (CAP seeder not run) |
+
+**Conclusion:** Coaching = **9 confirmed**. App = **100 still unverified** — product 10022 doesn't exist in the local DB until the CAP seeder runs. Re-run this query on DEV04 after CAP/CIP data lands to confirm 10022=100 and 10025=9.
 
 ### Q3 — order_no ⚠️ KEY FINDING (drives (2)-8)
 
