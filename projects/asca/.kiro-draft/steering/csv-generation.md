@@ -1,6 +1,6 @@
 ---
 inclusion: fileMatch
-fileMatchPattern: "**/CommonUtil.php,**/ZipanUtil.php,**/SendJournalsDataLogic.php,**/DailyRateCalculationPreLogic.php,**/RevenueAllocation/**"
+fileMatchPattern: "**/CommonUtil.php" "**/ZipanUtil.php" "**/SendJournalsDataLogic.php" "**/DailyRateCalculationPreLogic.php" "**/RevenueAllocation/**"
 ---
 
 # CSV Generation Reference
