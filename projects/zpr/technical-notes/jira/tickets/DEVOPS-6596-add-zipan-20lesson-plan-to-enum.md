@@ -1,9 +1,10 @@
-# DEVOPS-XXX — Accounting: add Zipan 20-lesson plan (product_id 38) to monthly-plan enum
+# DEVOPS-6596 — Accounting: add Zipan 20-lesson plan (product_id 38) to monthly-plan enum
 
 ## Ticket Info
 
 | | |
 |---|---|
+| **JIRA** | [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) |
 | **Type** | Task (DEVOPS — accounting-system maintenance) |
 | **Project** | DEVOPS (no ASC project; handled like the ASCM refactor) |
 | **Assignee** | Cristoff-san (delegated by Patrick-san) |

@@ -84,39 +84,46 @@ Three mandatory gates where work cannot proceed without approval:
 
 **Principle: 1 Epic = 1 Spec.** Each epic has the standard story set for time logging and PR tracking.
 
+**Story naming convention:** each spec's stories are prefixed `[Spec NN] —` so a ticket's spec is identifiable from its title alone (e.g. `[Spec 01] — Requirements + Sign-off`). Keys are shown where the tickets already exist.
+
 ```
+# ASCM Refactor
 Epic: DEVOPS-6415 — ASCM Prep (refactor — did NOT run the spec workflow)
 └── (all work committed directly under the epic — no per-story spec breakdown)
 
+# ASCA Project
 Epic: ASCA-9 — Project Scaffolding (one-time — NOT a spec; excluded from the Spec story template)
 └── Story: ASCA-10 — Steering files (ASCA — adapted from ASCH)   → Lead (Noel)
     (Branch setup was originally planned as a second story but was dropped — this epic carries a single story.)
 
-Epic: ASCA Spec 01 — Foundation (8 stories — Coding spans 2 repos)
-├── Story: Requirements + Sign-off             → PM (Kuroda-san)
-├── Story: Architecture (Design + Tasks)       → Lead (Noel)
-├── Story: Coding (ls-db migrations)           → Dev (Throy)
-├── Story: Coding (accounting application)     → Dev (Throy)
-├── Story: Code Review                         → Lead (Noel)
-├── Story: Dev/Manual Testing                  → Lead (Noel)
-└── Story: QA Testing                          → QA (Miko)
+Epic: ASCA-13 — [Spec 01] — Foundation (8 stories — Coding spans 2 repos)
+├── Story: ASCA-14 — [Spec 01] — Requirements + Sign-off             → PM (Kuroda-san)
+├── Story: ASCA-15 — [Spec 01] — Architecture (Design + Tasks)       → Lead (Noel)
+├── Story: ASCA-16 — [Spec 01] — Coding (ls-db migrations)           → Dev (Throy)
+├── Story: ASCA-17 — [Spec 01] — Coding (accounting application)     → Dev (Throy)
+├── Story: ASCA-18 — [Spec 01] — Code Review                         → Lead (Noel)
+├── Story: ASCA-20 — [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
+└── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Miko)
 
-Epic: ASCA Spec 02 — CAP Integration (7 stories — single repo)
-├── Story: Requirements + Sign-off             → PM (Kuroda-san)
-├── Story: Architecture (Design + Tasks)       → Lead (Noel)
-├── Story: Coding                              → Dev (Throy)
-├── Story: Code Review                         → Lead (Noel)
-├── Story: Dev/Manual Testing                  → Lead (Noel)
-└── Story: QA Testing                          → QA (Miko)
+Epic: [Spec 02] — CAP Integration (7 stories — single repo) — NOT YET CREATED
+├── Story: [Spec 02] — Requirements + Sign-off             → PM (Kuroda-san)
+├── Story: [Spec 02] — Architecture (Design + Tasks)       → Lead (Noel)
+├── Story: [Spec 02] — Coding                              → Dev (Throy)
+├── Story: [Spec 02] — Code Review                         → Lead (Noel)
+├── Story: [Spec 02] — Dev/Manual Testing                  → Lead (Noel)
+└── Story: [Spec 02] — QA Testing                          → QA (Miko)
 
-Epic: ASCI Spec 01 — CIP Integration (7 stories — single repo)
-├── Story: Requirements + Sign-off             → PM (Kuroda-san)
-├── Story: Architecture (Design + Tasks)       → Lead (Noel)
-├── Story: Coding                              → Dev (Orlino or Cristoff)
-├── Story: Code Review                         → Lead (Noel)
-├── Story: Dev/Manual Testing                  → Lead (Noel)
-└── Story: QA Testing                          → QA (Glenn)
+# ASCI Project (separate JIRA project — reuses ASCA foundation)
+Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREATED
+├── Story: [Spec 01] — Requirements + Sign-off             → PM (Kuroda-san)
+├── Story: [Spec 01] — Architecture (Design + Tasks)       → Lead (Noel)
+├── Story: [Spec 01] — Coding                              → Dev (Orlino or Cristoff)
+├── Story: [Spec 01] — Code Review                         → Lead (Noel)
+├── Story: [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
+└── Story: [Spec 01] — QA Testing                          → QA (Glenn)
 ```
+
+> **Scope note (R-16):** ASCI CIP Integration is no longer config-only — CIP lesson plans 1029–1032 are 3-way (Lesson/Coaching/App). Its story set stands, but the Coding story is larger than the earlier "config addition" estimate.
 
 **Note on Scaffolding:** This epic (ASCA-9) intentionally carries a single story (ASCA-10, steering files) and does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). Steering-file setup is project setup, not spec dev work. The originally-planned "Branch setup" story was dropped. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a slim non-spec epic is expected and does not distort measurement.
 

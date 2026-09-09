@@ -19,7 +19,7 @@
 
 | Item | Value |
 |---|---|
-| Project code | ZPR (upstream) — our work billed under DEVOPS |
+| Project code | ZPR (upstream) — our work billed under DEVOPS ([DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596)) |
 | Upstream owner | Zipan / shared-platform teams |
 | Code repo (our change) | `accounting_related_system_for_freee` |
 | Scope | Add product_id 38 to `ZipanMonthlyPlanEnum` (+ test) |

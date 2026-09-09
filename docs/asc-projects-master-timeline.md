@@ -28,7 +28,7 @@
 | **ASCA** | **ASC for CAP** (active — builds foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) |
 | **ASCI** | **ASC for CIP** (active — reuses foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
-| DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | — | — |
+| DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) | — |
 
 ---
 
@@ -46,7 +46,9 @@
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
 
-**Net:** ~1+ week behind the Foundation-start baseline. Critical-path next action: ASCA Spec 01 `requirements.md` → G1.
+**Net:** ~1+ week behind the Foundation-start baseline. Critical-path next action: ASCA Spec 01 `requirements.md` → G1 ([ASCA-14](https://bizmates.atlassian.net/browse/ASCA-14)).
+
+**Foundation JIRA (created 2026-09-09):** Epic [ASCA-13] `[Spec 01] — Foundation` with 7 stories — ASCA-14 Requirements+Sign-off (G1), ASCA-15 Architecture (G2), ASCA-16 Coding (ls-db migrations), ASCA-17 Coding (accounting), ASCA-18 Code Review (G3), ASCA-19 QA Testing, ASCA-20 Dev/Manual Testing. Stories prefixed `[Spec 01] —`. Scaffolding epic [ASCA-9] carries ASCA-10 (steering, done) + ASCA-11/12 (DEV04 env).
 
 ### Scope growth (not just delay)
 
@@ -220,7 +222,7 @@ Runs in parallel with ASCA (different developer, isolated 1-file change) — doe
 | QA + UAT | **Sep 14–18** | QA verifies reports; UAT (generous box for a 1-line change) |
 | Buffer | **Sep 21–30** | Absorbs issues; release before Oct 1 |
 
-**Docs:** `projects/zpr/project-context.md`, `research/ZPR/REF-ZPR-01-project-spec-20260908.md`, grooming ticket `projects/zpr/technical-notes/jira/tickets/DEVOPS-XXX-add-zipan-20lesson-plan-to-enum.md`.
+**JIRA:** [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596). **Docs:** `projects/zpr/project-context.md`, `research/ZPR/REF-ZPR-01-project-spec-20260908.md`, ticket `projects/zpr/technical-notes/jira/tickets/DEVOPS-6596-add-zipan-20lesson-plan-to-enum.md`.
 
 ---
 
@@ -661,7 +663,8 @@ ASC is NOT blocked by upstream timelines:
 | 2026/09/02 | O-9 confirmed (`bundle_type` TINYINT) |
 | 2026/09/07 | JIRA + Atlassian MCP live; ASCA-9 (Scaffolding) + ASCA-10 (steering) created |
 | 2026/09/08 | CAP data (Terry) + CIP data (Jefferson) received & verified. **REF-CAP-09 refund requirements + R-16 (CIP 3-way) from Kuroda-san.** O-10 product_type conflict surfaced. ZPR (Zipan Price Revision) accounting change identified. |
-| **2026/09/09–11** | **ZPR dev + DEV04 (Cristoff, DEVOPS)** |
+| 2026/09/09 | ASCA Foundation epic + stories created (ASCA-13…20, `[Spec 01] —` prefix). ZPR ticket **DEVOPS-6596** created. |
+| **2026/09/09–11** | **ZPR dev + DEV04 (Cristoff, DEVOPS-6596)** |
 | **2026/09/14–18** | **ZPR QA + UAT** |
 | ⚠️ (baseline ~Sep 7) | Foundation NOT started — behind baseline; Spec 01 G1 pending |
 | **★ before 2026/10/01** | **ZPR released — Oct 1 PRE batch deadline** |
@@ -741,7 +744,7 @@ ASC is NOT blocked by upstream timelines:
 | `research/CIP/REF-CIP-04` | CIP product_id + price updates |
 | `research/ZPR/REF-ZPR-01-project-spec-20260908.md` | **ZPR (Zipan Price Revision) upstream spec — verbatim** |
 | `projects/zpr/project-context.md` | ZPR accounting-scope context (add product 38 to enum) |
-| `projects/zpr/technical-notes/jira/tickets/DEVOPS-XXX-add-zipan-20lesson-plan-to-enum.md` | ZPR grooming ticket (for Cristoff) |
+| `projects/zpr/technical-notes/jira/tickets/DEVOPS-6596-add-zipan-20lesson-plan-to-enum.md` | ZPR ticket ([DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596), Cristoff) |
 | `projects/asca/technical-notes/investigation/20260904-g1-open-questions-code-investigation/` | G1 code investigation (bundle key, product_type, composition) |
 | `domain-knowledge/plans-and-products.md` | Full plan/product reference (authoritative — updated 2026-09-08) |
 | `projects/ascm/knowledge-base/` | ASCM lessons learned |
