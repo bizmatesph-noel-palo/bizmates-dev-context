@@ -26,7 +26,7 @@ Answers Kuroda-san's G1 open items (2)-7 (product_type) and (2)-8 (bundle pairin
 | 1 | contract_type code values | ✅ **Confirmed** from `config/const.php` |
 | 2 | product_type values | 🟡 Existing confirmed (Coaching=9, App 10012=100). ⚠️ **New products conflict (O-10): CAP says 10022=618/10025=469; CIP DB says 10022=100/10025=9.** Final migration decides. |
 | 3 | order_no structure & grouping | ⚠️ order_no nullable/non-unique; key needs `plan_id`. **B2B product-sets have no plan_id** (plan_id=0) — flag for B2B detection |
-| 4 | bundle composition | ✅ **Confirmed (CAP+CIP data)** — bundle is **2–4 products**, not always 2. App 10022 in every plan (¥0). Split stays 2-way; detection must pick Coaching+App, skip Lesson/FVP |
+| 4 | bundle composition | ✅ **Confirmed (CAP+CIP data)** — bundle is **2–4 products**, not always 2. App 10022 in every plan (¥0). Split: **CAP 2-way; CIP 1029–1032 3-way per R-16** (2026-09-08, supersedes O-8) — detection must pick Coaching+App (and Lesson for CIP 1029–1032) |
 | 5 | plan_id availability in pipeline | ✅ **Confirmed** — `plan_id` is on `trn_charge` and fetched, but **dropped before `log_daily_rate_calculation`** |
 
 **Two decisions this drives:**
@@ -115,9 +115,10 @@ Confirmed against real `mst_plan_content` data (Terry-san CAP, Jefferson-san CIP
 
 - **App 10022 present in every CAP and CIP plan** ✅ — good detection anchor.
 - App charges at **¥0** (companion) — the ¥0-App assumption holds ✅.
-- **Split stays 2-way** (Coaching + App) per O-8. Lesson (product_type 1) and FVP (10011) are NOT part of the allocation split — the existing daily-rate logic handles them.
+- ~~**Split stays 2-way** (Coaching + App) per O-8. Lesson (product_type 1) and FVP (10011) are NOT part of the allocation split — the existing daily-rate logic handles them.~~
+- **⚠️ Superseded by R-16 (2026-09-08, REF-CAP-09):** split arity is now **CAP (all) + CIP 1028 = 2-way (Coaching + App)**, but **CIP 1029–1032 = 3-way (Lesson : Coaching : App**, tax-excl weights 13,500 : 66,500 : 3,618). For CIP 1029–1032, Lesson IS part of the split. FVP (10011) remains outside the split. This reverses the 2-way-only conclusion recorded here on 2026-09-04.
 
-**Conclusion:** the design's "always exactly 2 `trn_charge` rows" assumption is **wrong**. Detection must **pick the Coaching + App rows out of a 2–4 product bundle**, ignoring Lesson/FVP — not assume a 2-row pair.
+**Conclusion:** the design's "always exactly 2 `trn_charge` rows" assumption is **wrong**. Detection must pick the split rows out of a 2–4 product bundle: **Coaching + App for CAP and CIP 1028; Lesson + Coaching + App for CIP 1029–1032 (R-16)** — not assume a 2-row pair.
 
 ### Q5 — plan_id in the pipeline ✅ CONFIRMED (schema gap)
 

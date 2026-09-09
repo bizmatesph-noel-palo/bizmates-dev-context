@@ -46,15 +46,17 @@ Revenue **allocation** for bundled Coaching + App plans. Splits the Coaching cha
 - **Scope:** Bizmates only (`mysql` connection)
 - **Two projects share one framework:**
   - **ASCA (ASC for CAP)** — Coaching and App Plan bundles (plans 1016–1027). Builds the shared foundation.
-  - **ASCI (ASC for CIP)** — Coaching Intensive Plan bundles (plans 1028–1032). Reuses ASCA's foundation.
+  - **ASCI (ASC for CIP)** — Coaching Intensive Plan bundles (plans 1028–1032). Reuses ASCA's foundation. **⚠️ No longer config-only** since R-16 (2026-09-08): CIP 1029–1032 are 3-way (Lesson : Coaching : App), so ASCI needs 3-way split logic (only 1028 is 2-way).
 - **Approach:** **Scenario D (injection) + Option 1 (Overwrite).** Allocation is injected into the existing batch — it does NOT run as a separate command and does NOT send its own journals.
 - **Injection point:** `CommonUtil::createDailyRateCalculation()` — between writing N to the log table and building the sum. Also `DataCorrectionLogic::createDailyRateCalculation()` for the correction path.
 - **What it does:** After the existing code writes N (coaching = full amount, app = ¥0) to `log_daily_rate_calculation`, the allocation service overwrites those rows with P values (coaching reduced, app allocated). Everything downstream (sum, Freee, CSVs, balance) inherits P automatically.
-- **Formula:** `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`
+- **Formula (2-way — CAP + CIP 1028):** `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`
   - `N` = Σ(paid_price) across the bundle (coaching + app) — makes allocation idempotent
   - `L_app` = ¥3,980; `L_coaching` = ¥19,800 (CAP 15min) / ¥39,600 (CAP 30min) / CIP pending (O-5 reopened — plan repriced ¥88,000→¥75,900)
+  - **⚠️ These L values are tax-INCLUSIVE; REF-CAP-09 (2026-09-08) specifies tax-EXCLUSIVE weights (App 3,618, Coaching 66,500, Lesson 13,500) — needs human reconciliation.**
+- **Formula (3-way — CIP 1029–1032, per R-16 2026-09-08):** N is split across **Lesson : Coaching : App** by weight (tax-excl **13,500 : 66,500 : 3,618**), remainder absorbed so ΣP = N. Lesson is part of the split for these plans.
 - **Bundle grouping:** `student_id + order_no + plan_id` — handles cancel+repurchase and simultaneous plans. ⚠️ `order_no` alone is too loose (nullable/non-unique; G1 2026-09-04) — `plan_id` is required in the key; final key pending CAP-team confirmation (O-8)
-- **Detection:** plan_id enums (`CoachingAndAppPlanEnum` for CAP, `CoachingIntensivePlanEnum` for CIP) + App product_id 10022 (changed from 10021 on 2026-08-19). CIP coaching product_id is 10025 (changed from 10022). Both CAP and CIP split **2-way** (Coaching + App).
+- **Detection:** plan_id enums (`CoachingAndAppPlanEnum` for CAP, `CoachingIntensivePlanEnum` for CIP) + App product_id 10022 (changed from 10021 on 2026-08-19). CIP coaching product_id is 10025 (changed from 10022). **Split arity (O-8 superseded by R-16, 2026-09-08):** CAP (all plans) and CIP 1028 split **2-way** (Coaching + App); **CIP 1029–1032 split 3-way** (Lesson : Coaching : App, tax-excl weights 13,500 : 66,500 : 3,618). This makes **ASCI no longer config-only** — it needs 3-way split logic.
 - **Failure isolation:** allocation is wrapped in try/catch. If it fails, the log table keeps N (today's behavior) — no revenue lost, batch continues.
 - **Audit:** new `log_alloc_*` tables (batch-generated) + `mst_alloc_reference_prices` (master data) record the run lifecycle, source snapshots, and per-product allocation detail.
 - **New output:** one AllocationDetail CSV added to the existing zip (not a separate email).

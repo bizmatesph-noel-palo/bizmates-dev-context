@@ -49,9 +49,9 @@ This doc uses **`bundle_type` TINYINT** throughout and notes the original (`proj
 | 1 | `log_alloc_calculation_runs` | `log_` | Run lifecycle — one row per batch execution (preview/final) |
 | 2 | `log_alloc_source_documents` | `log_` | Immutable snapshot of original N values before overwrite |
 | 3 | `log_alloc_bundles` | `log_` | Bundle header — one detected Coaching+App pair per run |
-| 4 | `log_alloc_bundle_charges` | `log_` | Products within a bundle (always 2 today: coaching + app) |
+| 4 | `log_alloc_bundle_charges` | `log_` | Products within a bundle in the split (2 for CAP + CIP 1028; **3 for CIP 1029–1032 — Lesson + coaching + app, per R-16**) |
 | 5 | `log_alloc_groups` | `log_` | One bundle × one month (ΣN, ΣP, is_balanced) |
-| 6 | `log_alloc_prorations` | `log_` | **Core result** — one row per product per group (L, ratio, N, P) |
+| 6 | `log_alloc_prorations` | `log_` | **Core result** — one row per product per group (L, ratio, N, P). 2 rows (CAP + CIP 1028) or **3 rows (CIP 1029–1032: Lesson + coaching + app, per R-16)** |
 | 7 | `mst_alloc_reference_prices` | `mst_` | Allocation weights (L), effective-dated master data |
 | 8 | `log_alloc_sum_calculation` | `log_` | Freee-level aggregation |
 | 9 | `log_alloc_sum_calculation_history` | `log_` | Trace: summary row → proration rows |
@@ -122,7 +122,7 @@ Bundle header — one row per detected Coaching+App pair per run.
 
 ## 4. `log_alloc_bundle_charges`
 
-One row per product inside a bundle (always 2 today: coaching + app). Links individual charges to their bundle.
+One row per product inside a bundle's split (2 for CAP + CIP 1028: coaching + app; **3 for CIP 1029–1032: Lesson + coaching + app, per R-16 2026-09-08**). Links individual charges to their bundle.
 
 | Column | Type | Null | Description |
 |---|---|---|---|
@@ -130,7 +130,7 @@ One row per product inside a bundle (always 2 today: coaching + app). Links indi
 | `bundle_id` | BIGINT UNSIGNED | NO | FK → `log_alloc_bundles.id` |
 | `charge_id` | BIGINT UNSIGNED | NO | FK to `trn_charge.id` (logical) |
 | `product_id` | INT | NO | Coaching (10005/10015/10025) or App (10022) |
-| `product_role` | TINYINT | NO | 0=coaching, 1=app — which side of the split |
+| `product_role` | TINYINT | NO | 0=coaching, 1=app — which side of the split. **⚠️ R-16 (2026-09-08): CIP 1029–1032 are 3-way, so a Lesson role is also needed for those plans (e.g. 2=lesson) — not yet modeled here.** |
 | `log_daily_rate_calculation_id` | BIGINT UNSIGNED | YES | The log row this charge maps to (the one overwritten) |
 | `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
 
@@ -179,7 +179,9 @@ One row per product per group. Stores the reference price (L), the ratio, the or
 | `paid_at` | DATE | YES | Snapshot of `trn_charge.paid_at` (date part) |
 | `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
 
-**Formula:** `allocated_amount` (P) computed as `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`.
+**Formula (2-way — CAP + CIP 1028):** `allocated_amount` (P) computed as `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`.
+
+**⚠️ 3-way (CIP 1029–1032, per R-16 2026-09-08):** the split is Lesson : Coaching : App (tax-excl weights 13,500 : 66,500 : 3,618), so P is allocated across three products by weight (remainder absorbed to keep ΣP = N). The 2-way formula above is stale for these plans. See technical design §9.
 
 ---
 
@@ -206,6 +208,10 @@ Effective-dated allocation weights (L). Configurable without code changes.
 | 1 (cap) | 10015 (Coaching 30min) | 39600 | |
 | 2 (cip) | 10022 (App) | 3980 | |
 | 2 (cip) | 10025 (Coaching Intensive) | 🔴 PENDING (O-5) | was 84020; plan repriced ¥88,000→¥75,900 |
+
+> **⚠️ Weights are TAX-INCLUSIVE above — reconcile against REF-CAP-09 (2026-09-08), which specifies TAX-EXCLUSIVE weights.** REF-CAP-09 gives tax-exclusive weights for CIP of **Lesson 13,500 : Coaching 66,500 : App 3,618** (App 3,618 not ¥3,980; Coaching 66,500). The tax-inclusive figures above (¥3,980 App, ¥19,800 / ¥39,600 CAP coaching) predate this and **need human reconciliation** — do not silently overwrite. See O-5 update in the master timeline.
+>
+> **⚠️ O-8 superseded by R-16 (2026-09-08):** CIP 1029–1032 are **3-way (Lesson : Coaching : App)**, only 1028 is 2-way. The seed set above has no **Lesson** weight row for CIP — the 3-way plans need one (tax-excl 13,500) once weights are reconciled. ASCI is no longer config-only.
 
 **Invariant V-4:** all applied reference-price rows must be effective for the target date, or the run cannot finalize.
 
@@ -300,9 +306,9 @@ WHERE r.run_type = 1        -- Final
 log_alloc_calculation_runs (1)
 ├──< log_alloc_source_documents      (snapshot per charge)
 ├──< log_alloc_bundles (1)
-│     ├──< log_alloc_bundle_charges  (2 per bundle: coaching + app)
+│     ├──< log_alloc_bundle_charges  (2: coaching + app; 3 for CIP 1029–1032: +lesson, per R-16)
 │     └──< log_alloc_groups (1)
-│           └──< log_alloc_prorations (2 per group: coaching + app)
+│           └──< log_alloc_prorations (2 per group; 3 for CIP 1029–1032: lesson+coaching+app, per R-16)
 ├──< log_alloc_sum_calculation (1)
 │     └──< log_alloc_sum_calculation_history >── log_alloc_prorations
 └──< log_alloc_deliveries
@@ -317,7 +323,9 @@ v_alloc_prorations_active   (view over prorations + runs)
 
 | Item | Impact | Status |
 |---|---|---|
-| O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting |
+| R-16 (supersedes O-8) | CIP 1029–1032 are **3-way** (Lesson : Coaching : App), only 1028 is 2-way. Adds a Lesson `product_role` and a Lesson reference-price seed row (tax-excl 13,500); prorations/bundle_charges hold 3 rows for these plans. ASCI no longer config-only. | ⚠️ New (REF-CAP-09, 2026-09-08) — schema needs 3-way support |
+| Tax-incl vs tax-excl weights | REF-CAP-09 weights are **tax-exclusive** (App 3,618, Coaching 66,500, Lesson 13,500); seed table + design use tax-inclusive (¥3,980 / ¥19,800 / ¥39,600). | ⚠️ Needs human reconciliation — do not silently overwrite |
+| O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting (REF-CAP-09 gives tax-excl L_coaching = 66,500 — reconcile) |
 | O-7 | product_ids in seeds + `product_id` columns (App 10022, CIP coaching 10025) | ✅ Confirmed |
 | O-9: `bundle_type` rename + retype | Column across 6 tables: `project_code` VARCHAR → `bundle_type` TINYINT (1=CAP, 2=CIP) | ✅ Confirmed by Kuroda-san 2026-09-02 |
 

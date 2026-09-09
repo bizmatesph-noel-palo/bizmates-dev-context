@@ -14,7 +14,7 @@ inclusion: auto
 | ASCM | ASC — Monthly plans | Added monthly rate calculation (recursive CTE). Deployed June 2026. |
 | ASCH | ASC — Honki Set | **Cancelled 2026-08-07.** Would have prorated Honki Set bundles 3 ways. Research/engineering standards reused; its allocation formula is NOT used. |
 | **ASCA** | **ASC for CAP** | **Our project.** Allocates CAP coaching-charge revenue between Coaching and App. Builds the shared allocation framework. Bizmates-only. Deadline 2026/12/17, first prod run 2027/01/01. |
-| **ASCI** | **ASC for CIP** | **Our project.** Allocates CIP coaching-charge revenue. Reuses ASCA's foundation (config/enum addition, no engine change). |
+| **ASCI** | **ASC for CIP** | **Our project.** Allocates CIP coaching-charge revenue. Reuses ASCA's foundation. **⚠️ No longer config-only** — R-16 (2026-09-08) makes CIP 1029–1032 3-way, so ASCI needs 3-way split logic (engine change), not just a config/enum addition. Only 1028 is 2-way. |
 | CAP | Coaching and App Plan | **Upstream project** (MBTI_backend, Keith's team). Creates new bundled plans **1016–1027** (Coaching + App). |
 | CIP | Coaching Intensive Plan | **Upstream project** (MBTI_backend, Jefferson's team). Creates Coaching Intensive product **10025** with plans **1028–1032**. |
 
@@ -41,11 +41,15 @@ The ASCA formula is **single-stage** — split N between Coaching and App by ref
 | Term | Meaning |
 |---|---|
 | N | Bundle group total = Σ(paid_price) across the bundle (coaching row + app row) for a target_ym. Using the group total (not the coaching row alone) makes allocation **idempotent** — N is invariant across re-runs. |
-| L_app | App reference price (allocation weight) = ¥3,980 tax-incl. From `mst_alloc_reference_prices`. |
-| L_coaching | Coaching reference price = ¥19,800 (15min) / ¥39,600 (30min) / CIP Intensive 🔴 pending (O-5, plan repriced ¥88,000→¥75,900). |
+| L_app | App reference price (allocation weight) = ¥3,980 tax-incl. From `mst_alloc_reference_prices`. **⚠️ REF-CAP-09 (2026-09-08) gives tax-EXCLUSIVE App weight = 3,618 — reconcile.** |
+| L_coaching | Coaching reference price = ¥19,800 (15min) / ¥39,600 (30min) tax-incl / CIP Intensive 🔴 pending (O-5, plan repriced ¥88,000→¥75,900). **⚠️ REF-CAP-09 gives tax-EXCLUSIVE CIP Coaching weight = 66,500 — reconcile.** |
 | P_app | Allocated App amount = `floor(N × L_app / (L_coaching + L_app))`. Overwrites the App log row (was ¥0). |
 | P_coaching | Allocated Coaching amount = `N − P_app`. Overwrites the Coaching log row. Absorbs the rounding remainder so `P_coaching + P_app = N` always holds. |
-| Bundle | One detected Coaching + App pair for a contract. Both CAP and CIP split **2-way**. |
+| Bundle | A detected group of products for one contract that share the allocation split. **Split arity (O-8 superseded by R-16, 2026-09-08):** CAP (all plans) and CIP 1028 = **2-way** (Coaching + App); **CIP 1029–1032 = 3-way** (Lesson : Coaching : App). |
+| 2-way split | Coaching + App only. Applies to all CAP plans and CIP 1028 (Solo). |
+| 3-way split | Lesson : Coaching : App — CIP 1029–1032 only, per R-16 (REF-CAP-09, 2026-09-08). Tax-exclusive weights **13,500 : 66,500 : 3,618**. Makes ASCI no longer config-only. |
+| L_lesson | Lesson reference price (allocation weight) for the CIP 3-way split = **13,500 tax-excl** (R-16). Only used for CIP 1029–1032. |
+| R-16 | Kuroda-san decision (REF-CAP-09, 2026-09-08) reversing O-8: CIP 1029–1032 allocate **3-way** (Lesson : Coaching : App); only 1028 stays 2-way. |
 | Bundle grouping key | `student_id + order_no + plan_id` — isolates each contract. ⚠️ `order_no` alone is too loose (nullable for B2C, non-unique, and the existing system aggregates across products sharing one order_no — G1 investigation 2026-09-04); `plan_id` is required in the key and ambiguous groups (>1 coaching candidate) are skipped. Final key **pending CAP-team confirmation (O-8)**. |
 | Detection anchor | App `product_id` **10022** (changed from 10021 on 2026-08-19) + plan_id enums. |
 | Idempotency | Re-running produces the same result because N = ΣN is invariant and `snapshotSourceData()` skips already-snapshotted (charge_id, target_ym). |

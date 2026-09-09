@@ -14,6 +14,8 @@
 | **Supersedes** | REF-CIP-03 (product_id 10022, price ¥88,000) |
 | **Open items raised** | O-5 (L_coaching reopened — pending Kuroda-san/Accounting), O-7 (product_id change — ✅ confirmed FINAL), O-8 (split arity — ✅ resolved 2026-08-28: **2-way**, Coaching + App only) |
 
+> **⚠️ SUPERSEDED BY R-16 (REF-CAP-09, 2026-09-08):** O-8's "2-way" resolution recorded in this document was later **reversed**. CIP plans **1029–1032 are now 3-way** (Lesson : Coaching : App, tax-exclusive weights **13,500 : 66,500 : 3,618**); only **1028** stays 2-way. ASCI is no longer config-only. This note is added for traceability — the original 2026-08-24/28 content below is preserved as historical record. See `research/CAP/REF-CAP-09-Refund-Allocation-Requirements-20260908.md` and `docs/asc-projects-master-timeline.md`.
+
 ---
 
 ## ⚠️ Two changes that affect ASCI implementation
@@ -82,6 +84,8 @@ The detection query in the technical design (§9) uses:
 ```
 Change `10022` → `10025` (CIP coaching) and `10021` → `10022` (App). **✅ Split arity resolved (2026-08-28, Kuroda-san): 2-way (Coaching + App only)** for ALL CIP plans including 1029–1032. Online Lesson is handled separately by the existing daily-rate logic and does NOT enter the allocation — same as CAP. So detection whereIn = `[10005, 10015, 10025, 10022]` and the split stays 2-way.
 
+> **⚠️ SUPERSEDED BY R-16 (REF-CAP-09, 2026-09-08):** the "2-way for ALL CIP plans" statement above is **reversed**. CIP **1029–1032 are 3-way** (Lesson : Coaching : App, tax-excl 13,500 : 66,500 : 3,618) — Online Lesson **does** enter the allocation for these plans. Only **1028** stays 2-way. Detection whereIn still includes `[10005, 10015, 10025, 10022]` but must additionally pick the Lesson row (product_id 1–4) for CIP 1029–1032. ASCI is no longer config-only.
+
 ---
 
 ## Open Questions for Kuroda-san / Jefferson-san
@@ -90,6 +94,7 @@ Change `10022` → `10025` (CIP coaching) and `10021` → `10022` (App). **✅ S
 2. **App price in CIP:** Still ¥3,980 tax-incl, same as CAP? The formula lumps "Coaching Intensive & App" — need the App portion isolated.
 3. ~~**3-way split for 1029–1032:**~~ ✅ **RESOLVED (2026-08-28, Kuroda-san): 2-way (Coaching + App only).** Online Lesson handled separately by existing daily-rate logic — does not enter the allocation. Same as CAP.
    - **Source:** [Kuroda-san Slack confirmation (2026-08-28)](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) — *"This's 2 products, Coaching and App only."*
+   - **⚠️ SUPERSEDED BY R-16 (REF-CAP-09, 2026-09-08):** this "2-way" resolution was **reversed**. CIP **1029–1032 are 3-way** (Lesson : Coaching : App, tax-excl weights 13,500 : 66,500 : 3,618); only **1028** stays 2-way. ASCI is no longer config-only. See `research/CAP/REF-CAP-09-Refund-Allocation-Requirements-20260908.md`.
 4. **Half Price columns:** What triggers half price? Is it a first-period discount (like Honki Set month-6), and does it affect the allocation basis?
 5. **product_id 10025 confirmation:** Confirm the whereIn detection update and any Freee mapping (mst_code_change / mst_rule_for_journals) for the new product_id.
 

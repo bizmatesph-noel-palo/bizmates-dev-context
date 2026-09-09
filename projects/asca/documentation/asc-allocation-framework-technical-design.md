@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) · **2026-09-08 (R-16 reverses O-8: CIP 1029–1032 are 3-way (Lesson : Coaching : App), only 1028 is 2-way; ASCI is no longer config-only. Per REF-CAP-09. §7/§9/§15 updated.)** |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -289,7 +289,9 @@ Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change wi
 | 1031 | 3L + FVP + Coaching Intensive | 10025 |
 | 1032 | 4L + FVP + Coaching Intensive | 10025 |
 
-> **product_id 10025** (was 10022) per 2026-08-19 change. Plans 1029–1032 also bundle Online Lesson (1L–4L) + FVP — see O-8 (2-way vs 3-way split) in §15.
+> **product_id 10025** (was 10022) per 2026-08-19 change. Plans 1029–1032 also bundle Online Lesson (1L–4L) + FVP.
+>
+> **⚠️ O-8 superseded by R-16 (2026-09-08, REF-CAP-09):** CIP 1029–1032 are **3-way (Lesson : Coaching : App)** with tax-exclusive weights **13,500 : 66,500 : 3,618** — NOT 2-way. Only **1028 (Solo)** stays 2-way (Coaching + App). This means ASCI is **no longer config-only** — it needs 3-way split logic. See O-8 row in §15.
 
 **Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are brand new, same as CAP).
 
@@ -572,7 +574,7 @@ private function detectBundles(string $table, string $targetYm): Collection
         ->get()
         // Group by student_id + order_no + plan_id (G1 2026-09-04 — order_no alone
         // is nullable/non-unique and shared across products; plan_id disambiguates).
-        // Skip ambiguous groups (>1 coaching candidate). Final key pending O-8.
+        // Skip ambiguous groups (>1 coaching candidate). Final key pending CAP-team confirmation.
         ->groupBy(fn ($row) => $row->student_id . '|' . ($row->order_no ?? 'null') . '|' . $row->plan_id);
         // Handles: cancel+repurchase, CAP+CIP simultaneous, multiple billing cycles
 }
@@ -590,7 +592,7 @@ A student can have multiple active contracts in the same month:
 > - The existing system already aggregates **across** products/charges sharing one `order_no` (`getTrnChargeForOrderNo()` SUMs by order_no; `getPaidPriceSumList()` groups by order_no + product_type). So "two different plans under one order_no" is plausible and would mis-pair.
 > - `plan_id` is **dropped before `log_daily_rate_calculation`**, so detection must join back to `trn_charge` for it (already required by the query above).
 >
-> **Rule:** key on `student_id + order_no + plan_id`, and **skip ambiguous groups** (more than one coaching candidate). The final key is **pending the CAP-team answer (O-8)** on whether one `order_no` can hold multiple plans and how to key B2C (NULL order_no). See `technical-notes/investigation/20260904-g1-open-questions-code-investigation.md`.
+> **Rule:** key on `student_id + order_no + plan_id`, and **skip ambiguous groups** (more than one coaching candidate). The final key is **pending the CAP-team answer** on whether one `order_no` can hold multiple plans and how to key B2C (NULL order_no). See `technical-notes/investigation/20260904-g1-open-questions-code-investigation.md`.
 
 Validation V-1 (ΣP = ΣN) still holds at the bundle level regardless of the exact key.
 
@@ -604,7 +606,13 @@ Validation V-1 (ΣP = ΣN) still holds at the bundle level regardless of the exa
 
 ### Compute Allocations — Uses ΣN (Group Total)
 
-> ⚠️ **Bundle is 2–4 products, not always 2** (confirmed from CAP/CIP `mst_plan_content`, 2026-09-08). CAP 1016/1017 and CIP 1028 are 2-product (Coaching + App); CAP 1018–1027 and CIP 1029–1032 also include Online Lesson (product_id 1–4) + FVP (10011). The split is **2-way only** (Coaching + App per O-8) — Lesson and FVP are handled by the existing daily-rate logic and are **excluded** from the allocation. So extraction must **explicitly pick the Coaching and App rows by product_id**, never "the non-App row" (that could grab the Lesson row), and N sums **only** the Coaching + App pair.
+> ⚠️ **Bundle is 2–4 products, not always 2** (confirmed from CAP/CIP `mst_plan_content`, 2026-09-08). CAP 1016/1017 and CIP 1028 are 2-product (Coaching + App); CAP 1018–1027 and CIP 1029–1032 also include Online Lesson (product_id 1–4) + FVP (10011). Detection must **explicitly pick the relevant rows by product_id**, never "the non-App row" (that could grab the wrong row).
+>
+> **Split arity (O-8 superseded by R-16, 2026-09-08, REF-CAP-09):**
+> - **CAP (all plans) and CIP 1028 (Solo):** **2-way** (Coaching + App). Lesson and FVP are handled by the existing daily-rate logic and are excluded from the allocation; N sums only the Coaching + App pair.
+> - **CIP 1029–1032:** **3-way (Lesson : Coaching : App)** with tax-exclusive weights **13,500 : 66,500 : 3,618**. Lesson IS part of the split for these plans. N sums the Lesson + Coaching + App rows.
+>
+> The code below still reflects the OLD 2-way-only model and is **stale for CIP 1029–1032** — it must be extended to 3-way for those plans (ASCI engine work; no longer config-only). Kept here pending the ASCI re-baseline.
 
 ```php
 private const COACHING_PRODUCT_IDS = [10005, 10015, 10025]; // CAP 15/30min + CIP intensive
@@ -1164,7 +1172,7 @@ ls-database-migrations/
 | 8 | Tenant scope | Bizmates only | Both tenants | Coaching/App don't exist on Zipan. ZipanUtil untouched. |
 | 9 | Pre/Final | Single service with preFlg parameter | Separate classes | Avoids duplication (KB #14 lesson). |
 | 10 | CAP first | CAP builds foundation, CIP reuses | CIP first | CAP requirements more concrete. Same total effort either way. |
-| 11 | Bundle grouping key | student_id + order_no + plan_id | student_id + order_no; or student_id alone | order_no alone is nullable/non-unique and shared across products (G1 2026-09-04) — plan_id disambiguates, skip ambiguous groups. Final key pending O-8. (Kuroda-san 2026-08-17; revised per G1 2026-09-04) |
+| 11 | Bundle grouping key | student_id + order_no + plan_id | student_id + order_no; or student_id alone | order_no alone is nullable/non-unique and shared across products (G1 2026-09-04) — plan_id disambiguates, skip ambiguous groups. Final key pending CAP-team confirmation (multi-plan order_no / B2C keying). (Kuroda-san 2026-08-17; revised per G1 2026-09-04) |
 | 12 | CIP L_coaching | ¥84,020 (plan − L_app) | ¥88,000 (plan price directly) | CIP has no standalone coaching price. Coaching = residual. ΣL = plan price. Full month → App gets exactly ¥3,980. (Kuroda-san + Accounting, 2026-08-17) |
 
 ---
@@ -1182,7 +1190,7 @@ ls-database-migrations/
 | O-3 | Table prefix | Engineering team | ✅ **Resolved (2026-08-17)** — `log_alloc_*` for batch-generated, `mst_alloc_*` for reference prices. Approved by Kuroda-san. | — |
 | O-5 | CIP coaching reference price | Business + Accounting | 🔴 **REOPENED (2026-08-28)** — was ¥84,020 (from plan ¥88,000). Plan is now ¥75,900 (REF-CIP-04). New L_coaching likely ¥71,920 (= 75,900 − 3,980) but UNCONFIRMED. Awaiting Kuroda-san/Accounting. | ASCI reference price seeder |
 | O-7 | Product ID changes (2026-08-19) | Business (Go-san, done) | ✅ **Confirmed FINAL** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Detection whereIn + reference-price product_id + Freee mapping must use new ids. | Detection + seeder + Freee mapping |
-| O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ✅ **Resolved (2026-08-28)** — **2-way (Coaching + App only)**, even for plans 1029–1032. Online Lesson handled separately by existing daily-rate logic. Same split as CAP → ASCI stays a config addition. [Kuroda-san Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | — |
+| O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ⚠️ **O-8 superseded by R-16 (2026-09-08):** CIP 1029–1032 are 3-way; only 1028 is 2-way. Tax-exclusive weights Lesson : Coaching : App = **13,500 : 66,500 : 3,618** (REF-CAP-09). **ASCI is no longer config-only** — it needs 3-way split logic. ~~Resolved (2026-08-28) — 2-way (Coaching + App only), even for 1029–1032; ASCI stays a config addition.~~ (superseded — kept for history) [Kuroda-san Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | ASCI scope + engine |
 | O-9 | `project_code` → `bundle_type` rename + retype | Kuroda-san (DB design owner) | ✅ **Confirmed (2026-09-02)** — (a) renamed the CAP/CIP discriminator column (6 tables) to reflect data category not project ownership (same reasoning as the table-prefix ADR); (b) retyped VARCHAR → TINYINT for enum-column consistency (`BundleType`: 1=CAP, 2=CIP, `label()`→'cap'/'cip'). | Migrations (Spec 01a) |
 | ~~P-3~~ | ~~CAP new coaching product_id~~ | — | ✅ Superseded by O-7 — the actual change was the App id (10021→10022), not the CAP coaching id. CAP coaching stays 10005/10015. | — |
 | O-6 | Allocation detail CSV needed? | Accounting (Nemoto-san) | ✅ **Resolved (2026-08-17):** Existing CSVs show allocated amounts (confirmed OK). Accounting needs a breakdown of how allocation was calculated. Deliverables: AllocationDetail CSV in zip (~30 lines code) + Metabase saved query (post-deployment). | — |
