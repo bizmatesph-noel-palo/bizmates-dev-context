@@ -132,7 +132,8 @@ DB::table($table)->where('id', $appRow->id)->update(['paid_price' => $pApp]);
 
 ## Enums & DTOs
 
-- **Enums:** int-backed, per `coding-standards.md`. `BundleType` (1=CAP/2=CIP, `label()` for display), `RunType`, `RunStatus`; plan-detection enums use `HasEnumHelperTrait`. Prefer enum-selected behavior over abstract base classes (composition over inheritance) — but only introduce a strategy/interface when a second implementation actually exists (KISS). ASCA has one allocation path, so no strategy pattern.
+- **Enums:** int-backed, per `coding-standards.md`. `BundleType` (1=CAP/2=CIP, `label()` for display), `RunType`, `RunStatus`; plan-detection enums use `HasEnumHelperTrait`.
+- **Allocation formula = strategy interface (R-16):** split arity is pluggable via `AllocationFormulaInterface` — `TwoWayAllocationFormula` (Coaching + App) in Foundation, `ThreeWayAllocationFormula` (Lesson : Coaching : App, CIP 1029–1032) in ASCI. The engine selects a formula by the detected plan family and delegates; a plan with no registered formula is skipped (V-3), never run through the wrong formula. This is the one place the strategy pattern is warranted — R-16 created a genuine second implementation (earlier "one allocation path, no strategy" guidance is superseded).
 - **DTOs:** use a small readonly DTO (e.g. an `AllocationResult` carrying `coachingLogId`, `appLogId`, `pCoaching`, `pApp`, `originalN`) when data crosses method boundaries; a plain array is fine for a single `create()`.
 
 ## What NOT to Use
@@ -141,6 +142,6 @@ DB::table($table)->where('id', $appRow->id)->update(['paid_price' => $pApp]);
 |---|---|
 | New artisan command / Logic class | Allocation injects into existing commands — it is not a standalone batch. |
 | Repository | Eloquent on the alloc tables + query-builder for detection is enough. No ORM abstraction layer. |
-| Proration-method / journal-entry strategy | No O→P proration and no self-sent journals in ASCA. Single-stage overwrite; App rides the existing Freee path. |
+| Journal-entry strategy / self-sent journals | No self-sent journals in ASCA — App rides the existing Freee path. (Note: an allocation-**formula** strategy interface IS used for split arity — see the Enums/formula bullet above — but there is no journal-sending strategy.) |
 | Action / Observer / Decorator | Batch service, single path — no HTTP actions, no events, no behavioral wrapping. |
 | Abstract base classes | Prefer injected collaborators + enums. Only add an interface when a second implementation appears (CIP reuses the same engine via config, not a subclass). |
