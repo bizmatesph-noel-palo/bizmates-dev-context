@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) · **2026-09-08 (R-16 reverses O-8: CIP 1029–1032 are 3-way (Lesson : Coaching : App), only 1028 is 2-way; ASCI is no longer config-only. Per REF-CAP-09. §7/§9/§15 updated.)** |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) · **2026-09-08 (R-16 reverses O-8: CIP 1029–1032 are 3-way (Lesson : Coaching : App), only 1028 is 2-way; ASCI is no longer config-only. Per REF-CAP-09. §7/§9/§15 updated.)** · 2026-09-09 (added §1a — G1 round-2 decisions: formula interface, CAP-only Foundation, V-5 anchor row, resolution date, NULL-order_no key, product_type guard, true floor, non-zero-App guard; per REF-CAP-10) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -23,6 +23,23 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 - Onboarding a team member (full context in one place)
 - Reviewing a PR (verify the implementation matches the design)
 - Debugging in production (trace data flow from source to Freee)
+
+---
+
+## 1a. G1 Round-2 Decisions (2026-09-09) — supersede earlier sections
+
+> Kuroda-san's Spec 01 review round 2 (`research/CAP/REF-CAP-10-...`) resolved several design points. **Where an older section below conflicts, these win.** Each is detailed in the Spec 01 requirements (`accounting_related_system_for_freee/.kiro/specs/asca-spec-01-foundation` and `ls-database-migrations/.kiro/specs/asca-spec-01-database-migration`).
+
+| # | Decision | Effect on this design |
+|---|---|---|
+| **Formula interface** | Split arity is a pluggable `AllocationFormulaInterface`. Foundation implements **2-way only** (`TwoWayAllocationFormula`: Coaching + App). **3-way** (`ThreeWayAllocationFormula`: Lesson : Coaching : App, R-16) is implemented in **ASCI**. A plan with no registered formula is skipped (never mis-split). | Supersedes any "single allocation path / no strategy" wording (§9, §14). The `computeAllocations()` sample below is the 2-way formula behind the interface. |
+| **Foundation = CAP only** | Foundation detection is **CAP plans (1016–1027) only**. All CIP (1028 + 1029–1032) → **ASCI**. Any CIP plan seen in a Foundation run is skipped with a warning (V-3), never fails the run. | Supersedes "covering CAP + CIP 1028" phrasing. Detection `whereIn product_id` = {10005, 10015, 10022} for Foundation (no 10025). |
+| **V-5 anchor row (empty-set race)** | "One active Final per month" is enforced via an always-present **`log_alloc_run_anchors`** row per (`bundle_type`, `target_ym`), `SELECT … FOR UPDATE`-locked before switching the active pointer — so the guarantee holds even with no prior active Final. | Adds an 11th table. Supersedes the "lock the prior active run" mechanism in §9 (that failed the empty case). |
+| **Reference-price resolution date** | Resolution date = **last calendar day of `target_ym`** (single deterministic definition). Ref-price table gets UNIQUE (`bundle_type`,`product_id`,`effective_from`), an app-level overlap check, and initial `effective_from = 2027-01-01`. | Pins the previously-undefined "target date". |
+| **Bundle key when order_no is NULL** | `order_no` is NULL for B2C **and** B2E (≈ all CAP bundles). Key = (`student_id`, `order_no`, `plan_id`) with a **charge/contract-level fallback** when order_no is NULL. Cardinality: exactly 1 Coaching + 1 App per bundle. | Supersedes the plain (`student_id`, `order_no`) grouping in §9. |
+| **product_type exact-match guard (O-10)** | The run validates each `product_type` against the **exact expected value** per product_id (not a candidate set) and fails loudly on mismatch. Values locked by Kuroda-san (10022/10025). | New correctness guard before Freee grouping. |
+| **True floor** | `floor()` is a true mathematical floor toward −∞ (`floor(-3.2) = -4`); never `intval()`/cast. Refund (negative N) is Spec 02, but the floor semantics are fixed now. | Applies to the formula sample below. |
+| **Non-zero App guard** | If an App row has non-zero `paid_price`, mark the bundle incomplete (V-3) and skip — do not fold into N. | New guard. |
 
 ---
 
