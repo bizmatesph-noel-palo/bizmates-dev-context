@@ -93,8 +93,12 @@ Epic: DEVOPS-6415 — ASCM Prep (refactor — did NOT run the spec workflow)
 
 # ASCA Project
 Epic: ASCA-9 — Project Scaffolding (one-time — NOT a spec; excluded from the Spec story template)
-└── Story: ASCA-10 — Steering files (ASCA — adapted from ASCH)   → Lead (Noel)
-    (Branch setup was originally planned as a second story but was dropped — this epic carries a single story.)
+├── Story: ASCA-10 — Steering files (ASCA — adapted from ASCH)   → Lead (Noel)
+├── Task:  ASCA-11 — Repository update for Dev04                 → Dev (Throy)
+├── Task:  ASCA-12 — Database update for Dev04                   → Dev (Throy) [Done]
+├── Task:  ASCA-21 — DEV04 — Reconfigure for Freee API Access    → Lead (Noel) [Done]
+└── Task:  ASCA-22 — DEV04 — Investigate Zipan DB connection     → Dev (Throy) [Done — fixed + validated 2026-09-11; unblocked ZPR DEV04 run + ASCA Foundation testing]
+    (Beyond steering, this epic also holds the DEV04 environment setup/fix tasks. Shared DEV04 env: ASCA-21/22 both resolved — ZPR (DEVOPS-6596) and ASCA Foundation testing unblocked.)
 
 Epic: ASCA-13 — [Spec 01] — Foundation (8 stories — Coding spans 2 repos)
 ├── Story: ASCA-14 — [Spec 01] — Requirements + Sign-off             → PM (Kuroda-san)
@@ -125,7 +129,7 @@ Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREA
 
 > **Scope note (R-16):** ASCI CIP Integration is no longer config-only — CIP lesson plans 1029–1032 are 3-way (Lesson/Coaching/App). Its story set stands, but the Coding story is larger than the earlier "config addition" estimate.
 
-**Note on Scaffolding:** This epic (ASCA-9) intentionally carries a single story (ASCA-10, steering files) and does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). Steering-file setup is project setup, not spec dev work. The originally-planned "Branch setup" story was dropped. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a slim non-spec epic is expected and does not distort measurement.
+**Note on Scaffolding:** This epic (ASCA-9) is project setup, not spec dev work — it does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). It holds the steering story (ASCA-10) plus the DEV04 environment setup/fix tasks (ASCA-11/12/21/22). The originally-planned "Branch setup" story was dropped. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a non-spec epic is expected and does not distort measurement.
 
 **Note on ASCM Prep (DEVOPS-6415):** The refactor (ArchiverService/MailerService extraction + DataCorrectionLogic drift fix) is billed under [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415), not ASCA. It was **originally scoped with the same story set as Spec 01 — Foundation**, but in practice it did **not** run the spec-driven workflow — all work was committed directly under the epic without the per-story (Requirements → Architecture → Coding → Review → Testing → QA) breakdown. Recorded here so the KPI/history reflects what actually happened. See its own epic doc.
 

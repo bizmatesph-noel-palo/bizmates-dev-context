@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -32,21 +32,22 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-09-08)
+## ⚠️ Status / Actuals (as of 2026-09-11)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
 ### Where we actually are
 
-| Baseline expectation (by W2, Sep 7) | Actual (2026-09-08) |
+| Baseline expectation (by W2, Sep 7) | Actual (2026-09-11) |
 |---|---|
-| Foundation (Spec 01) coding started | **Not started** — still pre-Foundation |
-| ASCA Spec 01 requirements signed off (G1) | **Not done** — requirements.md not yet written/approved |
-| Steering files done | ✅ Done (promoted to accounting repo) |
+| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2): generating `design.md` next |
+| ASCA Spec 01 requirements signed off (G1) | ✅ **Approved to proceed** — Kuroda-san, REF-CAP-11 (Round 3, 2026-09-10), Round-3 items A (pairing key) + B (V-5 anchor) folded into both requirements.md |
+| ASCA Spec 01 requirements.md (both repos) | ✅ Done — accounting (`asca-spec-01-foundation`) + ls-db (`asca-spec-01-database-migration`), aligned with REF-CAP-11 |
+| Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
 
-**Net:** ~1+ week behind the Foundation-start baseline. Critical-path next action: ASCA Spec 01 `requirements.md` → G1 ([ASCA-14](https://bizmates.atlassian.net/browse/ASCA-14)).
+**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are now cleared. Critical-path next action: ASCA Spec 01 `design.md` → G2 ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)), then `tasks.md`. Design generation started 2026-09-11; tasks.md targeted for Mon 2026-09-14.
 
 **Foundation JIRA (created 2026-09-09):** Epic [ASCA-13] `[Spec 01] — Foundation` with 7 stories — ASCA-14 Requirements+Sign-off (G1), ASCA-15 Architecture (G2), ASCA-16 Coding (ls-db migrations), ASCA-17 Coding (accounting), ASCA-18 Code Review (G3), ASCA-19 QA Testing, ASCA-20 Dev/Manual Testing. Stories prefixed `[Spec 01] —`. Scaffolding epic [ASCA-9] carries ASCA-10 (steering, done) + ASCA-11/12 (DEV04 env).
 
@@ -237,7 +238,7 @@ Runs in parallel with ASCA (different developer, isolated 1-file change) — doe
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
 | 1 | **Steering** | Lead | Create `accounting_related_system_for_freee/.kiro/steering/` files | Codify patterns from technical design: file structure (`RevenueAllocation/` dirs), naming conventions, enum pattern (int-backed + `HasEnumHelperTrait`), log tag `[REVENUE_ALLOCATION]` (ASCM UPPER_SNAKE style), error handling, testing expectations. Scoped to new `RevenueAllocation` code only — existing code untouched. |
-| 2 | **Spec** | Lead | ASCA Spec 01: requirements.md | Formalize Foundation requirements from the technical design doc. Covers: DB schema (10 tables + 1 view), models, enums, allocation service, run lifecycle, reference prices, test data seeder. |
+| 2 | **Spec** | Lead | ASCA Spec 01: requirements.md | Formalize Foundation requirements from the technical design doc. Covers: DB schema (11 tables + 1 view), models, enums, allocation service, run lifecycle, reference prices, test data seeder. |
 | 3 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves scope, allocation formula, reference prices, plan detection before design begins. |
 | 4 | **Spec** | Lead | ASCA Spec 01: design.md | Technical design decisions specific to implementation — class responsibilities, method signatures, injection points, validation invariants, DTO shapes (if needed). References the authoritative technical design doc. Starts after G1 pass (can spill into early W2). |
 | 5 | **Spec** | Lead | ASCA Spec 01: tasks.md | Executable task list derived from design. Each task scoped to a single PR, with clear acceptance criteria. Maps to Gantt steps in Phase 1. |
@@ -269,14 +270,14 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 | Step | What | Owner | Effort | Blocked by |
 |---|---|---|---|---|
-| 1 | 10 migrations + 1 view + structure tests (`log_alloc_*`) | Dev 1 | 1 week | ✅ None |
+| 1 | 11 migrations + 1 view + structure tests (`log_alloc_*`) | Dev 1 | 1 week | ✅ None |
 | 2 | Models / enums / run lifecycle service | Lead | 3–4 days | None |
 | 3 | Reference-price master + price resolution + seeder | Lead | 2–3 days | None |
 | 4 | Detection strategy + bundle generation | Dev 1 | 3–4 days | None |
 | 5 | Allocation engine + ΣN computation + validations V-1 to V-5 | Dev 1 | 4–5 days | None |
 | 6 | Test data seeder (mock CAP/CIP charges for DEV04) | Lead | 1 day | None |
 
-**DB Schema (Step 1 deliverable — 10 tables + 1 view):**
+**DB Schema (Step 1 deliverable — 11 tables + 1 view; the 10 core tables + `log_alloc_run_anchors` V-5 anchor added per G1 1-1 / REF-CAP-11 B):**
 
 | # | Table | Prefix | Role |
 |---|---|---|---|
@@ -290,7 +291,8 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 | 8 | `log_alloc_sum_calculation` | `log_*` | Freee aggregation |
 | 9 | `log_alloc_sum_calculation_history` | `log_*` | Trace: summary → allocation rows |
 | 10 | `log_alloc_deliveries` | `log_*` | Freee/CSV/email attempt tracking |
-| 11 | `v_alloc_prorations_active` | `v_*` | View for active-run queries |
+| 11 | `log_alloc_run_anchors` | `log_*` | Lock-only V-5 anchor (one row per `bundle_type`+`target_ym`; no `active_run_id` — REF-CAP-11 B) |
+| 12 | `v_alloc_prorations_active` | `v_*` | View for active-run queries |
 
 ---
 
@@ -328,10 +330,10 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
-| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product **10025**, L_coaching (🔴 pending O-5 re-confirm). Split confirmed 2-way (O-8). Written during W9. |
-| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection and reference price (pending O-5). Split arity already confirmed 2-way. |
-| 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — CIP enum, reference price seeder row, detection query addition. Minimal design since it reuses ASCA engine. |
-| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm scope is config-only addition. |
+| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product **10025**, L_coaching = tax-excl **66,500** (REF-CAP-09). **Split arity (R-16, reverses O-8):** 1028 is 2-way; **1029–1032 are 3-way** (Lesson : Coaching : App). Written during W9. |
+| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection and reference price (L_coaching = 66,500 tax-excl). Split arity: 1028 2-way, 1029–1032 3-way (R-16). |
+| 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — CIP enum, reference price seeder rows (coaching + lesson), detection query addition, **`ThreeWayAllocationFormula`** registration (Lesson : Coaching : App). Reuses ASCA engine via the formula interface. |
+| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm 3-way formula + detection scope (no longer config-only per R-16). |
 | 5 | **Execute** | Dev 2 | CIP Detection Strategy (`CoachingIntensivePlanEnum`: 1028–1032) + reference price config | ~3–5 days |
 | 6 | **Gate 3** | Lead | Code review — CIP Integration PRs | PR approved before merge. |
 | 7 | **Verify** | Lead | ASCI dev testing on DEV04 | ~1–2 days |
@@ -378,7 +380,7 @@ Dev Team:                 ║═════════════════
 |---|---|---|
 | **ASCA Spec 01** | Foundation | New DB tables (`log_alloc_*`, `mst_alloc_*`), Eloquent models, plan detection enums, allocation engine (formula + idempotency), run lifecycle service, reference price seeder, test data seeder |
 | **ASCA Spec 02** | CAP Integration ⚠️ | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation |
-| **ASCI Spec 01** | CIP Integration | CIP bundle detection (plans 1028–1032, product **10025**), CIP reference prices (L_coaching 🔴 pending O-5). Config-only addition — 2-way split confirmed (O-8), same as CAP. |
+| **ASCI Spec 01** | CIP Integration | CIP bundle detection (plans 1028–1032, product **10025**), CIP reference prices (L_coaching = 66,500 tax-excl, REF-CAP-09). **No longer config-only (R-16):** 1028 is 2-way, 1029–1032 are 3-way (Lesson : Coaching : App) — requires a `ThreeWayAllocationFormula` registered via the engine's formula interface. |
 
 > ⚠️ **Spec sizing note (ASCA Spec 02 and ASCI Spec 01):**
 >
@@ -409,7 +411,7 @@ Dev Team:                 ║═════════════════
 | ══ **GATE 1** ══ | PM | **Requirements sign-off — Foundation scope, formula, reference prices** | | ■ | | | | | | | | | | |
 | **Spec Prep** | Lead | ASCA Spec 01 (Foundation): design.md + tasks.md | | | ■ | | | | | | | | | |
 | ══ **GATE 2** ══ | Lead + Dev | **Design & tasks approval — Foundation architecture + task list** | | | ■ | | | | | | | | | |
-| **Foundation** | Dev 1 | DB migrations (10 tables + 1 view) + structure tests | | | ■ | ■ | | | | | | | | |
+| **Foundation** | Dev 1 | DB migrations (11 tables + 1 view) + structure tests | | | ■ | ■ | | | | | | | | |
 | **Foundation** | Lead | Models / enums / run lifecycle service | | | | ■ | | | | | | | | |
 | **Foundation** | Lead | Reference-price master + price resolution + seeder | | | | | ■ | | | | | | | |
 | **Foundation** | Dev 1 | Allocation engine + ΣN computation + validations | | | | | ■ | ■ | | | | | | |
@@ -729,7 +731,7 @@ ASC is NOT blocked by upstream timelines:
 | Document | What it covers |
 |---|---|
 | `projects/asca/documentation/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
-| `projects/asca/documentation/asc-alloc-db-schema.md` | **DB schema reference** — full field list, types, descriptions for all 10 tables + view |
+| `projects/asca/documentation/asc-alloc-db-schema.md` | **DB schema reference** — full field list, types, descriptions for all 11 tables + view |
 | `projects/asca/documentation/asca-development-workflow.md` | **Development workflow** — spec lifecycle, gates, JIRA structure, branch strategy, roles |
 | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Historical — original Scenario D proposal (timeline now consolidated here) |
 | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` prefix |
