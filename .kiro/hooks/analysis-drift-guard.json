@@ -1,0 +1,12 @@
+{
+  "name": "Analysis Drift Guard",
+  "version": "1.0.0",
+  "description": "On each prompt, anchors the work to the current spec-driven phase and its single next deliverable, so tangents and re-analysis don't masquerade as progress.",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "DRIFT CHECK. Before responding: (1) name the current spec-driven phase (Specify -> G1 -> Design -> G2 -> Tasks -> Implement) and its single next deliverable. (2) Ask whether this request advances that deliverable. If it does not, say so and offer to defer, rather than silently producing more analysis. (3) Verify anything you call 'open' or a 'blocker' against the authoritative source (open-items/decision table), not a secondary note. (4) A data source is not a code dependency. (5) Answer at the length the question deserves - yes/no first, detail only on request. If several turns have passed without moving the current artifact, say so explicitly and state the one next action. See knowledge/avoiding-analysis-drift.md."
+  }
+}
