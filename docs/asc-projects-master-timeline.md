@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -32,7 +32,7 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-09-11)
+## ⚠️ Status / Actuals (as of 2026-09-15)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
@@ -40,14 +40,14 @@
 
 | Baseline expectation (by W2, Sep 7) | Actual (2026-09-11) |
 |---|---|
-| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2): generating `design.md` next |
+| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2): ls-db `design.md` **complete + reviewed** (aligned with schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11); `tasks.md` next |
 | ASCA Spec 01 requirements signed off (G1) | ✅ **Approved to proceed** — Kuroda-san, REF-CAP-11 (Round 3, 2026-09-10), Round-3 items A (pairing key) + B (V-5 anchor) folded into both requirements.md |
 | ASCA Spec 01 requirements.md (both repos) | ✅ Done — accounting (`asca-spec-01-foundation`) + ls-db (`asca-spec-01-database-migration`), aligned with REF-CAP-11 |
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
 
-**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are now cleared. Critical-path next action: ASCA Spec 01 `design.md` → G2 ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)), then `tasks.md`. Design generation started 2026-09-11; tasks.md targeted for Mon 2026-09-14.
+**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are cleared and the ls-db `design.md` is now complete and reviewed for alignment with the reference docs. Critical-path next action: ASCA Spec 01 `tasks.md` → then G2 sign-off ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)). Design completed 2026-09-15; tasks.md next.
 
 **Foundation JIRA (created 2026-09-09):** Epic [ASCA-13] `[Spec 01] — Foundation` with 7 stories — ASCA-14 Requirements+Sign-off (G1), ASCA-15 Architecture (G2), ASCA-16 Coding (ls-db migrations), ASCA-17 Coding (accounting), ASCA-18 Code Review (G3), ASCA-19 QA Testing, ASCA-20 Dev/Manual Testing. Stories prefixed `[Spec 01] —`. Scaffolding epic [ASCA-9] carries ASCA-10 (steering, done) + ASCA-11/12 (DEV04 env).
 
