@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -32,24 +32,36 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-09-15)
+## ⚠️ Status / Actuals (as of 2026-09-16)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
 ### Where we actually are
 
-| Baseline expectation (by W2, Sep 7) | Actual (2026-09-11) |
+| Baseline expectation (by W2, Sep 7) | Actual (2026-09-16) |
 |---|---|
-| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2): ls-db `design.md` **complete + reviewed** (aligned with schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11); `tasks.md` next |
+| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2). **ls-db half (`asca-spec-01-database-migration`): `design.md` + `tasks.md` complete** (generated 2026-09-15, reviewed/aligned). **Accounting half (`asca-spec-01-foundation`): `requirements.md` only — `design.md` + `tasks.md` in progress 2026-09-16.** |
 | ASCA Spec 01 requirements signed off (G1) | ✅ **Approved to proceed** — Kuroda-san, REF-CAP-11 (Round 3, 2026-09-10), Round-3 items A (pairing key) + B (V-5 anchor) folded into both requirements.md |
 | ASCA Spec 01 requirements.md (both repos) | ✅ Done — accounting (`asca-spec-01-foundation`) + ls-db (`asca-spec-01-database-migration`), aligned with REF-CAP-11 |
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
 
-**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are cleared and the ls-db `design.md` is now complete and reviewed for alignment with the reference docs. Critical-path next action: ASCA Spec 01 `tasks.md` → then G2 sign-off ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)). Design completed 2026-09-15; tasks.md next.
+**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are cleared and the **ls-db half** (`design.md` + `tasks.md`) is complete and reviewed. Critical-path next action: generate the **accounting half** `design.md` + `tasks.md` (`asca-spec-01-foundation`), then G2 sign-off on both halves ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)). ls-db design+tasks completed 2026-09-15; accounting design+tasks in progress 2026-09-16.
+
+> **Spec tooling note (2026-09-16):** the spec-UI "Continue to Design/Tasks" flow was crashing with `i.map is not a function`. Root cause: the spec's `.config.kiro` was missing its `specId` (hand-authored via draft→promote, never registered through the UI). Fixed by writing a valid single-line `.config.kiro` (specId + `workflowType: requirements-first` + `specType: feature`) for both `asca-spec-01-database-migration` (ls-db) and `asca-spec-01-foundation` (accounting). Also fixed a malformed requirement heading (`Requirement 13a` → renumbered 14/15/16) in the ls-db requirements.md.
 
 **Foundation JIRA (created 2026-09-09):** Epic [ASCA-13] `[Spec 01] — Foundation` with 7 stories — ASCA-14 Requirements+Sign-off (G1), ASCA-15 Architecture (G2), ASCA-16 Coding (ls-db migrations), ASCA-17 Coding (accounting), ASCA-18 Code Review (G3), ASCA-19 QA Testing, ASCA-20 Dev/Manual Testing. Stories prefixed `[Spec 01] —`. Scaffolding epic [ASCA-9] carries ASCA-10 (steering, done) + ASCA-11/12 (DEV04 env).
+
+### ZPR (DEVOPS-6596) — Zipan 20-lesson plan — actuals
+
+| Date | Event |
+|---|---|
+| 2026-09-14 | Ran the batch commands on DEV04 and generated the reports for QA testing. |
+| 2026-09-15 | **Blocker found:** the Zipan 20-lesson plan (`product_id 38`) was missing on DEV04. **Root cause: DEV04's DB was outdated — not synced from the latest prod DB**, so the new plan's charges weren't present to test against (environment/data issue, not the enum change). |
+| — | **Fix path:** (1) get latest **prod DB dump** (Zipan required, Bizmates optional), (2) re-import to DEV04, (3) re-run the commands and collect the reports for QA. |
+
+> **Schedule risk:** ZPR must **release before Oct 1** (Oct 1 PRE batch). The DEV04 refresh eats into the Sep 14–18 QA/UAT box, but the Sep 21–30 buffer still covers it. Complete the DEV04 prod-DB refresh this week so QA can re-verify against correct data. Flag to Patrick-san: this is an **environment (stale DEV04 DB)** issue, not a code defect.
 
 ### Scope growth (not just delay)
 
