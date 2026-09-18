@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) · 2026-09-16 (Status update: accounting-repo `asca-spec-01-foundation` `design.md`+`tasks.md` now COMPLETE — both Foundation halves fully specced; next action G2 sign-off (ASCA-15). Synced resolved items: O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100); CAP reference prices locked tax-excl (3,618 / 18,000 / 36,000); grouping key + `bundle_type` updated in Current Approach) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -40,14 +40,14 @@
 
 | Baseline expectation (by W2, Sep 7) | Actual (2026-09-16) |
 |---|---|
-| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2). **ls-db half (`asca-spec-01-database-migration`): `design.md` + `tasks.md` complete** (generated 2026-09-15, reviewed/aligned). **Accounting half (`asca-spec-01-foundation`): `requirements.md` only — `design.md` + `tasks.md` in progress 2026-09-16.** |
+| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2). **ls-db half (`asca-spec-01-database-migration`): `design.md` + `tasks.md` complete** (generated 2026-09-15, reviewed/aligned). **Accounting half (`asca-spec-01-foundation`): `requirements.md` + `design.md` + `tasks.md` complete** (2026-09-16). Both Foundation halves are now fully specced; next action is G2 sign-off. |
 | ASCA Spec 01 requirements signed off (G1) | ✅ **Approved to proceed** — Kuroda-san, REF-CAP-11 (Round 3, 2026-09-10), Round-3 items A (pairing key) + B (V-5 anchor) folded into both requirements.md |
 | ASCA Spec 01 requirements.md (both repos) | ✅ Done — accounting (`asca-spec-01-foundation`) + ls-db (`asca-spec-01-database-migration`), aligned with REF-CAP-11 |
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
 
-**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are cleared and the **ls-db half** (`design.md` + `tasks.md`) is complete and reviewed. Critical-path next action: generate the **accounting half** `design.md` + `tasks.md` (`asca-spec-01-foundation`), then G2 sign-off on both halves ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)). ls-db design+tasks completed 2026-09-15; accounting design+tasks in progress 2026-09-16.
+**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are cleared and the **ls-db half** (`design.md` + `tasks.md`) is complete and reviewed. Both Foundation halves now have complete requirements + design + tasks (ls-db 2026-09-15, accounting 2026-09-16). Critical-path next action: **G2 sign-off on both halves** ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)), then coding can begin.
 
 > **Spec tooling note (2026-09-16):** the spec-UI "Continue to Design/Tasks" flow was crashing with `i.map is not a function`. Root cause: the spec's `.config.kiro` was missing its `specId` (hand-authored via draft→promote, never registered through the UI). Fixed by writing a valid single-line `.config.kiro` (specId + `workflowType: requirements-first` + `specType: feature`) for both `asca-spec-01-database-migration` (ls-db) and `asca-spec-01-foundation` (accounting). Also fixed a malformed requirement heading (`Requirement 13a` → renumbered 14/15/16) in the ls-db requirements.md.
 
@@ -100,7 +100,7 @@ First real batch:                    Jan 1, 2027
 
 **What we're building:** A shared allocation framework that splits Coaching charge revenue between Coaching and App products, injected into the existing accounting batch commands.
 
-**Architecture:** Scenario D (injection into existing commands) + Option 1 (Overwrite N→P). Single injection point in `CommonUtil::createDailyRateCalculation()`. Shared `log_alloc_*` tables with `project_code` column.
+**Architecture:** Scenario D (injection into existing commands) + Option 1 (Overwrite N→P). Single injection point in `CommonUtil::createDailyRateCalculation()`. Shared `log_alloc_*` / `mst_alloc_*` tables with a `bundle_type` TINYINT discriminator (1=CAP, 2=CIP; O-9).
 
 **Technical design:** `projects/asca/documentation/asc-allocation-framework-technical-design.md` (authoritative)
 
@@ -161,7 +161,7 @@ First real batch:                    Jan 1, 2027
 | Timing | Option 1 — Overwrite N→P inside CommonUtil | 1 Freee API call. Zero downstream changes. Idempotent. |
 | Injection point | `CommonUtil::createDailyRateCalculation()` | Covers Pre, Final, and DataCorrection batches. |
 | N definition | Σ(paid_price) across bundle (coaching + app) | Idempotent by construction — safe on re-runs. |
-| Bundle grouping | student_id + order_no | Handles cancel+repurchase, simultaneous plans. |
+| Bundle grouping | student_id + order_no + plan_id (order_no present); student_id + plan_id + start_date + end_date (order_no NULL — B2C/B2E, Round-3 A) | Handles cancel+repurchase, simultaneous plans; date-matched pairing when order_no is NULL. |
 | Detection | product_id 10022 (App, new id) + plan_id enums | Anchor on App id. Works for both CAP and CIP. (App id changed 10021→10022 on 2026-08-19) |
 | Execution order | ASC-CAP first → ASC-CIP second | CAP requirements more concrete. CIP reuses foundation. |
 
@@ -633,13 +633,13 @@ ASC is NOT blocked by upstream timelines:
 | O-7 | Product ID changes | Business (Go-san) | ✅ **Confirmed FINAL (2026-08-19)** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. | Detection + seeder + Freee mapping |
 | O-8 | CIP split arity | Accounting (Kuroda-san) | ⚠️ **REVERSED by R-16 (2026-09-08)** — was 2-way; now **CIP 1029–1032 are 3-way (Lesson : Coaching : App = 13,500 : 66,500 : 3,618, tax-excl)**. 1028 stays 2-way. **ASCI is no longer config-only.** | ASCI scope + engine |
 | O-9 | `project_code` → `bundle_type` rename+retype | Kuroda-san | ✅ **Confirmed (2026-09-02)** — TINYINT enum (1=CAP, 2=CIP). | Migrations |
-| O-10 | New product_type conflict | CAP/CIP teams | ⚠️ **Open (2026-09-08)** — CAP proposal `10022=618 / 10025=469` vs CIP local DB `10022=100 / 10025=9`. Data, not code blocker — final migration decides; ASC reads at runtime. | — (verify on DEV04) |
+| O-10 | New product_type conflict | CAP/CIP teams (Kuroda-san) | ✅ **Resolved (Round-3, REF-CAP-11, 2026-09-10)** — Coaching `10005=9`, `10015=9`; App `10022=100` (same as existing App 10012); CIP `10025=9` (ASCI). ASC reads `product_type` from `mst_product` at runtime and validates the exact expected value per product (V-6). | — |
 | R-16 | CIP 3-way allocation | Accounting (Kuroda-san) | ✅ **Decided (2026-09-08, REF-CAP-09)** — Plan A: lesson-included CIP plans split 3-way. Expands ASCI. | ASCI engine |
 | Refund | Refund allocation requirements | Accounting (Kuroda-san) | ✅ **Delivered (REF-CAP-09, 2026-09-08)** — same pipeline for +/−, true floor toward −∞, execution-month lump. Unblocks ASCA Spec 02 refund requirements. | ASCA Spec 02 (refund) |
 
 **Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic; unaffected by CIP price, refund, or O-10. Can start now.
 **Blockers for ASCA Spec 02:** refund requirements now delivered (REF-CAP-09) — unblocked.
-**Blockers for ASCI:** O-5/R-16 weights (66,500 : 3,618 : 13,500) to reconcile; **R-16 makes ASCI 3-way (not config-only)** — needs re-baseline. O-10 resolves via final migration.
+**Blockers for ASCI:** O-5/R-16 weights (66,500 : 3,618 : 13,500) to reconcile; **R-16 makes ASCI 3-way (not config-only)** — needs re-baseline. O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100, 10025=9).
 
 **ZPR (DEVOPS):** no blockers — 1-file enum add. Hard date: release before Oct 1 (PRE batch).
 
@@ -722,7 +722,7 @@ ASC is NOT blocked by upstream timelines:
 | Plan IDs | 1016–1027 (12 plans) | 1028–1032 (5 plans) |
 | Coaching product_id | 10005 (15min) / 10015 (30min) | **10025** (Intensive — changed from 10022 on 2026-08-19) |
 | App product_id | **10022** (changed from 10021 on 2026-08-19) | **10022** (same as CAP) |
-| product_type (new products) | ⚠️ **O-10 open** — App 10022 = 618 (CAP) or 100 (CIP DB); CIP 10025 = 469 (CAP) or 9 (CIP DB). Final migration decides. Existing: Coaching 9, App 10012 = 100. |
+| product_type (new products) | ✅ **O-10 resolved (Round-3/REF-CAP-11, 2026-09-10)** — Coaching 10005/10015 = 9; App 10022 = 100 (same as existing App 10012); CIP 10025 = 9 (ASCI). ASC reads from `mst_product` at runtime; V-6 validates the exact value per product. |
 | Bundle composition | 2 products (1016/1017) or 3–4 (1018–1027 add Lesson+FVP) | 2 products (1028) or 4 (1029–1032 add Lesson+FVP) |
 | Split arity | 2-way (Coaching + App) | **1028: 2-way. 1029–1032: 3-way (Lesson+Coaching+App) per R-16.** |
 | Allocation weights (tax-**excl**, per R-16) | Coaching / App (reconcile earlier tax-incl ¥19,800/¥39,600 & ¥3,980) | **Lesson 13,500 : Coaching 66,500 : App 3,618** |
@@ -731,7 +731,7 @@ ASC is NOT blocked by upstream timelines:
 | Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
 
 > **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Note `10022` now = App (was CIP coaching).
-> **⚠️ O-10 (2026-09-08):** CAP vs CIP disagree on new product_types. Data, not code blocker — ASC reads `product_type` from `mst_product` at runtime; final migration is authoritative.
+> **✅ O-10 (resolved Round-3/REF-CAP-11, 2026-09-10):** product_types confirmed — Coaching 10005/10015 = 9, App 10022 = 100, CIP 10025 = 9. ASC reads `product_type` from `mst_product` at runtime and validates the exact expected value per product (V-6).
 > **⚠️ O-8 REVERSED by R-16 (2026-09-08):** CIP lesson plans (1029–1032) are now **3-way** (Lesson : Coaching : App). Only 1028 stays 2-way. ASCI is no longer config-only.
 > **🟡 O-5 (updated):** REF-CAP-09 gives tax-excl L_coaching = 66,500 for CIP; reconcile against the stale ¥84,020 and the tax-incl figures.
 > **Weights are tax-EXCLUSIVE** per REF-CAP-09 — earlier docs used tax-inclusive (¥3,980 / ¥19,800); reconcile in design/schema.
