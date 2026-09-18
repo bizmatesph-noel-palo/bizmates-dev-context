@@ -118,6 +118,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 | **Master timeline (authoritative schedule)** | **`docs/asc-projects-master-timeline.md`** |
 | Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
 | Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` |
+| **Open decision — DataCorrection retirement (Spec 02, pending Kuroda-san)** | `projects/asca/technical-notes/decisions/20260917-datacorrection-retirement-question.md` |
 | Upstream CAP research | `research/CAP/` |
 | Base system context (ASCM) | `projects/ascm/project-context.md` |
 | ASCM knowledge base | `projects/ascm/knowledge-base/` |

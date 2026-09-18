@@ -59,6 +59,24 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 
 ---
 
+## 1c. CIP Residual-Value Pricing (2026-09-17, REF-CIP-05) — supersedes R-16 for CIP
+
+> Kuroda-san's 2026-09-17 update (`research/CIP/REF-CIP-05-...`) **withdraws proportional allocation for CIP entirely** and replaces it with residual-value pricing. This **supersedes REF-CAP-09 §10 / R-16** (the CIP 3-way split) and the 2026-09-03 P-4 CIP allocation baseline. **CAP / ASCA Foundation are explicitly unaffected** — CAP keeps the proportional allocation engine exactly as designed in §1a/§1b. This is a **Phase 3 (ASCI) scope reduction**.
+
+| # | Decision | Effect on this design |
+|---|---|---|
+| **CIP no longer uses the allocation engine** | CIP (1028–1032) revenue is split by issuing **separate, already-priced charges** that flow through the existing daily pro-ration unchanged — no formula, no reference-price effective-date lookup, no allocation run/anchor tracking for CIP. | Supersedes R-16 (§1a, §7, §9 3-way notes) and any "CIP 3-way" wording. CIP is removed from the allocation engine's scope entirely (it was already out of Foundation; now it's out of ASCI's *engine* scope too). |
+| **CIP charges (After)** | App = **¥3,980** tax-incl (existing `price_flag=2` list price, reused directly — no new App record). Coaching Intensive = **¥71,920** tax-incl from a NEW booking-only master record (`product_id 10025`, **`price_flag=3`**, tax-excl 65,382; 71,920 = 75,900 − 3,980). Lesson (1029–1032) = its own existing standalone price. Each pro-rated independently. First-month discounts apply per charge, no special-casing. | New `mst_new_price_listing` row is an ASCI/ls-db seeder concern, out of Foundation scope. The `price_flag=2` (66,500/3,618) and `price_flag=4` rows are NOT invalidated. |
+| **3-way formula removed from scope** | `ThreeWayAllocationFormula` (Lesson : Coaching : App = 13,500 : 66,500 : 3,618) is **no longer needed** — the three CIP components are independently priced and pro-rated, not one amount split three ways. | **Decision (Lead, 2026-09-17):** keep the pluggable `AllocationFormulaInterface` + `TwoWayAllocationFormula` (CAP still uses them; preserves the "no silent mis-split / no default fallback" guarantee). Drop only the *promise* of a `ThreeWayAllocationFormula` in ASCI. Foundation code is unchanged. |
+| **Schema impact** | The `product_role` "2 = lesson (reserved for CIP 3-way)" reservation and the planned CIP Lesson reference-price seed row are **no longer needed for allocation** (CIP writes no proration rows). The columns remain harmless/CAP-only; no migration change required. | `asc-alloc-db-schema.md` R-16 notes are annotated as superseded. |
+| **ASCA-8 (Metabase)** | No change for now — its columns were designed for engine-processed (CAP) charges. Whether CIP is excluded is a later, non-blocking team decision. | Unchanged. |
+| **Shareholder refund cap** | ¥19,800 coaching cap applies against `product_type = 9` regardless of which price record (price_flag 2 vs 3) the coaching charge came from. | No change. |
+| **Schedule (ASCI Phase 3)** | Shrinks from "stand up the allocation engine for CIP" to "add the new master price record(s) + verify existing pro-ration/discount produces the expected independent charges." | See master timeline Phase 3. |
+
+> **Net:** CAP/Foundation = unchanged (proportional engine, 2-way, CAP-only). CIP/ASCI = no engine at all (residual-value pricing via separate charges + existing pro-ration). The `AllocationFormulaInterface` stays but is now CAP-2-way-only in practice.
+
+---
+
 ## 2. Project Context
 
 ### What Was Cancelled

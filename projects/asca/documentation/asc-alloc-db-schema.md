@@ -18,6 +18,8 @@
 
 The complete field-level schema for the 11 allocation tables + 1 view. REF-CAP-04 (Kuroda-san) defines the original 10-table set and roles; the 11th table (`log_alloc_run_anchors`, the V-5 lock-only anchor) was added per REF-CAP-11 (Round-3, 2026-09-10). This doc adds the **columns, data types, nullability, keys, and field descriptions** needed to write the migrations (Spec 01a) and models (Spec 01b).
 
+> **⚠️ CIP 3-way notes below are SUPERSEDED (REF-CIP-05, 2026-09-17).** Kuroda-san withdrew proportional allocation for CIP entirely: CIP (1028–1032) now uses **residual-value pricing** — separate, already-priced charges (App ¥3,980; Coaching Intensive ¥71,920 from a new `product_id 10025` `price_flag=3` record; Lesson at its own price) through existing daily pro-ration, **no allocation engine, no proration rows, no 3-way formula**. The R-16 3-way references retained below are historical (they describe the pre-2026-09-17 plan) and do NOT drive the schema. **CAP (1016–1027) is unchanged** — it keeps the engine and this schema. See technical design §1c.
+
 ## Conventions
 
 - **Connection:** `mysql` (Bizmates) at runtime; `bizmates_mysql` in migrations. Bizmates-only — no Zipan.
@@ -132,7 +134,7 @@ One row per product inside a bundle's split (2 for CAP + CIP 1028: coaching + ap
 | `bundle_id` | BIGINT UNSIGNED | NO | FK → `log_alloc_bundles.id` |
 | `charge_id` | BIGINT UNSIGNED | NO | FK to `trn_charge.id` (logical) |
 | `product_id` | INT | NO | Coaching (10005/10015/10025) or App (10022) |
-| `product_role` | TINYINT | NO | 0=coaching, 1=app — which side of the split. **⚠️ R-16 (2026-09-08): CIP 1029–1032 are 3-way, so a Lesson role is also needed for those plans (e.g. 2=lesson) — not yet modeled here.** |
+| `product_role` | TINYINT | NO | 0=coaching, 1=app — which side of the split. *(A `2=lesson` role was reserved for the former CIP 3-way plan; that plan is **withdrawn — REF-CIP-05, 2026-09-17**, so no Lesson role is needed. The TINYINT is future-proof either way; no schema change.)* |
 | `log_daily_rate_calculation_id` | BIGINT UNSIGNED | YES | The log row this charge maps to (the one overwritten) |
 | `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
 
@@ -183,7 +185,7 @@ One row per product per group. Stores the reference price (L), the ratio, the or
 
 **Formula (2-way — CAP + CIP 1028):** `allocated_amount` (P) computed as `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`.
 
-**⚠️ 3-way (CIP 1029–1032, per R-16 2026-09-08):** the split is Lesson : Coaching : App (tax-excl weights 13,500 : 66,500 : 3,618), so P is allocated across three products by weight (remainder absorbed to keep ΣP = N). The 2-way formula above is stale for these plans. See technical design §9.
+**~~3-way (CIP 1029–1032, R-16)~~ — SUPERSEDED (REF-CIP-05, 2026-09-17):** CIP no longer flows through allocation, so no CIP proration rows (2-way or 3-way) are written at all. This table is populated by CAP (2-way) only. The former 3-way note is retained for history; see technical design §1c.
 
 ---
 
@@ -213,7 +215,7 @@ Effective-dated allocation weights (L). Configurable without code changes.
 
 > **✅ CAP weights are TAX-EXCLUSIVE (resolved — REF-CAP-11 Round-3, 2026-09-10; REF-CAP-09).** CAP: App 3,618, Coaching 15min 18,000, Coaching 30min 36,000 — each equal to `mst_new_price_listing.price` so the ASCA-8 breakdown recomputes an identical floored P (no ¥1 divergence). The earlier tax-inclusive figures (¥3,980 / ¥19,800 / ¥39,600) are superseded. CIP tax-excl weights (Lesson 13,500 : Coaching 66,500 : App 3,618) are ASCI scope; the CIP coaching value is still pending final confirmation (O-5).
 >
-> **⚠️ O-8 superseded by R-16 (2026-09-08):** CIP 1029–1032 are **3-way (Lesson : Coaching : App)**, only 1028 is 2-way. The seed set above has no **Lesson** weight row for CIP — the 3-way plans need one (tax-excl 13,500) once weights are reconciled. ASCI is no longer config-only.
+> **✅ R-16 (CIP 3-way) SUPERSEDED by REF-CIP-05 (2026-09-17):** CIP no longer uses reference-price weights at all — it books separate, already-priced charges (App ¥3,980; Coaching Intensive ¥71,920 from a new `product_id 10025` `price_flag=3` record) through existing pro-ration. No CIP rows (Coaching, App, or Lesson) are seeded in `mst_alloc_reference_prices`. The CAP rows above are the only allocation weights. CIP's new `price_flag=3` record lives in `mst_new_price_listing` (ASCI seeder), not here.
 
 **Invariant V-4:** all applied reference-price rows must be effective for the target date, or the run cannot finalize.
 
@@ -342,7 +344,7 @@ v_alloc_prorations_active   (view over prorations + runs; active = Completed run
 
 | Item | Impact | Status |
 |---|---|---|
-| R-16 (supersedes O-8) | CIP 1029–1032 are **3-way** (Lesson : Coaching : App), only 1028 is 2-way. Adds a Lesson `product_role` and a Lesson reference-price seed row (tax-excl 13,500); prorations/bundle_charges hold 3 rows for these plans. ASCI no longer config-only. | ⚠️ New (REF-CAP-09, 2026-09-08) — schema needs 3-way support |
+| ~~R-16: CIP 3-way~~ **SUPERSEDED** | ~~CIP 1029–1032 are 3-way (Lesson : Coaching : App)~~ — **withdrawn by REF-CIP-05 (2026-09-17).** CIP no longer uses the allocation engine at all (residual-value pricing: separate charges + existing pro-ration). No Lesson `product_role`, no CIP Lesson seed row, no 3-way prorations are needed. `product_role`/columns stay as-is (CAP-only, harmless); no migration change. | ✅ Superseded (REF-CIP-05, 2026-09-17) — no schema change; CAP unaffected |
 | Tax-incl vs tax-excl weights | Resolved for CAP: seed table now uses tax-**exclusive** (App 3,618, Coaching 18,000 / 36,000) = `mst_new_price_listing.price`. CIP weights (Coaching 66,500, Lesson 13,500) are ASCI scope. | ✅ CAP resolved (REF-CAP-11 Round-3, 2026-09-10); CIP coaching pending (O-5) |
 | O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting (REF-CAP-09 gives tax-excl L_coaching = 66,500 — reconcile) |
 | O-7 | product_ids in seeds + `product_id` columns (App 10022, CIP coaching 10025) | ✅ Confirmed |

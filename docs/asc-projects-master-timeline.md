@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) · 2026-09-16 (Status update: accounting-repo `asca-spec-01-foundation` `design.md`+`tasks.md` now COMPLETE — both Foundation halves fully specced; next action G2 sign-off (ASCA-15). Synced resolved items: O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100); CAP reference prices locked tax-excl (3,618 / 18,000 / 36,000); grouping key + `bundle_type` updated in Current Approach) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) · 2026-09-16 (Status update: accounting-repo `asca-spec-01-foundation` `design.md`+`tasks.md` now COMPLETE — both Foundation halves fully specced; next action G2 sign-off (ASCA-15). Synced resolved items: O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100); CAP reference prices locked tax-excl (3,618 / 18,000 / 36,000); grouping key + `bundle_type` updated in Current Approach) · 2026-09-17 (Scope change: **REF-CIP-05 — CIP switches to residual-value pricing, dropping the allocation engine for CIP entirely** (supersedes R-16 3-way). Phase 3 (ASCI) shrinks to a master-price-record + pro-ration-verification task; CAP/Foundation unaffected. Lead decision: keep `AllocationFormulaInterface` + `TwoWayAllocationFormula`, drop the 3-way promise) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
@@ -26,7 +26,7 @@
 | ASC | ASCM (Accounting System Changes — Monthly) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) |
 | ASCH | ASC Honki Set (cancelled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
 | **ASCA** | **ASC for CAP** (active — builds foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) |
-| **ASCI** | **ASC for CIP** (active — reuses foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
+| **ASCI** | **ASC for CIP** (active — CIP uses residual-value pricing, not the allocation engine, per REF-CIP-05) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
 | DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) | — |
 
@@ -70,7 +70,7 @@ New requirements landed after the baseline was set — these expand scope, so th
 | Change | Source | Impact |
 |---|---|---|
 | **Refund allocation** (negative amounts, same pipeline, true floor toward −∞) | REF-CAP-09 (Kuroda-san, 2026-09-08) | Expands ASCA Spec 02 (refund) — was already the split-candidate sub-spec |
-| **CIP 1029–1032 now 3-way** (Lesson : Coaching : App = 13,500 : 66,500 : 3,618, tax-excl) | REF-CAP-09 R-16 (2026-09-08) | **Reverses O-8 (2-way).** ASCI is **no longer config-only** — needs 3-way split logic. Bigger ASCI. |
+| ~~CIP 1029–1032 3-way~~ → **CIP dropped from the allocation engine entirely (residual-value pricing)** | REF-CIP-05 (2026-09-17), supersedes R-16 | **Scope REDUCTION, not growth.** CIP books separate already-priced charges (Lesson / App ¥3,980 / Coaching Intensive ¥71,920) through existing pro-ration — no split, no engine. ASCI shrinks to a master-price-record task. |
 | Tax-**exclusive** weights (App 3,618, Coaching 66,500) | REF-CAP-09 | Reconcile against earlier tax-incl figures (¥3,980 / ¥19,800) in design/schema |
 | product_type conflict (O-10): CAP 618/469 vs CIP DB 100/9 | Terry/Jefferson data | Data, not code blocker — final migration decides |
 
@@ -342,11 +342,11 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
-| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP requirements — plans 1028–1032 detection, product **10025**, L_coaching = tax-excl **66,500** (REF-CAP-09). **Split arity (R-16, reverses O-8):** 1028 is 2-way; **1029–1032 are 3-way** (Lesson : Coaching : App). Written during W9. |
-| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves CIP plan detection and reference price (L_coaching = 66,500 tax-excl). Split arity: 1028 2-way, 1029–1032 3-way (R-16). |
-| 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — CIP enum, reference price seeder rows (coaching + lesson), detection query addition, **`ThreeWayAllocationFormula`** registration (Lesson : Coaching : App). Reuses ASCA engine via the formula interface. |
-| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm 3-way formula + detection scope (no longer config-only per R-16). |
-| 5 | **Execute** | Dev 2 | CIP Detection Strategy (`CoachingIntensivePlanEnum`: 1028–1032) + reference price config | ~3–5 days |
+| 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP residual-value requirements (REF-CIP-05) — add Coaching Intensive `price_flag=3` master record (¥71,920 tax-incl) for `product_id 10025`; CIP books separate already-priced charges (Lesson / App ¥3,980 / Coaching Intensive) through existing pro-ration. **No allocation engine, no split formula for CIP.** Written during W9. |
+| 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves the CIP residual-value approach (already confirmed in REF-CIP-05): Coaching Intensive booking price ¥71,920, App ¥3,980, Lesson at its own price — separate charges, no split. |
+| 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — add the `product_id 10025` `price_flag=3` master price record; verify existing daily pro-ration + first-month-discount logic produce the expected independent CIP charges. **No CIP detection, no allocation formula, no `mst_alloc_reference_prices` CIP rows.** |
+| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm the master-price-record + pro-ration-verification scope (no allocation engine for CIP, per REF-CIP-05). |
+| 5 | **Execute** | Dev 2 | Add Coaching Intensive `price_flag=3` master price record + verify pro-ration/discount produces the expected separate CIP charges (residual-value, REF-CIP-05) | ~1–2 days |
 | 6 | **Gate 3** | Lead | Code review — CIP Integration PRs | PR approved before merge. |
 | 7 | **Verify** | Lead | ASCI dev testing on DEV04 | ~1–2 days |
 
@@ -392,7 +392,7 @@ Dev Team:                 ║═════════════════
 |---|---|---|
 | **ASCA Spec 01** | Foundation | New DB tables (`log_alloc_*`, `mst_alloc_*`), Eloquent models, plan detection enums, allocation engine (formula + idempotency), run lifecycle service, reference price seeder, test data seeder |
 | **ASCA Spec 02** | CAP Integration ⚠️ | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation |
-| **ASCI Spec 01** | CIP Integration | CIP bundle detection (plans 1028–1032, product **10025**), CIP reference prices (L_coaching = 66,500 tax-excl, REF-CAP-09). **No longer config-only (R-16):** 1028 is 2-way, 1029–1032 are 3-way (Lesson : Coaching : App) — requires a `ThreeWayAllocationFormula` registered via the engine's formula interface. |
+| **ASCI Spec 01** | CIP Integration (residual-value pricing — REF-CIP-05) | **No allocation engine for CIP.** Add the Coaching Intensive booking record (`product_id 10025`, `price_flag=3`, ¥71,920 tax-incl / 65,382 tax-excl = CIP Solo 75,900 − App 3,980) to `mst_new_price_listing`; CIP then books separate already-priced charges (Lesson at its own price, App ¥3,980, Coaching Intensive ¥71,920) through existing daily pro-ration. No bundle detection, no split formula, no `mst_alloc_reference_prices`/run/anchor for CIP. Verify pro-ration + first-month discount produce the expected independent charges. |
 
 > ⚠️ **Spec sizing note (ASCA Spec 02 and ASCI Spec 01):**
 >
@@ -628,18 +628,19 @@ ASC is NOT blocked by upstream timelines:
 | O-1 | CAP App product_id | CAP team | ✅ Resolved — was 10021; changed to **10022** on 2026-08-19 (see O-7) | — |
 | O-2 | Asymmetric discount (CIP RA-04) | Accounting | Low risk — if rejected, proration_basis returns | — |
 | O-4 | B2B App reversal logic | Accounting + CAP | Post-release (Phase 4) | — |
-| O-5 | CIP coaching reference price | Accounting | 🟡 **Updated (REF-CAP-09, 2026-09-08)** — R-16 gives tax-excl weight **L_coaching = 66,500** (and App 3,618, Lesson 13,500). Reconcile against earlier ¥84,020/¥71,920 guesses and tax-incl figures. | ASCI seeder |
+| O-5 | CIP coaching reference price | Accounting | ✅ **MOOT for allocation (REF-CIP-05, 2026-09-17)** — CIP uses no allocation weight. Instead a real Coaching Intensive charge price ¥71,920 tax-incl (65,382 tax-excl) is added as `product_id 10025` `price_flag=3` in `mst_new_price_listing`. The old 66,500 `price_flag=2` reference row is retained (shareholder-refund reference) but not used for CIP allocation. | ASCI master-price seed |
 | O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
 | O-7 | Product ID changes | Business (Go-san) | ✅ **Confirmed FINAL (2026-08-19)** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. | Detection + seeder + Freee mapping |
-| O-8 | CIP split arity | Accounting (Kuroda-san) | ⚠️ **REVERSED by R-16 (2026-09-08)** — was 2-way; now **CIP 1029–1032 are 3-way (Lesson : Coaching : App = 13,500 : 66,500 : 3,618, tax-excl)**. 1028 stays 2-way. **ASCI is no longer config-only.** | ASCI scope + engine |
+| O-8 | CIP split arity | Accounting (Kuroda-san) | ✅ **MOOT (REF-CIP-05, 2026-09-17)** — CIP no longer uses proportional allocation at all (residual-value pricing: separate already-priced charges + existing pro-ration). Neither 2-way nor 3-way applies to CIP. | ASCI (no engine) |
 | O-9 | `project_code` → `bundle_type` rename+retype | Kuroda-san | ✅ **Confirmed (2026-09-02)** — TINYINT enum (1=CAP, 2=CIP). | Migrations |
 | O-10 | New product_type conflict | CAP/CIP teams (Kuroda-san) | ✅ **Resolved (Round-3, REF-CAP-11, 2026-09-10)** — Coaching `10005=9`, `10015=9`; App `10022=100` (same as existing App 10012); CIP `10025=9` (ASCI). ASC reads `product_type` from `mst_product` at runtime and validates the exact expected value per product (V-6). | — |
-| R-16 | CIP 3-way allocation | Accounting (Kuroda-san) | ✅ **Decided (2026-09-08, REF-CAP-09)** — Plan A: lesson-included CIP plans split 3-way. Expands ASCI. | ASCI engine |
+| R-16 | CIP 3-way allocation | Accounting (Kuroda-san) | ✅ **SUPERSEDED (REF-CIP-05, 2026-09-17)** — 3-way split withdrawn; CIP books three independently-priced charges (Lesson / App / Coaching Intensive ¥71,920) through existing pro-ration, no split. Shrinks ASCI. | ASCI (no engine) |
 | Refund | Refund allocation requirements | Accounting (Kuroda-san) | ✅ **Delivered (REF-CAP-09, 2026-09-08)** — same pipeline for +/−, true floor toward −∞, execution-month lump. Unblocks ASCA Spec 02 refund requirements. | ASCA Spec 02 (refund) |
+| DC-retire | DataCorrection batch retirement (Spec 02 injection) | Kuroda-san (PM) | 🟡 **Pending confirmation (raised 2026-09-17)** — if DataCorrection is retired (DevOps corrects via direct SQL), drop the `allocateForCharge()` → `DataCorrectionLogic` injection from Spec 02 (slice 02d). `allocateForCharge()` stays in Foundation regardless. Does NOT block Spec 02 requirements or other slices. See `projects/asca/technical-notes/decisions/20260917-datacorrection-retirement-question.md`. | ASCA Spec 02 (DataCorrection slice only) |
 
 **Blockers for ASCA Foundation:** cleared — Foundation is project-agnostic; unaffected by CIP price, refund, or O-10. Can start now.
-**Blockers for ASCA Spec 02:** refund requirements now delivered (REF-CAP-09) — unblocked.
-**Blockers for ASCI:** O-5/R-16 weights (66,500 : 3,618 : 13,500) to reconcile; **R-16 makes ASCI 3-way (not config-only)** — needs re-baseline. O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100, 10025=9).
+**Blockers for ASCA Spec 02:** refund requirements delivered (REF-CAP-09) — unblocked. One scope item **pending Kuroda-san**: whether the DataCorrection batch is being retired (DevOps direct-SQL). If retired, the `allocateForCharge()` → `DataCorrectionLogic` injection slice (02d) is dropped. This does NOT block Spec 02 requirements or the other slices (CommonUtil injection, CSV, refund). See the decision note (2026-09-17).
+**Blockers for ASCI:** none of the old allocation-weight blockers apply — **REF-CIP-05 (2026-09-17) drops the allocation engine for CIP entirely** (residual-value pricing). ASCI shrinks to: add the Coaching Intensive `price_flag=3` master record (¥71,920 tax-incl) + verify existing pro-ration/discount produces the expected independent charges. O-10 product_type resolved (10005/10015=9, 10022=100, 10025=9).
 
 **ZPR (DEVOPS):** no blockers — 1-file enum add. Hard date: release before Oct 1 (PRE batch).
 
@@ -724,15 +725,15 @@ ASC is NOT blocked by upstream timelines:
 | App product_id | **10022** (changed from 10021 on 2026-08-19) | **10022** (same as CAP) |
 | product_type (new products) | ✅ **O-10 resolved (Round-3/REF-CAP-11, 2026-09-10)** — Coaching 10005/10015 = 9; App 10022 = 100 (same as existing App 10012); CIP 10025 = 9 (ASCI). ASC reads from `mst_product` at runtime; V-6 validates the exact value per product. |
 | Bundle composition | 2 products (1016/1017) or 3–4 (1018–1027 add Lesson+FVP) | 2 products (1028) or 4 (1029–1032 add Lesson+FVP) |
-| Split arity | 2-way (Coaching + App) | **1028: 2-way. 1029–1032: 3-way (Lesson+Coaching+App) per R-16.** |
-| Allocation weights (tax-**excl**, per R-16) | Coaching / App (reconcile earlier tax-incl ¥19,800/¥39,600 & ¥3,980) | **Lesson 13,500 : Coaching 66,500 : App 3,618** |
+| Split arity | 2-way (Coaching + App) — proportional allocation | **CIP: NO split (REF-CIP-05, 2026-09-17).** CIP books separate already-priced charges (App ¥3,980 + Coaching Intensive ¥71,920, plus Lesson for 1029–1032) through existing pro-ration. |
+| Allocation weights (CAP only, tax-**excl**) | Coaching 18,000 (15min) / 36,000 (30min) : App 3,618 | **CIP uses no allocation weights** — real charge prices instead (App ¥3,980; Coaching Intensive ¥71,920 tax-incl / 65,382 tax-excl, `price_flag=3`). REF-CIP-05. |
 | App charge in trn_charge | ¥0 (companion) | ¥0 (companion) |
 | Date filter needed? | No (new plans) | No (new plans) |
 | Upstream prod date | Late Nov / early Dec | Late Nov / early Dec |
 
 > **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Note `10022` now = App (was CIP coaching).
 > **✅ O-10 (resolved Round-3/REF-CAP-11, 2026-09-10):** product_types confirmed — Coaching 10005/10015 = 9, App 10022 = 100, CIP 10025 = 9. ASC reads `product_type` from `mst_product` at runtime and validates the exact expected value per product (V-6).
-> **⚠️ O-8 REVERSED by R-16 (2026-09-08):** CIP lesson plans (1029–1032) are now **3-way** (Lesson : Coaching : App). Only 1028 stays 2-way. ASCI is no longer config-only.
+> **✅ R-16 (CIP 3-way) SUPERSEDED by REF-CIP-05 (2026-09-17):** CIP no longer uses proportional allocation at all — it books separate, already-priced charges (App ¥3,980; Coaching Intensive ¥71,920 from a new `product_id 10025` `price_flag=3` record; Lesson at its own price for 1029–1032) through existing daily pro-ration. No 2-way or 3-way split for CIP. CAP is unchanged (still 2-way proportional).
 > **🟡 O-5 (updated):** REF-CAP-09 gives tax-excl L_coaching = 66,500 for CIP; reconcile against the stale ¥84,020 and the tax-incl figures.
 > **Weights are tax-EXCLUSIVE** per REF-CAP-09 — earlier docs used tax-inclusive (¥3,980 / ¥19,800); reconcile in design/schema.
 
