@@ -1,67 +1,43 @@
 # bizmates-dev-context
 
-AI-assisted development workspace. Contains project-specific knowledge, artifacts, and context organized by project.
+AI-assisted development workspace for Bizmates projects.
 
 ## Structure
 
 ```
 bizmates-dev-context/
-├── .kiro/
-│   └── steering/
-│       └── workspace-identity.md   # What this workspace is, project routing
-├── domain-knowledge/               # Shared knowledge across all projects
-├── projects/
-│   ├── project-a/                  # First project
-│   └── project-b/                  # Next project
-├── scripts/
-│   ├── bootstrap-project.sh        # Scaffold new projects
-│   └── link-project.sh             # Scan repo and generate .detected-stack.md
-├── Makefile                         # Project management commands
-└── README.md
+├── domain-knowledge/       ← General system concepts (plans, campaigns, account types)
+├── research/               ← Upstream/external project research (CAP, CIP, CDB, HCR)
+├── docs/                   ← Cross-project timelines and historical estimates
+├── projects/               ← Project artifacts (one directory per JIRA project)
+│   ├── ascm/              ← ASC Monthly (completed)
+│   ├── asch/              ← ASC Honki Set (cancelled)
+│   ├── asca/              ← ASC for CAP (active)
+│   └── asci/              ← ASC for CIP (active)
+└── scripts/                ← Utility scripts
 ```
 
 ## Quick Start
 
-### Start a session
+1. Load project context: read `projects/{code}/project-context.md`
+2. For system concepts: check `domain-knowledge/`
+3. For upstream project info: check `research/`
+4. For cross-project timelines: check `docs/`
 
-1. Open workspace with project repo(s) + this repo + agentic-toolkit
-2. Load project context: "Read `projects/{name}/project-context.md`"
-3. Work normally — artifacts land in the project's directory
+## Placement Rules
 
-### Add a new project
-
-```bash
-make new-project name=project-code
-make link-project name=project-code repo=/path/to/code
-```
-
-Then in a session: "Read `projects/project-code/.detected-stack.md` and help me fill in `project-context.md`"
-
-## What Can I Do?
-
-Once project-context.md is filled, you can use any of these toolkit workflows:
-
-| Say... | What happens |
+| What you're documenting | Where it goes |
 |---|---|
-| "Investigate this issue" | Full investigation workflow → report in `technical-notes/investigation/` |
-| "Fix this bug" | Bug-fix workflow → code changes in project repo |
-| "Start a new feature" | Spec-driven development → requirements → design → tasks → code |
-| "Create a PR" | PR workflow → branch → commit → push → PR |
-| "Write a ticket" | JIRA template → ticket in `technical-notes/jira/tickets/` |
+| About YOUR project (decisions, tickets, tests) | `projects/{code}/` |
+| About an UPSTREAM project (their spec, their pricing) | `research/{upstream_code}/` |
+| General system concept (entities, plans, campaigns) | `domain-knowledge/` |
+| Cross-project plans/timelines | `docs/` |
 
-See `agentic-toolkit/knowledge/getting-started.md` for the full lifecycle.
+## JIRA Projects
 
-## Projects
-
-| Project | Directory | Code Repo | Status |
-|---------|-----------|-----------|--------|
-| ASC Monthly Plans | `projects/ascm/` | `accounting_related_system_for_freee` | Active |
-
-## Commands
-
-```bash
-make help           # Show available commands
-make new-project    # Scaffold a new project (name= required)
-make link-project   # Scan a repo and pre-fill context (name= repo= required)
-make list-projects  # List all project directories
-```
+| Code | Name | Board |
+|---|---|---|
+| ASC | Accounting System Changes (Monthly) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/summary) |
+| ASCH | ASC Honki Set | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) |
+| ASCA | ASC for CAP | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) |
+| ASCI | ASC for CIP | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
