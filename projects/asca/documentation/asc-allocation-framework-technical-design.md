@@ -43,6 +43,22 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 
 ---
 
+## 1b. G1 Round-3 Decisions (2026-09-10, REF-CAP-11) — supersede earlier sections
+
+> Kuroda-san's Spec 01 review round 3 (`research/CAP/REF-CAP-11-...`) **approved Foundation to proceed** and locked the remaining open points. Where an older section below conflicts, these win (they also win over §1a where they overlap). Reflected in both Spec 01 halves (`accounting_related_system_for_freee/.kiro/specs/asca-spec-01-foundation`, `ls-database-migrations/.kiro/specs/asca-spec-01-database-migration`) and the DB schema reference (`asc-alloc-db-schema.md`).
+
+| # | Decision | Effect on this design |
+|---|---|---|
+| **product_type resolved (O-10)** | product_type is per product, using the same values as the existing equivalents: Coaching 10005 = **9**, Coaching 10015 = **9**, App 10022 = **100** (same as existing App 10012); CIP Coaching Intensive 10025 = **9** (recorded for ASCI). No accounting sign-off needed. | Supersedes every "product_type UNRESOLVED (O-10) — 618/469 vs 100/9" note in §6/§10. These are the exact expected values the V-6 guard validates against. Reads from `mst_product` at runtime. |
+| **CAP reference prices = tax-EXCLUSIVE** | CAP weights are the tax-exclusive list prices from `mst_new_price_listing.price`: App 10022 = **¥3,618** (`price_flag = 2`), Coaching 15min 10005 = **¥18,000**, Coaching 30min 10015 = **¥36,000**. Each equals `mst_new_price_listing.price` so the ASCA-8 breakdown recomputes an identical floored P. | Supersedes the tax-**inclusive** ¥3,980 / ¥19,800 / ¥39,600 figures in §4/§6 and the seed table. `effective_from` = 2027-01-01. Coaching 15/30 to be confirmed against the final listing rows before the seeder runs (G1 2-1). |
+| **Bundle pairing key (Round-3 A)** | Key = (`student_id`, `order_no`, `plan_id`) when `order_no` is present; when `order_no` is NULL (the common case — NULL for B2C **and** B2E), pair the coaching charge (10005/10015) with the app charge (10022) that share the **same `start_date` AND `end_date`**. Mismatched dates ⇒ do not guess: mark incomplete (V-3) and skip. Keep the "exactly 1 coaching + 1 app" cardinality safety net. A mid-month renewal / cancel-and-rebuy that produces two pairs in one month must split into two separate bundles. | Supersedes the plain `student_id + order_no` grouping in §9 (and firms up §1a's "charge/contract-level fallback"). Real-data date alignment still to be verified on DEV04. |
+| **V-5 anchor (Round-3 B)** | Keep `log_alloc_run_anchors` as a **lock-only** row (one per month, UNIQUE `bundle_type`+`target_ym`); the finalizer `SELECT … FOR UPDATE`s it before switching the active pointer. **Drop `active_run_id`** — the single source of truth for the active Final is `superseded_by_run_id IS NULL` on the runs table (the condition `v_alloc_prorations_active` uses). Ensure the anchor exists race-safely (`INSERT … ON DUPLICATE KEY` / `INSERT IGNORE`) before locking. Retain-history: supersession sets the old run's `superseded_by_run_id` and makes the new run active, in one transaction. `LogAllocRunAnchor` is exposed as an Eloquent model. | Confirms §1a's anchor-row mechanism and pins the no-`active_run_id` shape used by the migrations and the schema reference (11th table). |
+| **Minor (Round-3 D)** | Snapshot wording is "snapshot the inputs needed to reproduce the allocation" (`original_paid_price` + `applied_reference_price` + `applied_reference_price_id`), not "the full input". CIP 10025 = ¥66,500 tax-excl is confirmed but out of Foundation scope (ASCI). | Aligns the §5/§9 snapshot language and CIP-price references. |
+
+> **Still tracked (not blocking Foundation):** write-back atomicity + DataCorrectionLogic injection are Spec 02; V-7 (App `paid_price = 0`) is a pre-go-live blocker implemented as specified; the 2027-01 `effective_from` go-live month is being confirmed. (REF-CAP-11 item E.)
+
+---
+
 ## 2. Project Context
 
 ### What Was Cancelled

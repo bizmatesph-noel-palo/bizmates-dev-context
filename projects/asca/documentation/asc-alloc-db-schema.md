@@ -5,7 +5,7 @@
 | |                                                                                                                                                                                                                                                     |
 |---|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | **Document type** | Database Schema Reference                                                                                                                                                                                                                           |
-| **Date** | 2026-09-01 (Created)                                                                                                                                                                                                                                |
+| **Date** | 2026-09-01 (Created) · 2026-09-16 (Updated for G1 Round-3 / REF-CAP-11: 11 tables incl. `log_alloc_run_anchors` + `superseded_by_run_id`; product_type O-10 resolved 9/9/100; CAP reference prices tax-EXCLUSIVE 3,618 / 18,000 / 36,000; pairing key + `bundle_type` O-9 confirmed) |
 | **Author** | Noel Palo, Lead Developer                                                                                                                                                                                                                           |
 | **Assisted by** | Kiro                                                                                                                                                                                                                                                |
 | **Status** | Active — schema source of truth for ASCA Spec 01 (Foundation)                                                                                                                                                                                       |
@@ -16,7 +16,7 @@
 
 ## Purpose
 
-The complete field-level schema for the 10 allocation tables + 1 view. REF-CAP-04 (Kuroda-san) defines the table set and roles; this doc adds the **columns, data types, nullability, keys, and field descriptions** needed to write the migrations (Spec 01a) and models (Spec 01b).
+The complete field-level schema for the 11 allocation tables + 1 view. REF-CAP-04 (Kuroda-san) defines the original 10-table set and roles; the 11th table (`log_alloc_run_anchors`, the V-5 lock-only anchor) was added per REF-CAP-11 (Round-3, 2026-09-10). This doc adds the **columns, data types, nullability, keys, and field descriptions** needed to write the migrations (Spec 01a) and models (Spec 01b).
 
 ## Conventions
 
@@ -31,7 +31,7 @@ The complete field-level schema for the 10 allocation tables + 1 view. REF-CAP-0
 
 ## ✅ Confirmed: `project_code` (VARCHAR) → `bundle_type` (TINYINT)
 
-REF-CAP-04 named the CAP/CIP discriminator column `project_code`. **This was changed** (O-9 — confirmed by Kuroda-san 2026-09-02):
+REF-CAP-04 named the CAP/CIP discriminator column `project_code`. **This was changed** (O-9 — confirmed FINAL by Kuroda-san 2026-09-02):
 
 1. **Rename** `project_code` → `bundle_type` — the column reflects **what the data IS** (a CAP-type or CIP-type bundle), not **which project created it** (same principle as the table-prefix ADR).
 2. **Retype** VARCHAR → **TINYINT** — for schema consistency with the other enum columns (`run_type`, `run_status`, etc. are all TINYINT). Stored as int (`1`=CAP, `2`=CIP); human-readable `'cap'`/`'cip'` comes from the `BundleType` enum's `label()` method for CSV/Metabase.
@@ -56,7 +56,8 @@ This doc uses **`bundle_type` TINYINT** throughout and notes the original (`proj
 | 8 | `log_alloc_sum_calculation` | `log_` | Freee-level aggregation |
 | 9 | `log_alloc_sum_calculation_history` | `log_` | Trace: summary row → proration rows |
 | 10 | `log_alloc_deliveries` | `log_` | Freee/CSV/email delivery attempt tracking |
-| 11 | `v_alloc_prorations_active` | `v_` | View — prorations from the active final run only |
+| 11 | `log_alloc_run_anchors` | `log_` | **V-5 lock-only anchor** — one row per (`bundle_type`, `target_ym`); serializes Final finalizers (REF-CAP-11 B). No `active_run_id`, no FK |
+| 12 | `v_alloc_prorations_active` | `v_` | View — prorations from the active final run only |
 
 ---
 
@@ -67,7 +68,7 @@ Run management. One row per batch execution. Persists even if the calculation fa
 | Column | Type | Null | Description |
 |---|---|---|---|
 | `id` | BIGINT UNSIGNED | NO | PK |
-| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP — which bundle family this run processed. *(was `project_code` VARCHAR in REF-CAP-04 — rename+retype pending Kuroda-san)* |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP — which bundle family this run processed. *(was `project_code` VARCHAR in REF-CAP-04 — rename+retype confirmed O-9, 2026-09-02)* |
 | `target_ym` | CHAR(6) | NO | Target year-month, `YYYYMM` (e.g. `202701`) |
 | `run_type` | TINYINT | NO | Enum `RunType`: 0=Preview, 1=Final |
 | `status` | TINYINT | NO | Enum `RunStatus`: 0=Creating, 1=Completed, 2=Failed |
@@ -75,9 +76,10 @@ Run management. One row per batch execution. Persists even if the calculation fa
 | `error_message` | TEXT | YES | Failure reason (set when status=Failed) |
 | `started_at` | DATETIME | NO | When the run began |
 | `finalized_at` | DATETIME | YES | When the run completed or failed |
+| `superseded_by_run_id` | BIGINT UNSIGNED | YES | Self-FK → `log_alloc_calculation_runs.id`. NULL = this is the active run (V-5). A superseded Final points at its successor (REF-CAP-11 B, 2026-09-10) |
 | `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
 
-**Keys / rules:** V-5 — only one active final run per (`bundle_type`, `target_ym`). Enforced within transaction.
+**Keys / rules:** V-5 — only one active Final run per (`bundle_type`, `target_ym`), i.e. exactly one Completed Final with `superseded_by_run_id IS NULL`. Enforced within the finalize transaction via the `log_alloc_run_anchors` lock (not a raw UNIQUE), so it holds even in the empty-set case (REF-CAP-11 B).
 
 ---
 
@@ -112,11 +114,11 @@ Bundle header — one row per detected Coaching+App pair per run.
 | `order_no` | VARCHAR(64) | YES | Order number — part of the bundle grouping key |
 | `plan_id` | INT | NO | The CAP/CIP plan_id (1016–1027 or 1028–1032) |
 | `primary_charge_id` | BIGINT UNSIGNED | NO | The coaching charge (bundle anchor) |
-| `match_rule` | VARCHAR(32) | NO | How the bundle was detected (e.g. `student_order_no`) |
+| `match_rule` | VARCHAR(32) | NO | How the bundle was detected (e.g. `student_order_no_plan` when `order_no` present, or `student_plan_dates` for the NULL-`order_no` date-matched fallback — REF-CAP-11 A) |
 | `bundle_status` | TINYINT | NO | 0=complete (coaching+app both present). Non-zero = incomplete (V-3 warning) |
 | `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
 
-**Grouping key:** (`student_id`, `order_no`) — isolates each contract (handles cancel+repurchase, simultaneous plans).
+**Grouping key (REF-CAP-11 Round-3 A, 2026-09-10):** (`student_id`, `order_no`, `plan_id`) when `order_no` is present; when `order_no` is NULL (the common case — NULL for B2C and B2E), pair by (`student_id`, `plan_id`, `start_date`, `end_date`) — the coaching charge (10005/10015) and app charge (10022) that share the same `start_date` AND `end_date`. Mismatched dates ⇒ do not guess: mark incomplete and skip (V-3). Isolates each contract (handles cancel+repurchase, simultaneous plans, mid-month renewal → two bundles).
 
 ---
 
@@ -166,7 +168,7 @@ One row per product per group. Stores the reference price (L), the ratio, the or
 | `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `charge_id` | BIGINT UNSIGNED | NO | The charge this proration is for |
 | `product_id` | INT | NO | Coaching or App product |
-| `product_type` | INT | NO | Freee product_type. Existing: Coaching 10005/10015 = 9, App 10012 = 100. New (CAP/CIP): ⚠️ UNRESOLVED (O-10) — App 10022 = 618 (CAP) or 100 (CIP DB); CIP 10025 = 469 (CAP) or 9 (CIP DB). Final migration decides; ASC reads it at runtime. |
+| `product_type` | INT | NO | Freee product_type, read from `mst_product` at runtime and validated exactly per product (V-6). ✅ O-10 RESOLVED (REF-CAP-11 Round-3, 2026-09-10): Coaching 10005 = 9, Coaching 10015 = 9, App 10022 = 100 (same as existing App 10012); CIP 10025 = 9 (ASCI, out of Foundation scope). |
 | `reference_price` | INT | NO | L — the allocation weight (yen) from `mst_alloc_reference_prices` |
 | `ratio` | DECIMAL(8,6) | NO | This product's share of the weight total |
 | `original_amount` | INT | NO | N — pre-allocation paid_price (yen) |
@@ -194,22 +196,22 @@ Effective-dated allocation weights (L). Configurable without code changes.
 | `id` | BIGINT UNSIGNED | NO | PK |
 | `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP *(was `project_code` VARCHAR)* |
 | `product_id` | INT | NO | The product this price applies to |
-| `reference_price` | INT | NO | L value (yen, tax-inclusive) |
+| `reference_price` | INT | NO | L value (yen, **tax-EXCLUSIVE** list price from `mst_new_price_listing.price`, so the ASCA-8 breakdown recomputes an identical floored P — REF-CAP-09 / REF-CAP-11) |
 | `effective_from` | DATE | NO | Start of validity |
 | `effective_to` | DATE | YES | End of validity (NULL = open-ended) |
 | `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
 
-**Seed values (per REF-CIP-04 + technical design):**
+**Seed values (CAP rows per REF-CAP-11 Round-3, tax-EXCLUSIVE = `mst_new_price_listing.price`; CIP rows are ASCI scope, values pending):**
 
 | bundle_type | product_id | reference_price | Note |
 |---|---|---|---|
-| 1 (cap) | 10022 (App) | 3980 | |
-| 1 (cap) | 10005 (Coaching 15min) | 19800 | |
-| 1 (cap) | 10015 (Coaching 30min) | 39600 | |
+| 1 (cap) | 10022 (App) | 3618 | tax-excl, `price_flag = 2`; `effective_from = 2027-01-01` |
+| 1 (cap) | 10005 (Coaching 15min) | 18000 | tax-excl; confirm exact `mst_new_price_listing` row before seeding (G1 2-1) |
+| 1 (cap) | 10015 (Coaching 30min) | 36000 | tax-excl; confirm exact `mst_new_price_listing` row before seeding (G1 2-1) |
 | 2 (cip) | 10022 (App) | 3980 | |
 | 2 (cip) | 10025 (Coaching Intensive) | 🔴 PENDING (O-5) | was 84020; plan repriced ¥88,000→¥75,900 |
 
-> **⚠️ Weights are TAX-INCLUSIVE above — reconcile against REF-CAP-09 (2026-09-08), which specifies TAX-EXCLUSIVE weights.** REF-CAP-09 gives tax-exclusive weights for CIP of **Lesson 13,500 : Coaching 66,500 : App 3,618** (App 3,618 not ¥3,980; Coaching 66,500). The tax-inclusive figures above (¥3,980 App, ¥19,800 / ¥39,600 CAP coaching) predate this and **need human reconciliation** — do not silently overwrite. See O-5 update in the master timeline.
+> **✅ CAP weights are TAX-EXCLUSIVE (resolved — REF-CAP-11 Round-3, 2026-09-10; REF-CAP-09).** CAP: App 3,618, Coaching 15min 18,000, Coaching 30min 36,000 — each equal to `mst_new_price_listing.price` so the ASCA-8 breakdown recomputes an identical floored P (no ¥1 divergence). The earlier tax-inclusive figures (¥3,980 / ¥19,800 / ¥39,600) are superseded. CIP tax-excl weights (Lesson 13,500 : Coaching 66,500 : App 3,618) are ASCI scope; the CIP coaching value is still pending final confirmation (O-5).
 >
 > **⚠️ O-8 superseded by R-16 (2026-09-08):** CIP 1029–1032 are **3-way (Lesson : Coaching : App)**, only 1028 is 2-way. The seed set above has no **Lesson** weight row for CIP — the 3-way plans need one (tax-excl 13,500) once weights are reconciled. ASCI is no longer config-only.
 
@@ -267,6 +269,21 @@ Delivery attempt tracking (Freee / CSV / email). Supports retry and failure isol
 
 ---
 
+## 11a. `log_alloc_run_anchors`  ★ V-5 lock-only anchor (added REF-CAP-11 B)
+
+Lock-only row, one per (`bundle_type`, `target_ym`). The finalizer takes `SELECT … FOR UPDATE` on it before switching the active pointer, so concurrent/re-run/crash-recovery Final finalizations serialize even when there is no prior active Final. There is intentionally **no** `active_run_id` column and **no** FK — the single source of truth for "which Final is active" is `superseded_by_run_id IS NULL` on `log_alloc_calculation_runs`.
+
+| Column | Type | Null | Description |
+|---|---|---|---|
+| `id` | BIGINT UNSIGNED | NO | PK |
+| `bundle_type` | TINYINT | NO | Enum `BundleType`: 1=CAP, 2=CIP |
+| `target_ym` | CHAR(6) | NO | Year-month, `YYYYMM` |
+| `created_at` / `updated_at` | TIMESTAMP | NO | Standard |
+
+**Keys / rules:** UNIQUE (`bundle_type`, `target_ym`) — exactly one anchor row per bundle family per month. Created race-safely via `INSERT … ON DUPLICATE KEY UPDATE` / `INSERT IGNORE`, then `SELECT … FOR UPDATE`. Lock-only: no data columns beyond the key.
+
+---
+
 ## 11. `v_alloc_prorations_active` (view)
 
 Convenience view returning prorations from the **active final run only** (latest completed final run per `bundle_type` + `target_ym`). Used by CSV generation and Metabase so consumers don't have to filter runs manually.
@@ -313,8 +330,10 @@ log_alloc_calculation_runs (1)
 │     └──< log_alloc_sum_calculation_history >── log_alloc_prorations
 └──< log_alloc_deliveries
 
+log_alloc_run_anchors       (standalone lock-only — one row per bundle_type+target_ym; no FK)
+log_alloc_calculation_runs.superseded_by_run_id → log_alloc_calculation_runs.id  (self-ref; NULL = active Final, V-5)
 mst_alloc_reference_prices  (standalone master — read by the engine)
-v_alloc_prorations_active   (view over prorations + runs)
+v_alloc_prorations_active   (view over prorations + runs; active = Completed run with superseded_by_run_id IS NULL)
 ```
 
 ---
@@ -324,10 +343,12 @@ v_alloc_prorations_active   (view over prorations + runs)
 | Item | Impact | Status |
 |---|---|---|
 | R-16 (supersedes O-8) | CIP 1029–1032 are **3-way** (Lesson : Coaching : App), only 1028 is 2-way. Adds a Lesson `product_role` and a Lesson reference-price seed row (tax-excl 13,500); prorations/bundle_charges hold 3 rows for these plans. ASCI no longer config-only. | ⚠️ New (REF-CAP-09, 2026-09-08) — schema needs 3-way support |
-| Tax-incl vs tax-excl weights | REF-CAP-09 weights are **tax-exclusive** (App 3,618, Coaching 66,500, Lesson 13,500); seed table + design use tax-inclusive (¥3,980 / ¥19,800 / ¥39,600). | ⚠️ Needs human reconciliation — do not silently overwrite |
+| Tax-incl vs tax-excl weights | Resolved for CAP: seed table now uses tax-**exclusive** (App 3,618, Coaching 18,000 / 36,000) = `mst_new_price_listing.price`. CIP weights (Coaching 66,500, Lesson 13,500) are ASCI scope. | ✅ CAP resolved (REF-CAP-11 Round-3, 2026-09-10); CIP coaching pending (O-5) |
 | O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting (REF-CAP-09 gives tax-excl L_coaching = 66,500 — reconcile) |
 | O-7 | product_ids in seeds + `product_id` columns (App 10022, CIP coaching 10025) | ✅ Confirmed |
 | O-9: `bundle_type` rename + retype | Column across 6 tables: `project_code` VARCHAR → `bundle_type` TINYINT (1=CAP, 2=CIP) | ✅ Confirmed by Kuroda-san 2026-09-02 |
+| O-10: new-product `product_type` | `product_type` read from `mst_product` at runtime, validated exactly per product (V-6) | ✅ Resolved (REF-CAP-11 Round-3, 2026-09-10): 10005 = 9, 10015 = 9, App 10022 = 100, CIP 10025 = 9 (ASCI) |
+| V-5 anchor table | Adds `log_alloc_run_anchors` (11th table, lock-only, UNIQUE `bundle_type`+`target_ym`, no `active_run_id`) + `superseded_by_run_id` on `log_alloc_calculation_runs` | ✅ Confirmed (REF-CAP-11 Round-3 B, 2026-09-10) — see §11a below |
 
 ---
 
