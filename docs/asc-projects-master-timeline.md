@@ -74,7 +74,7 @@ New requirements landed after the baseline was set — these expand scope, so th
 | Tax-**exclusive** weights (App 3,618, Coaching 66,500) | REF-CAP-09 | Reconcile against earlier tax-incl figures (¥3,980 / ¥19,800) in design/schema |
 | product_type conflict (O-10): CAP 618/469 vs CIP DB 100/9 | Terry/Jefferson data | Data, not code blocker — final migration decides |
 
-**Recommendation:** re-baseline ASCA Spec 02 + ASCI with Kuroda-san given R-16 (3-way CIP) and refund scope. Foundation (Spec 01) is unaffected and can start now.
+**Recommendation:** ASCI scope is now a *reduction* (REF-CIP-05 drops the CIP allocation engine), so the earlier R-16 re-baseline driver is gone. Refund remains a Spec 02 scope item. Foundation (Spec 01) is unaffected and can start now.
 
 **Note:** "ASC" is the JIRA code for ASCM. The original project was named just "ASC" before subsequent projects (ASCH, ASCA, ASCI) were created.
 
@@ -404,7 +404,7 @@ Dev Team:                 ║═════════════════
 > - Spec 02c: Refund Allocation (record_kind = 1)
 > - Spec 02d: DataCorrection Integration (`allocateForCharge()`)
 >
-> **ASCI Spec 01** may remain as-is (config-only addition to existing engine) or split if CIP introduces edge cases not present in CAP (e.g., different bundle structure, multi-product detection).
+> **ASCI Spec 01** is no longer an allocation-engine change at all (REF-CIP-05): it is a master-price-record addition (`product_id 10025`, `price_flag=3`, ¥71,920) plus verification that existing daily pro-ration produces the expected independent CIP charges. Likely a single small spec.
 >
 > **Impact on timeline:** Splitting does not change the W6–W9 / W10–W11 time allocation — it changes the number of G1 sign-offs Kuroda-san receives during those weeks. Final spec boundaries will be determined when requirements are written (W5 for ASCA Spec 02, W9 for ASCI Spec 01).
 
@@ -504,7 +504,7 @@ Dev Team:                 ║═════════════════
 | **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | ⚠️ **Foundation NOT started** — Spec 01 requirements not yet signed off (G1). **ZPR dev (Cristoff) Sep 9–11.** |
 | **W3** | Sep 14–18 | 5 | Foundation: models, enums, run lifecycle | ⚠️ Behind baseline. **ZPR QA+UAT Sep 14–18.** |
 | **W4** | Sep 21–25 | 5 | Foundation: reference prices, engine | ZPR buffer → ★ release before Oct 1 |
-| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | ⚠️ At risk given W2 slip + refund/R-16 scope growth (re-baseline pending) |
+| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | ⚠️ Behind baseline by ~1.5–2 wks (Foundation execution not started; awaiting G2). Deadline still achievable with buffer; ASCI scope reduced by REF-CIP-05 |
 | **W6** | Oct 5–9 | 5 | ASCA: injection + detection | |
 | **W7** | Oct 12–16 | 5 | ASCA: CSV, DataCorrection allocateForCharge | |
 | **W8** | Oct 19–23 | 5 | ASCA: refund allocation | |
@@ -709,7 +709,7 @@ ASC is NOT blocked by upstream timelines:
 | Smoke test on DEV04 | ✅ Done (W0) |
 | QA manual verification (W1) | ✅ Passed (W1) |
 
-*(For live status — Foundation not started, ZPR in flight, refund/R-16 scope growth — see the Status/Actuals section at the top.)*
+*(For live status — Foundation specced but not executed (awaiting G2), ZPR in flight, ASCI scope reduced by REF-CIP-05 — see the Status/Actuals section at the top.)*
 
 ---
 
