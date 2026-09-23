@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Technical Design |
-| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) · **2026-09-08 (R-16 reverses O-8: CIP 1029–1032 are 3-way (Lesson : Coaching : App), only 1028 is 2-way; ASCI is no longer config-only. Per REF-CAP-09. §7/§9/§15 updated.)** · 2026-09-09 (added §1a — G1 round-2 decisions: formula interface, CAP-only Foundation, V-5 anchor row, resolution date, NULL-order_no key, product_type guard, true floor, non-zero-App guard; per REF-CAP-10) |
+| **Date** | 2026-08-13 (Created) · 2026-08-20 (Open items updated) · 2026-09-01 (§11 table names synced with ADR; product_id changes; O-5 reopened; O-7/O-8 added) · 2026-09-01 (O-8 resolved 2-way; O-9 bundle_type rename proposed; DB schema doc created) · 2026-09-07 (O-9 confirmed 2026-09-02; §9 bundle key revised to student_id+order_no+plan_id per G1 investigation) · **2026-09-08 (R-16 reverses O-8: CIP 1029–1032 are 3-way (Lesson : Coaching : App), only 1028 is 2-way; ASCI is no longer config-only. Per REF-CAP-09. §7/§9/§15 updated.)** · 2026-09-09 (added §1a — G1 round-2 decisions: formula interface, CAP-only Foundation, V-5 anchor row, resolution date, NULL-order_no key, product_type guard, true floor, non-zero-App guard; per REF-CAP-10) · 2026-09-10 (added §1b — G1 round-3 decisions, Foundation approved to proceed; per REF-CAP-11) · 2026-09-17 (added §1c — REF-CIP-05 residual-value pricing supersedes R-16 for CIP; CAP/Foundation unaffected) · 2026-09-23 (added §1d — Spec 02 split into 4 sub-specs (02a–02d) confirmed; recorded DEVOPS-6415/6596 dependency + branch state; superseded Scenario D proposal reference repointed to `archive/`) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
@@ -74,6 +74,34 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 | **Schedule (ASCI Phase 3)** | Shrinks from "stand up the allocation engine for CIP" to "add the new master price record(s) + verify existing pro-ration/discount produces the expected independent charges." | See master timeline Phase 3. |
 
 > **Net:** CAP/Foundation = unchanged (proportional engine, 2-way, CAP-only). CIP/ASCI = no engine at all (residual-value pricing via separate charges + existing pro-ration). The `AllocationFormulaInterface` stays but is now CAP-2-way-only in practice.
+
+---
+
+## 1d. Spec 02 Split + DEVOPS Dependency (2026-09-23) — implementation packaging
+
+> This section records how the CAP-integration work in this design is **packaged into specs**, and the DEVOPS prerequisite. It changes no design decision above — it maps the design onto shippable units. Authoritative schedule: `docs/asc-projects-master-timeline.md`.
+
+### ASCA Spec 02 is split into four sub-specs (confirmed 2026-09-23)
+
+Foundation (Spec 01, in execution) delivers the engine + schema. **CAP integration (Spec 02) is split into four independently shippable sub-specs** — per spec-driven sizing (one feature = one spec = one PR; ≤15 tasks; ≤3-page design). Flat folder naming matches the Spec 01 precedent (`asca-spec-01-foundation`):
+
+| Sub-spec | Folder | Design sections it implements | Injection surface |
+|---|---|---|---|
+| **02a — CAP Core Injection** | `asca-spec-02a-cap-core-injection` | §8 (injection point, failure isolation), §9 (detect → compute → overwrite for CAP) | `CommonUtil::createDailyRateCalculation()` — step [b] between existing [a]/[c] |
+| **02b — Refund Allocation** | `asca-spec-02b-refund-allocation` | §4 (formula for negative N), REF-CAP-09 (true floor toward −∞, execution-month lump, overlap/cooling-off/tax-exemption/shareholder, ¥19,800 cap) | Same engine path as 02a; negative-N charges enter the same entry point (CAP-only) |
+| **02c — AllocationDetail CSV** | `asca-spec-02c-allocation-detail-csv` | §10 (CSV report): `allocationDetailFile` config + `RevenueAllocationCsvService::createAllocationDetailFile()` | Adds one file to `$fileNameList` via the extracted `ArchiverService`/`MailerService` (post-ASCM-refactor path) |
+| **02d — DataCorrection Integration** | `asca-spec-02d-datacorrection-integration` | §8 (second injection point), §9 (scoped `allocateForCharge()`) | `DataCorrectionLogic::createDailyRateCalculation()` after the addDaily INSERT |
+
+**Authoring/label order: 02a → 02b → 02c → 02d.** 02a is the prerequisite spine; refund (02b) is authored second to front-load its risk-carrying G1 sign-off (REF-CAP-09 is dense, with the shareholder cap still under executive discussion). 02c/02d are thin and stable. Implementation order in the master-timeline Gantt is unchanged (injection W6, CSV + DataCorrection W7, refund W8) — the split adds G1 sign-offs, not calendar time.
+
+### DEVOPS dependency (ASCM refactor + ZPR)
+
+The injection surface this design targets was **reshaped by the ASCM refactor (DEVOPS-6415)**, which extracted `ArchiverService` + `MailerService` and refactored `DailyRateCalculationPreLogic` / `SendJournalsDataLogic` / `DataCorrectionLogic` (and fixed the DataCorrectionLogic drift — the `BizmatesMonthlyPlanEnum` skip + missing `tax_free`/`country_id`/`gross_amount`). DEVOPS-6596 added the ZPR Zipan 20-lesson plan to `ZipanMonthlyPlanEnum`. Consequently:
+
+- **02c writes against the extracted `ArchiverService`/`MailerService`** (the CSV rides that path — see §10).
+- **02d writes against the refactored `DataCorrectionLogic`** (§8 second injection point).
+
+**Branch state (verified 2026-09-23):** DEVOPS-6415 + 6596 are merged into `deployment/dev04` (deployed + executed on DEV04) but are **NOT yet in `main` or `feature/ASCA/ASCA-master`**. `ASCA-master` is 18 commits behind `dev04` (exactly the 6415 + 6596 code + tests). **Spec 02 requirements** can be authored on `feature/ASCA/ASCA-master` now (behavior, not line-level code). The **design/tasks** phase needs the DEVOPS-refactored files present — pull them from `main` once 6415/6596 are released there (fallback: the DEVOPS feature branches, or a temporary integration branch).
 
 ---
 
@@ -1256,7 +1284,7 @@ ls-database-migrations/
 | Document | Location | What it covers |
 |---|---|---|
 | **Master timeline** | **`docs/asc-projects-master-timeline.md`** | **Authoritative timeline — Gantt, calendar mapping, team assignments, QA schedule** |
-| Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Original proposal — rationale, Scenario C vs D comparison, lead dev assessment |
+| Scenario D proposal (historical, archived) | `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Original proposal — rationale, Scenario C vs D comparison, lead dev assessment (archived 2026-09-23) |
 | Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` / `mst_alloc_*` prefix |
 | Discussion notes | `projects/asch/documentation/asc-alloc-integration-discussion-notes-20260811.md` | Decisions, scope assessment, refactoring discussion |
 | Process flow diagram | `projects/asch/documentation/diagrams/asc-alloc-injection-process-flow.md` | Visual flow diagrams |

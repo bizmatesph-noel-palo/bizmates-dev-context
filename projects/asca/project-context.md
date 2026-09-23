@@ -116,7 +116,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 |---|---|
 | Technical design (authoritative) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
 | **Master timeline (authoritative schedule)** | **`docs/asc-projects-master-timeline.md`** |
-| Scenario D proposal (historical) | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
+| Scenario D proposal (historical, archived) | `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` |
 | Table prefix ADR | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` |
 | Upstream CAP research | `research/CAP/` |
 | Base system context (ASCM) | `projects/ascm/project-context.md` |

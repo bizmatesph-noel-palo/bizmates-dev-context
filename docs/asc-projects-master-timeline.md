@@ -5,13 +5,13 @@
 | | |
 |---|---|
 | **Document type** | Project Timeline |
-| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) · 2026-09-16 (Status update: accounting-repo `asca-spec-01-foundation` `design.md`+`tasks.md` now COMPLETE — both Foundation halves fully specced; next action G2 sign-off (ASCA-15). Synced resolved items: O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100); CAP reference prices locked tax-excl (3,618 / 18,000 / 36,000); grouping key + `bundle_type` updated in Current Approach) · 2026-09-17 (Scope change: **REF-CIP-05 — CIP switches to residual-value pricing, dropping the allocation engine for CIP entirely** (supersedes R-16 3-way). Phase 3 (ASCI) shrinks to a master-price-record + pro-ration-verification task; CAP/Foundation unaffected. Lead decision: keep `AllocationFormulaInterface` + `TwoWayAllocationFormula`, drop the 3-way promise) |
+| **Date** | 2026-08-10 (Created) · 2026-08-20 (Consolidated — single authoritative timeline) · 2026-08-26 (Added Phase 0.5: Spec Preparation) · 2026-09-08 (Added Status/Actuals layer, ZPR row, refund scope-growth flag) · 2026-09-11 (Status update: G1 passed via REF-CAP-11, requirements done, on design.md; synced stale values — 11 tables, tax-excl prices, R-16 3-way CIP) · 2026-09-15 (Status update: ls-db `design.md` complete and reviewed against schema-ref/ADR/technical-design/G1-investigation/REF-CAP-11 — aligned; next action tasks.md) · 2026-09-16 (Status update: ls-db `design.md`+`tasks.md` complete; accounting-repo `design.md`+`tasks.md` in progress; ZPR DEV04 stale-DB blocker logged (09-14 reports → 09-15 missing product 38 → prod-DB re-import fix); spec `.config.kiro` specId fix noted) · 2026-09-16 (Status update: accounting-repo `asca-spec-01-foundation` `design.md`+`tasks.md` now COMPLETE — both Foundation halves fully specced; next action G2 sign-off (ASCA-15). Synced resolved items: O-10 product_type resolved (Round-3/REF-CAP-11: 10005/10015=9, 10022=100); CAP reference prices locked tax-excl (3,618 / 18,000 / 36,000); grouping key + `bundle_type` updated in Current Approach) · 2026-09-17 (Scope change: **REF-CIP-05 — CIP switches to residual-value pricing, dropping the allocation engine for CIP entirely** (supersedes R-16 3-way). Phase 3 (ASCI) shrinks to a master-price-record + pro-ration-verification task; CAP/Foundation unaffected. Lead decision: keep `AllocationFormulaInterface` + `TwoWayAllocationFormula`, drop the 3-way promise) · 2026-09-23 (Status + planning update: **Spec 01 Foundation now in EXECUTION** — both repos (Throy-san accounting, Cristoff-san ls-db) coding from approved tasks.md, awaiting PRs for review. **ASCA Spec 02 split CONFIRMED into 4 flat sub-specs** (02a Core Injection · 02b Refund · 02c AllocationDetail CSV · 02d DataCorrection); authoring order 02a→02b→02c→02d. **DEVOPS state recorded:** DEVOPS-6415 + 6596 sit on `deployment/dev04`, NOT yet in `main`/`feature/ASCA/ASCA-master` — Spec 02 needs them in its base (pull from `main` at the design phase once released). **Superseded docs archived** to root `archive/` (mirroring original paths) — see `archive/README.md`) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
 | **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM), QA Team |
-| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) · [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) |
-| **Supersedes** | `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` (timeline content), `docs/asc-cap-cip-combined-estimate-20260808.md` (Scenario C estimate) |
+| **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) · [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) · [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) |
+| **Supersedes** | `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` (timeline content; archived 2026-09-23), `archive/docs/asc-cap-cip-combined-estimate-20260808.md` (Scenario C estimate; archived 2026-09-23) |
 
 ---
 
@@ -32,22 +32,35 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-09-16)
+## ⚠️ Status / Actuals (as of 2026-09-23)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
 ### Where we actually are
 
-| Baseline expectation (by W2, Sep 7) | Actual (2026-09-16) |
+| Baseline expectation (by W2, Sep 7) | Actual (2026-09-23) |
 |---|---|
-| Foundation (Spec 01) coding started | **Not started** — in Architecture (G2). **ls-db half (`asca-spec-01-database-migration`): `design.md` + `tasks.md` complete** (generated 2026-09-15, reviewed/aligned). **Accounting half (`asca-spec-01-foundation`): `requirements.md` + `design.md` + `tasks.md` complete** (2026-09-16). Both Foundation halves are now fully specced; next action is G2 sign-off. |
+| Foundation (Spec 01) coding started | ✅ **In EXECUTION (both repos).** G2 passed; coding underway from approved `tasks.md`: **ls-db half (`asca-spec-01-database-migration`)** — Cristoff-san; **accounting half (`asca-spec-01-foundation`)** — Throy-san. **Awaiting PRs for code review (G3).** (Prior 09-16 state: both halves fully specced, awaiting G2.) |
 | ASCA Spec 01 requirements signed off (G1) | ✅ **Approved to proceed** — Kuroda-san, REF-CAP-11 (Round 3, 2026-09-10), Round-3 items A (pairing key) + B (V-5 anchor) folded into both requirements.md |
 | ASCA Spec 01 requirements.md (both repos) | ✅ Done — accounting (`asca-spec-01-foundation`) + ls-db (`asca-spec-01-database-migration`), aligned with REF-CAP-11 |
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
+| ASCA Spec 02 shape | ✅ **Split confirmed (2026-09-23)** into 4 flat sub-specs (02a–02d). Requirements not yet authored — will be written on `feature/ASCA/ASCA-master` (see DEVOPS note below for the design-phase dependency). |
 
-**Net:** still ~1+ week behind the Foundation-**coding** baseline, but requirements + G1 are cleared and the **ls-db half** (`design.md` + `tasks.md`) is complete and reviewed. Both Foundation halves now have complete requirements + design + tasks (ls-db 2026-09-15, accounting 2026-09-16). Critical-path next action: **G2 sign-off on both halves** ([ASCA-15](https://bizmates.atlassian.net/browse/ASCA-15)), then coding can begin.
+**Net:** Foundation coding is now **in flight in both repos** (Throy-san accounting, Cristoff-san ls-db), G1+G2 cleared — critical-path next action is **G3 code review** once PRs land ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)). Still ~1.5–2 weeks behind the original Foundation-coding baseline, but the Dec 17 deadline stays achievable on the W12–W15 buffer, and ASCI scope is reduced by REF-CIP-05. Spec 02 planning (the 4-way split) is settled ahead of Foundation completion so requirements authoring can start as soon as the team is ready.
+
+### DEVOPS branch/merge state (recorded 2026-09-23)
+
+Verified against the accounting repo (`github.com/bizmatesinc/accounting_related_system_for_freee`):
+
+| Item | State |
+|---|---|
+| **DEVOPS-6415** (ArchiverService + MailerService extraction + DataCorrectionLogic drift fix) | Merged into `deployment/dev04` (via `release/DEVOPS/dev04`). Deployed + executed on DEV04. **NOT in `main`, NOT in `feature/ASCA/ASCA-master`.** Still 13 commits ahead of `main`. |
+| **DEVOPS-6596** (ZPR — Zipan 20-lesson plan → `ZipanMonthlyPlanEnum`) | Merged into `deployment/dev04` on top of 6415. Deployed + executed on DEV04. **NOT in `main`/`ASCA-master`.** |
+| `feature/ASCA/ASCA-master` vs `deployment/dev04` | 18 commits behind (= exactly the 6415 + 6596 code: `ArchiverService.php`, `MailerService.php`, refactored `DailyRateCalculationPreLogic`/`SendJournalsDataLogic`/`DataCorrectionLogic`, `ZipanMonthlyPlanEnum`, + their tests), 28 ahead (ASCA docs/spec/steering). |
+
+**Impact on Spec 02:** the DEVOPS refactor reshapes the exact injection surface Spec 02 writes against — 02c rides the extracted `ArchiverService`/`MailerService`; 02d injects into the refactored `DataCorrectionLogic`. **Plan:** author Spec 02 requirements now on `feature/ASCA/ASCA-master` (requirements describe behavior, not line-level code, so they don't need the refactored files present). Before the **design/tasks** phase, pull the released DEVOPS updates from `main` (verify 6415 + 6596 have merged there first; fallback = the DEVOPS feature branches or a temp integration branch). The earlier idea of a dedicated `feature/ASCA/ASCA-DEVOPS-updates` branch is not required if the updates are released to `main` by then.
 
 > **Spec tooling note (2026-09-16):** the spec-UI "Continue to Design/Tasks" flow was crashing with `i.map is not a function`. Root cause: the spec's `.config.kiro` was missing its `specId` (hand-authored via draft→promote, never registered through the UI). Fixed by writing a valid single-line `.config.kiro` (specId + `workflowType: requirements-first` + `specType: feature`) for both `asca-spec-01-database-migration` (ls-db) and `asca-spec-01-foundation` (accounting). Also fixed a malformed requirement heading (`Requirement 13a` → renumbered 14/15/16) in the ls-db requirements.md.
 
@@ -69,7 +82,7 @@ New requirements landed after the baseline was set — these expand scope, so th
 
 | Change | Source | Impact |
 |---|---|---|
-| **Refund allocation** (negative amounts, same pipeline, true floor toward −∞) | REF-CAP-09 (Kuroda-san, 2026-09-08) | Expands ASCA Spec 02 (refund) — was already the split-candidate sub-spec |
+| **Refund allocation** (negative amounts, same pipeline, true floor toward −∞) | REF-CAP-09 (Kuroda-san, 2026-09-08) | Now its own sub-spec — **ASCA Spec 02b (Refund Allocation)**, confirmed 2026-09-23 |
 | ~~CIP 1029–1032 3-way~~ → **CIP dropped from the allocation engine entirely (residual-value pricing)** | REF-CIP-05 (2026-09-17), supersedes R-16 | **Scope REDUCTION, not growth.** CIP books separate already-priced charges (Lesson / App ¥3,980 / Coaching Intensive ¥71,920) through existing pro-ration — no split, no engine. ASCI shrinks to a master-price-record task. |
 | Tax-**exclusive** weights (App 3,618, Coaching 66,500) | REF-CAP-09 | Reconcile against earlier tax-incl figures (¥3,980 / ¥19,800) in design/schema |
 | product_type conflict (O-10): CAP 618/469 vs CIP DB 100/9 | Terry/Jefferson data | Data, not code blocker — final migration decides |
@@ -312,9 +325,9 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 
 **Billed under:** [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog)
 
-**Spec:** ASCA Spec 02 — CAP Integration ⚠️ (may split into 2–4 smaller specs during requirements generation; see Spec Overview note)
+**Spec:** ASCA Spec 02 — CAP Integration, **split into 4 sub-specs (confirmed 2026-09-23):** 02a CAP Core Injection · 02b Refund Allocation · 02c AllocationDetail CSV · 02d DataCorrection Integration. Each is its own `.kiro/specs/` folder, branch, PR, and G1/G2/G3 gate set. Authoring order 02a→02b→02c→02d (see Spec Overview sizing note). Implementation order below is unchanged — the split adds sign-offs, not time.
 
-**Prerequisite:** Phase 1 Foundation complete (G3 passed — all Foundation PRs merged).
+**Prerequisites:** (1) Phase 1 Foundation complete (G3 passed — all Foundation PRs merged); (2) DEVOPS updates (6415 + 6596) present in the ASCA base — 02c touches `ArchiverService`/`MailerService`, 02d touches `DataCorrectionLogic`. Requirements can be authored earlier on `feature/ASCA/ASCA-master`; design/tasks need the DEVOPS-refactored files (pull from `main` once released).
 
 | # | Category | Owner | Task | Detail |
 |---|---|---|---|---|
@@ -391,22 +404,26 @@ Dev Team:                 ║═════════════════
 | Spec | Full Name | What it delivers |
 |---|---|---|
 | **ASCA Spec 01** | Foundation | New DB tables (`log_alloc_*`, `mst_alloc_*`), Eloquent models, plan detection enums, allocation engine (formula + idempotency), run lifecycle service, reference price seeder, test data seeder |
-| **ASCA Spec 02** | CAP Integration ⚠️ | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation |
+| **ASCA Spec 02** | CAP Integration — **split into 4 sub-specs (02a–02d), confirmed 2026-09-23** | Injection into `CommonUtil::createDailyRateCalculation()` (overwrite N→P), CAP bundle detection (plans 1016–1027), AllocationDetail CSV for Accounting, `allocateForCharge()` in DataCorrectionLogic, refund allocation — now delivered as four independently shippable sub-specs (see the split table below) |
+| ↳ **Spec 02a** | CAP Core Injection | Inject `RevenueAllocationService::allocate()` into `CommonUtil::createDailyRateCalculation()` (step [b] between existing [a]/[c], try/catch failure isolation) + CAP bundle detection wiring (plans 1016–1027). The spine the other three build on. |
+| ↳ **Spec 02b** | Refund Allocation | Negative-N handling through the same pipeline (REF-CAP-09): true floor toward −∞, execution-month lump (not spread back), overlap/cooling-off/tax-exemption/shareholder scenarios, ¥19,800 coaching cap, atomic Coaching+App write. CAP-only. |
+| ↳ **Spec 02c** | AllocationDetail CSV | `allocationDetailFile` config in `config/const.php` + `RevenueAllocationCsvService::createAllocationDetailFile()`; one file added to `$fileNameList` via the extracted `ArchiverService`/`MailerService` (reporting only). |
+| ↳ **Spec 02d** | DataCorrection Integration | `allocateForCharge()` call in `DataCorrectionLogic::createDailyRateCalculation()` after the addDaily INSERT (scoped single-charge allocation). |
 | **ASCI Spec 01** | CIP Integration (residual-value pricing — REF-CIP-05) | **No allocation engine for CIP.** Add the Coaching Intensive booking record (`product_id 10025`, `price_flag=3`, ¥71,920 tax-incl / 65,382 tax-excl = CIP Solo 75,900 − App 3,980) to `mst_new_price_listing`; CIP then books separate already-priced charges (Lesson at its own price, App ¥3,980, Coaching Intensive ¥71,920) through existing daily pro-ration. No bundle detection, no split formula, no `mst_alloc_reference_prices`/run/anchor for CIP. Verify pro-ration + first-month discount produce the expected independent charges. |
 
-> ⚠️ **Spec sizing note (ASCA Spec 02 and ASCI Spec 01):**
+> ✅ **Spec sizing note (ASCA Spec 02 split — CONFIRMED 2026-09-23):**
 >
-> The scope listed above is preliminary grouping based on the technical design. Per spec-driven development standards, each spec targets 5–15 tasks and a design document of 1–3 pages. If a spec exceeds these thresholds during requirements generation, it will be split into smaller, independently shippable specs.
+> Per spec-driven development standards, each spec targets 5–15 tasks and a design document of 1–3 pages, and follows one-feature/one-spec/one-PR. ASCA Spec 02 covers 4 distinct concerns (injection, refund, CSV, DataCorrection) across different files, risk profiles, and dependencies — well past those thresholds. **It is now confirmed split into four flat sub-specs**, matching the Spec 01 folder precedent (`asca-spec-01-foundation`):
+> - **Spec 02a — CAP Core Injection** (`asca-spec-02a-cap-core-injection`): `CommonUtil` overwrite + CAP detection. The prerequisite spine.
+> - **Spec 02b — Refund Allocation** (`asca-spec-02b-refund-allocation`): negative-N via REF-CAP-09 (true floor, execution-month lump, cap). CAP-only.
+> - **Spec 02c — AllocationDetail CSV** (`asca-spec-02c-allocation-detail-csv`): reporting layer via `ArchiverService`/`MailerService`.
+> - **Spec 02d — DataCorrection Integration** (`asca-spec-02d-datacorrection-integration`): `allocateForCharge()` in `DataCorrectionLogic`.
 >
-> **ASCA Spec 02** is the most likely candidate for splitting. It covers 4 distinct concerns (injection, CSV, refund, DataCorrection) across 4 weeks. Probable split:
-> - Spec 02a: CAP Core Injection (CommonUtil + detection + overwrite)
-> - Spec 02b: AllocationDetail CSV (reporting layer)
-> - Spec 02c: Refund Allocation (record_kind = 1)
-> - Spec 02d: DataCorrection Integration (`allocateForCharge()`)
+> **Authoring/label order = 02a → 02b → 02c → 02d.** Refund (02b) is authored second — right after the core-injection spine — to front-load its risk-carrying G1 sign-off (REF-CAP-09 is dense and still has open items, e.g. the shareholder cap). 02c and 02d are thin and stable. **Implementation order in the Gantt is unchanged** (injection W6, CSV + DataCorrection W7, refund W8) — the split changes only the number of G1 sign-offs Kuroda-san receives, not the W6–W9 time box.
+>
+> **Dependencies:** 02a is the prerequisite for 02b/02c/02d. All four depend on (1) **Spec 01 merged** (engine + tables) and (2) the **DEVOPS updates** (6415 + 6596) present in the ASCA base — they touch `DataCorrectionLogic` (02d), `ArchiverService`/`MailerService` (02c). Requirements can be authored now on `feature/ASCA/ASCA-master`; the design/tasks phase needs the DEVOPS-refactored files checked out (pull from `main` once 6415/6596 are released there).
 >
 > **ASCI Spec 01** is no longer an allocation-engine change at all (REF-CIP-05): it is a master-price-record addition (`product_id 10025`, `price_flag=3`, ¥71,920) plus verification that existing daily pro-ration produces the expected independent CIP charges. Likely a single small spec.
->
-> **Impact on timeline:** Splitting does not change the W6–W9 / W10–W11 time allocation — it changes the number of G1 sign-offs Kuroda-san receives during those weeks. Final spec boundaries will be determined when requirements are written (W5 for ASCA Spec 02, W9 for ASCI Spec 01).
 
 | Category | Owner | Task | W0 (Aug 24) | W1 (Aug 31)🔴 | W2 (Sep 7) | W3 (Sep 14) | W4 (Sep 21) | W5 (Sep 28) | W6 (Oct 5) | W7 (Oct 12) | W8 (Oct 19) | W9 (Oct 26) | W10 (Nov 2)🔴 | W11 (Nov 9) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
@@ -501,10 +518,10 @@ Dev Team:                 ║═════════════════
 |---|---|---|---|---|
 | **W0** | Aug 24–28 | 5 | ASCM Refactor (DEVOPS-6415) | ✅ Done |
 | **W1** | Aug 31–Sep 5 | 4 | QA verification + Lead: steering files + spec session | ✅ Steering done · investigations done · 🔴 Aug 31 holiday |
-| **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | ⚠️ **Foundation NOT started** — Spec 01 requirements not yet signed off (G1). **ZPR dev (Cristoff) Sep 9–11.** |
+| **W2** | Sep 7–11 | 5 | Foundation: migrations + structure tests | ⚠️ Slipped ~1.5–2 wks vs baseline. **Update 09-23: Foundation now IN EXECUTION** (G1+G2 passed; Throy-san + Cristoff-san coding both repos, awaiting PRs). **ZPR dev (Cristoff) Sep 9–11.** |
 | **W3** | Sep 14–18 | 5 | Foundation: models, enums, run lifecycle | ⚠️ Behind baseline. **ZPR QA+UAT Sep 14–18.** |
 | **W4** | Sep 21–25 | 5 | Foundation: reference prices, engine | ZPR buffer → ★ release before Oct 1 |
-| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | ⚠️ Behind baseline by ~1.5–2 wks (Foundation execution not started; awaiting G2). Deadline still achievable with buffer; ASCI scope reduced by REF-CIP-05 |
+| **W5** | Sep 28–Oct 2 | 5 | Foundation complete → CAP Integration starts | ⚠️ Behind baseline by ~1.5–2 wks. Update 09-23: Foundation in execution (coding both repos, awaiting PRs → G3). Deadline still achievable with buffer; ASCI scope reduced by REF-CIP-05 |
 | **W6** | Oct 5–9 | 5 | ASCA: injection + detection | |
 | **W7** | Oct 12–16 | 5 | ASCA: CSV, DataCorrection allocateForCharge | |
 | **W8** | Oct 19–23 | 5 | ASCA: refund allocation | |
@@ -544,8 +561,8 @@ Dev Team:                 ║═════════════════
 | ASCM Refactor complete | W0 | Aug 28 | No blockers | ✅ |
 | ASCM QA verification passes | W1 | Sep 5 | Gate to Foundation (1 day lost to holiday) | ✅ |
 | **ZPR (Zipan 20L) released** | — | **before Oct 1** | ★ Hard deadline — Oct 1 PRE batch. Cristoff, DEVOPS. | 🔄 Dev Sep 9–11 |
-| ASCA Spec 01 requirements sign-off (G1) | W1–W2 | (baseline Sep 5) | Foundation requirements approved by Kuroda-san | ⚠️ Not done — critical path |
-| ASC Shared Foundation complete | W5 | Oct 2 | All tables + engine ready | ⚠️ At risk (Foundation not started; re-baseline pending) |
+| ASCA Spec 01 requirements sign-off (G1) | W1–W2 | (baseline Sep 5) | Foundation requirements approved by Kuroda-san | ✅ Passed (REF-CAP-11, 2026-09-10) |
+| ASC Shared Foundation complete | W5 | Oct 2 | All tables + engine ready | 🔄 In execution (09-23: coding both repos, awaiting PRs → G3) |
 | ASCA CAP dev complete | W9 | Oct 30 | Full pipeline tested on seeded data |
 | ASCI CIP dev complete | W11 | Nov 13 | CIP tested on seeded data |
 | QA active testing begins | W6 | Oct 5 | CAP scenarios (parallel with dev) |
@@ -596,7 +613,7 @@ W1:  ┣━━━━ Steering + Spec 01 requirements → ══ G1: PM Sign-Off 
 W2:  ┣━━━━ Spec 01 design + tasks (after G1) → ══ G2: Lead + Dev Review ══
 W2:  ┣━━━━ Task execution begins (after G2)
 W5:  ┣━━━━ All Spec 01 PRs → ══ G3: Code Review ══ → Foundation complete
-W6:  ┣━━━━ Spec 02 requirements → ══ G1 ══ → design → ══ G2 ══ → execution
+W6:  ┣━━━━ Spec 02 sub-specs (02a→02b→02c→02d) each: requirements → ══ G1 ══ → design → ══ G2 ══ → execution
 W9:  ┣━━━━ All Spec 02 PRs → ══ G3 ══ → CAP Integration complete
 W10: ┣━━━━ ASCI Spec 01 requirements → ══ G1 ══ → design → ══ G2 ══ → execution
 W11: ┣━━━━ All ASCI PRs → ══ G3 ══ → CIP Integration complete → Dev done
@@ -680,9 +697,10 @@ ASC is NOT blocked by upstream timelines:
 | 2026/09/09 | ASCA Foundation epic + stories created (ASCA-13…20, `[Spec 01] —` prefix). ZPR ticket **DEVOPS-6596** created. |
 | **2026/09/09–11** | **ZPR dev + DEV04 (Cristoff, DEVOPS-6596)** |
 | **2026/09/14–18** | **ZPR QA + UAT** |
-| ⚠️ (baseline ~Sep 7) | Foundation NOT started — behind baseline; Spec 01 G1 pending |
+| 2026/09/10 | Spec 01 G1 passed (REF-CAP-11, Round 3) |
+| 2026/09/23 | Foundation in EXECUTION (both repos coding, awaiting PRs → G3). ASCA Spec 02 split confirmed into 4 sub-specs (02a–02d). DEVOPS 6415/6596 recorded as on `deployment/dev04`, not yet in `main`/`ASCA-master`. Superseded docs archived to root `archive/`. |
 | **★ before 2026/10/01** | **ZPR released — Oct 1 PRE batch deadline** |
-| ~2026/10/02 | ASC Shared Foundation complete (⚠️ at risk — re-baseline pending) |
+| ~2026/10/02 | ASC Shared Foundation complete (🔄 in execution as of 09-23; coding both repos, awaiting PRs → G3) |
 | ~2026/10/30 | ASCA CAP dev complete |
 | ~2026/11/02 | 🔴 All Souls' Day (W10 loses 1 day) |
 | ~2026/11/13 | ASCI CIP dev complete |
@@ -709,7 +727,7 @@ ASC is NOT blocked by upstream timelines:
 | Smoke test on DEV04 | ✅ Done (W0) |
 | QA manual verification (W1) | ✅ Passed (W1) |
 
-*(For live status — Foundation specced but not executed (awaiting G2), ZPR in flight, ASCI scope reduced by REF-CIP-05 — see the Status/Actuals section at the top.)*
+*(For live status — Foundation in execution (coding both repos, awaiting PRs → G3), ASCA Spec 02 split into 4 sub-specs, DEVOPS 6415/6596 on `deployment/dev04` (not yet in main/ASCA-master), ASCI scope reduced by REF-CIP-05 — see the Status/Actuals section at the top.)*
 
 ---
 
@@ -745,9 +763,9 @@ ASC is NOT blocked by upstream timelines:
 | `projects/asca/documentation/asc-allocation-framework-technical-design.md` | **Authoritative technical design** — formula, data flow, code, injection |
 | `projects/asca/documentation/asc-alloc-db-schema.md` | **DB schema reference** — full field list, types, descriptions for all 11 tables + view |
 | `projects/asca/documentation/asca-development-workflow.md` | **Development workflow** — spec lifecycle, gates, JIRA structure, branch strategy, roles |
-| `projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Historical — original Scenario D proposal (timeline now consolidated here) |
+| `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` | Historical (archived 2026-09-23) — original Scenario D proposal (timeline now consolidated here) |
 | `projects/asca/documentation/ASCA-ADR-20260817-table-prefix-decision.md` | O-3 decision: `log_alloc_*` prefix |
-| `docs/asc-cap-cip-combined-estimate-20260808.md` | Historical — Scenario C estimate (superseded) |
+| `archive/docs/asc-cap-cip-combined-estimate-20260808.md` | Historical (archived 2026-09-23) — Scenario C estimate (superseded) |
 | `research/CAP/REF-CAP-04` | Kuroda-san DB design |
 | `research/CAP/REF-CAP-05` | Confirmed pricing (Slack thread) |
 | `research/CAP/REF-CAP-06` | CAP price mechanism (Confluence) |
