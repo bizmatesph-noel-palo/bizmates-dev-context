@@ -103,6 +103,8 @@ The injection surface this design targets was **reshaped by the ASCM refactor (D
 
 **Branch state (verified 2026-09-23):** DEVOPS-6415 + 6596 are merged into `deployment/dev04` (deployed + executed on DEV04) but are **NOT yet in `main` or `feature/ASCA/ASCA-master`**. `ASCA-master` is 18 commits behind `dev04` (exactly the 6415 + 6596 code + tests). **Spec 02 requirements** can be authored on `feature/ASCA/ASCA-master` now (behavior, not line-level code). The **design/tasks** phase needs the DEVOPS-refactored files present — pull them from `main` once 6415/6596 are released there (fallback: the DEVOPS feature branches, or a temporary integration branch).
 
+**Release packaging (decided 2026-09-23):** 6415 + 6596 will be **released together** (6596 is stacked on 6415 and was co-tested on DEV04) — this is the single DEVOPS release event that lands both in `main`, making the refactored injection surface available to pull for the Spec 02 design/tasks phase. As of 2026-09-23: dev + QA testing done, UAT starts 2026-09-24. See the master timeline (Phase 0.1 + Status/Actuals) for the release plan and its pre-Oct-1 deadline.
+
 ---
 
 ## 2. Project Context
@@ -1207,7 +1209,7 @@ ls-database-migrations/
 | `config/revenue_allocation.php` (NEW) | Config for launch dates, feature flags | 1 new file |
 | `config/const.php` | CSV header definition for AllocationDetail | ~20 lines |
 | `createSendMailAttacheFile()` | Add AllocationDetail CSV to file list | ~5 lines |
-| Migrations (ls-database-migrations) | 10 tables + 1 view | 11 files |
+| Migrations (ls-database-migrations) | 11 tables + 1 view (incl. `log_alloc_run_anchors`) | 11 files |
 | Seeder | Reference prices + mst_rule_for_journals (if missing) | 1–2 files |
 
 ### DOES NOT NEED CHANGES (Verified)

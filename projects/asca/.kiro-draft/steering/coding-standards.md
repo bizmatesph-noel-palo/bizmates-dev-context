@@ -121,7 +121,7 @@ tests/Unit/RevenueAllocation/
 
 Migrations live in the **`ls-database-migrations`** repo, NOT here. See `database-standards.md`.
 
-**Full field-level schema** (columns, types, keys, descriptions for all 10 tables + view) is the authoritative reference for models and migrations: `projects/asca/documentation/asc-alloc-db-schema.md` (in the dev-context workspace).
+**Full field-level schema** (columns, types, keys, descriptions for all 11 tables + view) is the authoritative reference for models and migrations: `projects/asca/documentation/asc-alloc-db-schema.md` (in the dev-context workspace).
 
 ## Naming Conventions
 

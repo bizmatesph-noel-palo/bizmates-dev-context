@@ -66,7 +66,7 @@ Three mandatory gates where work cannot proceed without approval:
 
 | Spec | Repo(s) | What it delivers |
 |---|---|---|
-| **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | DB schema (10 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
+| **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | DB schema (11 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
 | **ASCA Spec 02: CAP Integration** ⚠️ | `accounting_related_system_for_freee` | CommonUtil injection, CAP detection strategy, AllocationDetail CSV, DataCorrectionLogic allocation call, refund allocation |
 | **ASCI Spec 01: CIP Integration** ⚠️ | `accounting_related_system_for_freee` | CIP detection strategy (plans 1028–1032), CIP reference prices (L_coaching = ¥84,020) |
 
@@ -153,7 +153,7 @@ main
 ```
 main
 └── feature/ASCA/ASCA-master                              (long-lived)
-    └── feature/ASCA/ASCA-{t}-spec01-migrations           (10 tables + 1 view + structure tests)
+    └── feature/ASCA/ASCA-{t}-spec01-migrations           (11 tables + 1 view + structure tests)
 ```
 
 `{t}` = the JIRA story number the branch's work is logged against.
@@ -197,7 +197,7 @@ ASCA Spec 01 spans two repos. Execution order matters:
 ```
 ls-database-migrations                    accounting_related_system_for_freee
 ──────────────────────                    ──────────────────────────────────
-1. Create migration files (10 tables)     (can write model code in parallel)
+1. Create migration files (11 tables)     (can write model code in parallel)
 2. Run migrations on dev DB               
 3. Generate structure tests               
 4. PR → merge                            3. Create models, enums, services

@@ -1,5 +1,5 @@
 @startuml erd_asc_alloc_schema
-title ASC Allocation Framework - Entity Relationship Diagram \n10 tables + 1 view (log_alloc_* / mst_alloc_* / v_alloc_*)
+title ASC Allocation Framework - Entity Relationship Diagram \n11 tables + 1 view (log_alloc_* / mst_alloc_* / v_alloc_*)
 
 skinparam linetype ortho
 skinparam entity {
@@ -26,6 +26,7 @@ entity "log_alloc_calculation_runs" as runs {
     error_message : text
     started_at : datetime
     finalized_at : datetime
+    superseded_by_run_id : bigint <<FK self>>  [NULL = active Final, V-5]
     created_at : timestamp
     updated_at : timestamp
 }
@@ -71,7 +72,7 @@ entity "log_alloc_bundle_charges" as bundle_charges {
     * bundle_id : bigint <<FK>>
     charge_id : bigint
     product_id : int
-    product_role : tinyint  [0=coaching / 1=app]
+    product_role : tinyint  [0=coaching / 1=app / 2=lesson reserved-unused, CAP-only]
     log_daily_rate_calculation_id : bigint
     created_at : timestamp
     updated_at : timestamp
@@ -125,7 +126,7 @@ entity "mst_alloc_reference_prices" as ref_prices {
     --
     bundle_type : tinyint  [1=CAP / 2=CIP]
     product_id : int
-    reference_price : int  [L, tax-incl]
+    reference_price : int  [L, tax-EXCL: App 3,618 / C15 18,000 / C30 36,000]
     effective_from : date
     effective_to : date  [null = open]
     created_at : timestamp
@@ -179,6 +180,23 @@ entity "log_alloc_deliveries" as deliveries {
 }
 
 ' ─────────────────────────────────────────
+' V-5 LOCK-ONLY ANCHOR (REF-CAP-11 B)
+' ─────────────────────────────────────────
+
+entity "log_alloc_run_anchors" as run_anchors {
+    * id : bigint <<PK>>
+    --
+    bundle_type : tinyint  [1=CAP / 2=CIP]
+    target_ym : char(6)
+    created_at : timestamp
+    updated_at : timestamp
+    --
+    UNIQUE (bundle_type, target_ym)
+    lock-only: no active_run_id, no FK
+    SELECT..FOR UPDATE before switching active Final
+}
+
+' ─────────────────────────────────────────
 ' VIEW
 ' ─────────────────────────────────────────
 
@@ -187,13 +205,19 @@ entity "v_alloc_prorations_active" as v_active <<view>> {
     --
     joins log_alloc_prorations
     with  log_alloc_calculation_runs
-    where run_type=Final AND status=Completed
-      AND latest run per (bundle_type, target_ym)
+    where status=Completed
+      AND superseded_by_run_id IS NULL
+      (active Final per bundle_type, target_ym)
 }
 
 ' ─────────────────────────────────────────
 ' RELATIONSHIPS
 ' ─────────────────────────────────────────
+
+' self-reference: a superseded Final points at its successor (V-5; NULL = active)
+runs        |o--o| runs           : "superseded_by_run_id"
+
+' run_anchors is standalone lock-only (no FK) — serializes Final finalizers
 
 ' runs is the root of each execution
 runs        ||--o{ source_docs    : "run_id"

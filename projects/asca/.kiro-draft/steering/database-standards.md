@@ -43,11 +43,13 @@ There is no decimal money and no `adjustment_amount` — allocation overwrites `
 
 ## Table Conventions
 
-Allocation adds **10 tables + 1 view** (see the ls-db migration spec for the full field-level definition):
+Allocation adds **11 tables + 1 view** (see the ls-db migration spec for the full field-level definition):
 
-- `log_alloc_*` — batch-generated (runs, source documents, bundles, bundle charges, groups, prorations, sum calculation, sum history, deliveries)
+- `log_alloc_*` — batch-generated (runs, source documents, bundles, bundle charges, groups, prorations, sum calculation, sum history, deliveries, run anchors)
 - `mst_alloc_reference_prices` — master data (effective-dated allocation weights)
 - `v_alloc_prorations_active` — view over the active Final run
+
+> `log_alloc_run_anchors` is the 11th table — a lock-only V-5 anchor (one row per `bundle_type`+`target_ym`, no `active_run_id`, no FK) added per REF-CAP-11 Round-3. Active-Final truth is `superseded_by_run_id IS NULL` on `log_alloc_calculation_runs`.
 
 Notable conventions:
 - **Physical FKs** between allocation tables (differs from the older `log_*` tables, which have none) — per the table-prefix ADR.

@@ -39,6 +39,19 @@
 
 ---
 
+## Release Plan (decided 2026-09-23)
+
+**Release ASCM–ZPR (DEVOPS-6596) together with the ASCM Refactor (DEVOPS-6415).**
+
+- On `deployment/dev04`, 6596 is **stacked on top of** 6415, and both were deployed, executed, and QA-tested there as one combined set. A combined release ships exactly the validated artifact.
+- Splitting ZPR out would require rebasing it off 6415 and re-testing an untested combination — more work and risk.
+- The combined package **inherits ZPR's hard pre-Oct-1 deadline** (Oct 1 PRE batch). If UAT surfaces a Refactor-side issue late, the **break-glass fallback** is to release ZPR alone to protect Oct 1.
+- **Status (2026-09-23):** dev complete, deployed + executed on DEV04, reports to QA; QA testing done; **UAT starts 2026-09-24** (per DSM).
+
+Authoritative schedule + rationale: `docs/asc-projects-master-timeline.md` (Phase 0.1 + Status/Actuals).
+
+---
+
 ## The Change
 
 `app/Enums/ZipanMonthlyPlanEnum.php`:
