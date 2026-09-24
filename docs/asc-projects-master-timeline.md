@@ -756,7 +756,7 @@ ASC is NOT blocked by upstream timelines:
 > **🔴 Product ID change (2026-08-19, Go-san approved, FINAL):** CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Note `10022` now = App (was CIP coaching).
 > **✅ O-10 (resolved Round-3/REF-CAP-11, 2026-09-10):** product_types confirmed — Coaching 10005/10015 = 9, App 10022 = 100, CIP 10025 = 9. ASC reads `product_type` from `mst_product` at runtime and validates the exact expected value per product (V-6).
 > **✅ R-16 (CIP 3-way) SUPERSEDED by REF-CIP-05 (2026-09-17):** CIP no longer uses proportional allocation at all — it books separate, already-priced charges (App ¥3,980; Coaching Intensive ¥71,920 from a new `product_id 10025` `price_flag=3` record; Lesson at its own price for 1029–1032) through existing daily pro-ration. No 2-way or 3-way split for CIP. CAP is unchanged (still 2-way proportional).
-> **🟡 O-5 (updated):** REF-CAP-09 gives tax-excl L_coaching = 66,500 for CIP; reconcile against the stale ¥84,020 and the tax-incl figures.
+> **✅ O-5 (MOOT for allocation — REF-CIP-05, 2026-09-17):** CIP uses no allocation weight, so the old CIP coaching reference price (¥84,020 / 66,500) no longer feeds any formula. Instead a real Coaching Intensive charge price ¥71,920 tax-incl (65,382 tax-excl) is added as `product_id 10025` `price_flag=3` in `mst_new_price_listing` (ASCI seeder). CAP weights remain tax-excl (App 3,618 / C15 18,000 / C30 36,000).
 > **Weights are tax-EXCLUSIVE** per REF-CAP-09 — earlier docs used tax-inclusive (¥3,980 / ¥19,800); reconcile in design/schema.
 
 ---

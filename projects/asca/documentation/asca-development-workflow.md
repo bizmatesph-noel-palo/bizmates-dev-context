@@ -67,10 +67,12 @@ Three mandatory gates where work cannot proceed without approval:
 | Spec | Repo(s) | What it delivers |
 |---|---|---|
 | **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | DB schema (11 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
-| **ASCA Spec 02: CAP Integration** ⚠️ | `accounting_related_system_for_freee` | CommonUtil injection, CAP detection strategy, AllocationDetail CSV, DataCorrectionLogic allocation call, refund allocation |
-| **ASCI Spec 01: CIP Integration** ⚠️ | `accounting_related_system_for_freee` | CIP detection strategy (plans 1028–1032), CIP reference prices (L_coaching = ¥84,020) |
+| **ASCA Spec 02: CAP Integration** — split into 4 sub-specs (confirmed 2026-09-23) | `accounting_related_system_for_freee` | **02a** CAP Core Injection (`CommonUtil` overwrite + CAP detection) · **02b** Refund Allocation (REF-CAP-09, negative-N) · **02c** AllocationDetail CSV · **02d** DataCorrection Integration (`allocateForCharge()`). Authoring order 02a→02b→02c→02d. |
+| **ASCI Spec 01: CIP Integration** (residual-value pricing — REF-CIP-05) | `ls-database-migrations` (seeder) | **No allocation engine for CIP.** Add the Coaching Intensive booking record (`product_id 10025`, `price_flag=3`, ¥71,920 tax-incl) to `mst_new_price_listing`; verify existing daily pro-ration + first-month discount produce the expected independent CIP charges (Lesson / App ¥3,980 / Coaching Intensive ¥71,920). No CIP detection, no split formula, no `mst_alloc_reference_prices` CIP rows. Likely a single small spec. |
 
-⚠️ = Preliminary scope. May split into smaller specs during requirements generation if scope exceeds 15 tasks or 3-page design threshold (per spec-driven development standards). Final boundaries determined when requirements are written (W5 for ASCA Spec 02, W9 for ASCI Spec 01).
+> **Spec 02 split confirmed (2026-09-23):** the four sub-specs above are each their own `.kiro/specs/` folder + branch + PR + G1/G2/G3 gate set (flat naming per the Spec 01 precedent). See `docs/asc-projects-master-timeline.md` (Spec Overview) for the sizing rationale.
+>
+> **ASCI reduced (REF-CIP-05, 2026-09-17):** CIP dropped proportional allocation entirely — it now books separate, already-priced charges through existing pro-ration. The earlier "CIP detection strategy / ¥84,020 reference price" scope is withdrawn. See technical design §1c.
 
 **Probable split for ASCA Spec 02:**
 - Spec 02a: CAP Core Injection (CommonUtil + detection + overwrite)
