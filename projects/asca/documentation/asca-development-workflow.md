@@ -74,11 +74,13 @@ Three mandatory gates where work cannot proceed without approval:
 >
 > **ASCI reduced (REF-CIP-05, 2026-09-17):** CIP dropped proportional allocation entirely — it now books separate, already-priced charges through existing pro-ration. The earlier "CIP detection strategy / ¥84,020 reference price" scope is withdrawn. See technical design §1c.
 
-**Probable split for ASCA Spec 02:**
-- Spec 02a: CAP Core Injection (CommonUtil + detection + overwrite)
-- Spec 02b: AllocationDetail CSV (reporting layer)
-- Spec 02c: Refund Allocation (record_kind = 1)
-- Spec 02d: DataCorrection Integration (`allocateForCharge()`)
+**ASCA Spec 02 sub-specs (confirmed 2026-09-28 — supersedes the earlier "probable split"):**
+- **Spec 02a:** CAP Core Injection (`CommonUtil` overwrite + CAP detection) — the prerequisite spine
+- **Spec 02b:** Refund Allocation (REF-CAP-09, negative-N)
+- **Spec 02c:** AllocationDetail CSV (reporting layer)
+- **Spec 02d:** DataCorrection Integration (`allocateForCharge()`)
+
+Author/gate order 02a → 02b → 02c → 02d. Each is its own epic + branch + PR + G1/G2/G3 gate set. Requirements drafts: `projects/asca/specs/asca-spec-02{a,b,c,d}-*/requirements.md` (submitted to Kuroda-san for G1, 2026-09-28).
 
 ---
 
@@ -111,13 +113,24 @@ Epic: ASCA-13 — [Spec 01] — Foundation (8 stories — Coding spans 2 repos)
 ├── Story: ASCA-20 — [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
 └── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Miko)
 
-Epic: [Spec 02] — CAP Integration (7 stories — single repo) — NOT YET CREATED
-├── Story: [Spec 02] — Requirements + Sign-off             → PM (Kuroda-san)
-├── Story: [Spec 02] — Architecture (Design + Tasks)       → Lead (Noel)
-├── Story: [Spec 02] — Coding                              → Dev (Throy)
-├── Story: [Spec 02] — Code Review                         → Lead (Noel)
-├── Story: [Spec 02] — Dev/Manual Testing                  → Lead (Noel)
-└── Story: [Spec 02] — QA Testing                          → QA (Miko)
+# Spec 02 = 4 separate epics (one per sub-spec) — confirmed 2026-09-28. NOT YET CREATED.
+# Each epic carries the standard 6-story set. Author/gate order: 02a → 02b → 02c → 02d.
+Epic: [Spec 02a] — CAP Core Injection (6 stories — accounting repo)
+├── Story: [Spec 02a] — Requirements + Sign-off            → PM (Kuroda-san)
+├── Story: [Spec 02a] — Architecture (Design + Tasks)      → Lead (Noel)
+├── Story: [Spec 02a] — Coding                             → Dev (Throy)
+├── Story: [Spec 02a] — Code Review                        → Lead (Noel)
+├── Story: [Spec 02a] — Dev/Manual Testing                 → Lead (Noel)
+└── Story: [Spec 02a] — QA Testing                         → QA (Miko)
+
+Epic: [Spec 02b] — Refund Allocation (6 stories — accounting repo)
+└── (same 6-story set; Requirements story flags REF-CAP-09 open items: shareholder cap, tax-exemption path)
+
+Epic: [Spec 02c] — AllocationDetail CSV (6 stories — accounting repo)
+└── (same 6-story set)
+
+Epic: [Spec 02d] — DataCorrection Integration (6 stories — accounting repo)
+└── (same 6-story set; smallest — one scoped allocateForCharge() call site)
 
 # ASCI Project (separate JIRA project — reuses ASCA foundation)
 Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREATED
@@ -129,7 +142,7 @@ Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREA
 └── Story: [Spec 01] — QA Testing                          → QA (Glenn)
 ```
 
-> **Scope note (R-16):** ASCI CIP Integration is no longer config-only — CIP lesson plans 1029–1032 are 3-way (Lesson/Coaching/App). Its story set stands, but the Coding story is larger than the earlier "config addition" estimate.
+> **Scope note (REF-CIP-05, 2026-09-17 — supersedes R-16):** ASCI CIP Integration is **no allocation engine at all**. CIP moved to residual-value pricing — it books separate, already-priced charges (Lesson at its own price, App ¥3,980, Coaching Intensive ¥71,920 via a new `product_id 10025` `price_flag=3` record) through existing daily pro-ration. The Coding story shrinks to a master-price-record addition + pro-ration verification (ls-db seeder). No CIP detection, no split formula. See technical design §1c.
 
 **Note on Scaffolding:** This epic (ASCA-9) is project setup, not spec dev work — it does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). It holds the steering story (ASCA-10) plus the DEV04 environment setup/fix tasks (ASCA-11/12/21/22). The originally-planned "Branch setup" story was dropped. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a non-spec epic is expected and does not distort measurement.
 
@@ -145,7 +158,10 @@ main
 └── feature/ASCA/ASCA-master                              (long-lived — PRs target this)
     ├── feature/ASCA/ASCA-{t}-scaffolding                 (steering files — merge FIRST)
     ├── feature/ASCA/ASCA-{t}-spec01-foundation           (models, enums, engine, seeders)
-    ├── feature/ASCA/ASCA-{t}-spec02-cap-integration      (injection, CSV, refund)
+    ├── feature/ASCA/ASCA-{t}-spec02a-cap-core-injection  (CommonUtil overwrite + detection)
+    ├── feature/ASCA/ASCA-{t}-spec02b-refund-allocation   (negative-N, REF-CAP-09)
+    ├── feature/ASCA/ASCA-{t}-spec02c-allocation-detail-csv (CSV via Archiver/Mailer)
+    ├── feature/ASCA/ASCA-{t}-spec02d-datacorrection      (allocateForCharge injection)
     ├── feature/ASCI/ASCI-{t}-spec01-cip-integration      (CIP detection + config)
     ├── release/ASCA/dev04                                (deploy for QA)
     └── release/ASCA/prod                                 (production release)
