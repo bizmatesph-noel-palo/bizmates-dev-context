@@ -6,6 +6,15 @@
 
 ---
 
+## Current State (as of 2026-09-30)
+
+- **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**.
+- **ZPR daily-table cleanup:** ✅ executed by Yijun-san (DevOps) **2026-09-30** — 8 stale `product_id=38` rows removed from the Zipan daily tables (delete-only), before the 10/01 PRE. Upcoming: Noel's 10/01 PRE-figure verification (by 10/02 15:00 JST), then the September FINAL (10/02 18:00 JST). Runbook: `projects/asca/technical-notes/investigation/20260928-zpr-daily-table-cleanup/REPORT-00-zpr-daily-table-cleanup.md`.
+- **Foundation (Spec 01):** 🔄 in execution in both repos (Throy accounting, Cristoff ls-db); awaiting PRs → G3.
+- **Spec 02 (CAP Integration):** at G1 (submitted 2026-09-28). **3 sub-specs — 02a Core Injection · 02b Refund · 02c AllocationDetail CSV.** Former **02d (DataCorrection) dropped at G1** (Kuroda-san, REF-CAP-12 §0 — DataCorrection fix batch outdated; draft archived). G1 returned 4 items to resolve: 02b CAP refund→bundle pairing (**blocker**), 02a failure-state + re-run/V-7, 02c linking columns. **CIP refunds ARE split** by a fixed per-type rule (REF-CIP-06) but the home (02b / new sub-spec / ASCI) is **on hold** pending Kuroda-san's refund-type-identification answer.
+
+---
+
 ## What ASCA Is
 
 **ASCA (ASC for CAP)** implements revenue allocation for the Coaching and App Plan bundles within the existing accounting batch system. It splits coaching charge revenue between Coaching and App products so that Freee journals correctly reflect the revenue split.

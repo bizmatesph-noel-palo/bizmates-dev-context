@@ -5,10 +5,10 @@
 | | |
 |---|---|
 | **Document type** | Production Runbook |
-| **Date** | 2026-09-28 |
+| **Date** | 2026-09-28 (Authored) · 2026-09-30 (Executed) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
-| **Status** | Active — pending execution before the 10/01 PRE batch |
+| **Status** | ✅ Executed 2026-09-30 by Yijun-san (DevOps) — 8 rows deleted before the 10/01 PRE. Post-cleanup PRE verification + September FINAL still upcoming (see below). |
 | **Audience** | DevOps (executor), Kuroda-san (PM), Patrick-san (SDM) |
 | **Related** | `docs/asc-projects-master-timeline.md`; `projects/ascm/documentation/02-asc-project-changelog.md` §8 |
 
@@ -24,6 +24,21 @@ Remove **8 incorrect rows** from the **Zipan production** database. These rows b
   - Steps 1–4 (checks) — can run in Metabase or a MySQL client (read-only, safe).
   - Steps 5–8 (transaction with DELETE) — **must run in a MySQL client with write access.** Metabase is read-only and cannot run `DELETE` / `COMMIT`.
 - **How to run:** one query at a time, in order. Compare each result to the **Expected** line. 🛑 **If any result does not match Expected, STOP and message Noel before continuing.**
+
+---
+
+## ✅ Execution record (2026-09-30)
+
+Executed by **Yijun-san (DevOps)** on **2026-09-30**, within the "finish during 09/30, before the 10/01 PRE" window.
+
+- **Part A (safety checks, Steps 1–4):** all matched Expected — Step 1 = 4 rows, Step 2 = 4 rows, Step 3 = 0 rows, Step 4 = 0 rows. Checkpoint cleared.
+- **Part B/C (transaction):** `DELETE` affected **4 + 4 = 8 rows** (4 from `log_daily_rate_calculation_zipan`, 4 from `log_daily_rate_calculation_pre_zipan`). Step 7 pre-commit verification showed `remaining_final = 0` and `remaining_pre = 0`; transaction **committed**. Part C final confirmation: both counts = 0.
+- **Result:** the 8 stale `product_id = 38` daily rows (charges 14265–14268) are removed. Delete-only — no re-run.
+
+**Still upcoming (post-cleanup checkpoints — not yet done):**
+
+- **10/01 PRE verification** — due by **10/02 15:00 JST**. Noel to review: `log_monthly_rate_calculation_pre` has 202609 rows for 14265/14266 (total = 20, paid_price = ¥41,580 each); 202609 PRE sum for order 10030672 = ¥112,860; no `product_id = 38` rows in the daily table.
+- **September FINAL run** — **10/02 (Fri) 18:00 JST** (MonthlyRateCalculationCommand + SendJournalsDataCommand; moved by Kuroda-san for quarterly closing).
 
 ---
 
