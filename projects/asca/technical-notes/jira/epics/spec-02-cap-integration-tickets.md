@@ -17,23 +17,23 @@
 
 ## Purpose
 
-Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), which was split into 4 sub-specs on 2026-09-23 and **reduced to 3 (02a–02c) at G1 (2026-09-28, REF-CAP-12 §0)** — 02d (DataCorrection Integration) dropped by Kuroda-san (fix batch outdated). Per the dev workflow (**1 Epic = 1 Spec**), each surviving sub-spec gets **its own epic** with the standard 6-story set. This is a **draft only** — tickets are not created in JIRA until the Lead confirms (and normally after G1 sign-off on the corresponding requirements).
+Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-specs on 2026-09-23. Per the dev workflow (**1 Epic = 1 Spec**), each sub-spec gets **its own epic** with the standard 6-story set. This is a **draft only** — tickets are not created in JIRA until the Lead confirms (and normally after G1 sign-off on the corresponding requirements).
 
-**Status as of 2026-09-30:** requirements for 02a–02c drafted in `projects/asca/specs/` and submitted to Kuroda-san for **G1 review (2026-09-28)**; **G1 returned with 4 items to resolve** (REF-CAP-12) — see the per-epic notes below. **02d dropped** (draft archived under `archive/`).
+**Status as of 2026-10-01:** requirements for 02a–02d drafted in `projects/asca/specs/` and submitted to Kuroda-san for **G1 review (2026-09-28)**; **G1 returned with 4 items to resolve** (REF-CAP-12) — see the per-epic notes below. **02d** was **dropped at G1** (Kuroda-san, DataCorrection fix batch outdated) then **retained by Lead decision (2026-10-01)** — DEVOPS-6415-style drift risk — **pending re-confirmation with Kuroda-san before its epic is created.**
 
 ## Conventions (from the dev workflow)
 
 - **1 Epic = 1 sub-spec.** Story titles prefixed `[Spec 02x] —` so the sub-spec is identifiable from the title.
 - **Standard story set (6):** Requirements + Sign-off (G1) · Architecture/Design+Tasks (G2) · Coding · Code Review (G3) · Dev/Manual Testing · QA Testing.
 - **Repo:** all Spec 02 work is in `accounting_related_system_for_freee` (single repo — unlike Spec 01 which spanned two).
-- **Author/gate order:** 02a → 02b → 02c. (Former 02d dropped at G1.)
-- **Branch per sub-spec:** `feature/ASCA/ASCA-{story}-spec02{a,b,c}-...` targeting `feature/ASCA/ASCA-master`.
+- **Author/gate order:** 02a → 02b → 02c → 02d. (02d dropped at G1 → retained by Lead 2026-10-01, re-confirm with Kuroda-san.)
+- **Branch per sub-spec:** `feature/ASCA/ASCA-{story}-spec02{a,b,c,d}-...` targeting `feature/ASCA/ASCA-master`.
 
 ## Cross-cutting dependencies (note on every epic)
 
 1. **Spec 01 Foundation merged** — provides the engine (`allocate` / `allocateForCharge`), `log_alloc_*` / `mst_alloc_*` tables, enums, run lifecycle, reference-price seeder. Spec 02 only *calls* the engine.
-2. **DEVOPS 6415 + 6596 in the ASCA base** — 02c rides the extracted `ArchiverService`/`MailerService`. ✅ Released to prod 2026-09-28, so the refactored files are now pullable from `main` for the design/tasks phase.
-3. **02a is the prerequisite** for 02b / 02c.
+2. **DEVOPS 6415 + 6596 in the ASCA base** — 02c rides the extracted `ArchiverService`/`MailerService`; 02d injects into the refactored `DataCorrectionLogic`. ✅ Released to prod 2026-09-28 and **merged `main` → `feature/ASCA/ASCA-master` on 2026-10-01**, so the refactored files are now present in the ASCA base for the design/tasks phase.
+3. **02a is the prerequisite** for 02b / 02c / 02d.
 
 ---
 
@@ -51,7 +51,7 @@ Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), which was split into 
 | [Spec 02a] — Dev/Manual Testing | Lead (Noel) | — |
 | [Spec 02a] — QA Testing | QA (Miko) | — |
 
-**Notes:** Open item O-A (App Freee-mapping rows — `mst_code_change` / `mst_rule_for_journals` for App product_type) to verify before go-live — data, not code. **G1 items to resolve (REF-CAP-12):** #2 mid-run failure state — pick (a) whole-run transaction rollback vs (b) per-pair atomic + completed-with-errors + failed-pair list; #3 re-run idempotency vs V-7 — restore N from `log_alloc_prorations.original_paid_price` before recompute, or apply V-7 to pre-allocation values only (+ add a "re-run an already-allocated month" acceptance test). Also remove the former Req 5.4 / 02d references (02d dropped).
+**Notes:** Open item O-A (App Freee-mapping rows — `mst_code_change` / `mst_rule_for_journals` for App product_type) to verify before go-live — data, not code. **G1 items to resolve (REF-CAP-12):** #2 mid-run failure state — pick (a) whole-run transaction rollback vs (b) per-pair atomic + completed-with-errors + failed-pair list; #3 re-run idempotency vs V-7 — restore N from `log_alloc_prorations.original_paid_price` before recompute, or apply V-7 to pre-allocation values only (+ add a "re-run an already-allocated month" acceptance test). Req 5.4 (DataCorrection path → Spec 02d) stays — 02d retained by Lead decision 2026-10-01, pending re-confirmation with Kuroda-san.
 
 ---
 
@@ -91,12 +91,12 @@ Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), which was split into 
 
 ---
 
-## Epic 4 — [Spec 02d] — DataCorrection Integration — ❌ DROPPED at G1 (2026-09-28, REF-CAP-12 §0)
+## Epic 4 — [Spec 02d] — DataCorrection Integration — ⚠️ dropped at G1 → RETAINED by Lead decision (2026-10-01)
 
-> **DROPPED.** Kuroda-san dropped 02d at G1 review (2026-09-28) — "since this fix batch has been outdated I think we don't need to handle this." **Do NOT create this epic.** The requirements draft has been archived under `archive/projects/asca/specs/asca-spec-02d-datacorrection-integration/`. The 02a Req 5.4 reference to 02d was removed. Section retained below for the decision trail.
+> **Dropped at G1, retained by Lead.** Kuroda-san dropped 02d at G1 review (2026-09-28) — "since this fix batch has been outdated I think we don't need to handle this." **Lead decision (2026-10-01): retain 02d.** Reasoning: even if `DataCorrectionCommand` is retired soon, until it is, leaving the DataCorrection path without the CAP allocation injection re-creates the same silent-drift class of bug that **DEVOPS-6415** had to fix (DataCorrectionLogic had diverged from `CommonUtil` — missing the monthly-plan skip + `tax_free`/`country_id`/`gross_amount`). On the safe side we implement 02d so all three write paths stay consistent. **Re-confirm with Kuroda-san before creating this epic.** The 02a Req 5.4 reference to 02d is kept.
 
-**Requirements draft (archived):** `archive/projects/asca/specs/asca-spec-02d-datacorrection-integration/requirements.md`
-**Scope (dropped):** Scoped `allocateForCharge()` after the `addDaily` INSERT in the private `DataCorrectionLogic::createDailyRateCalculation()`; CAP-only (non-Zipan branch), try/catch isolation. Smallest sub-spec (one call site).
+**Requirements draft:** `projects/asca/specs/asca-spec-02d-datacorrection-integration/requirements.md`
+**Scope:** Scoped `allocateForCharge()` after the `addDaily` INSERT in the private `DataCorrectionLogic::createDailyRateCalculation()`; CAP-only (non-Zipan branch), try/catch isolation. Smallest sub-spec (one call site).
 
 | Story | Assignee | Gate |
 |---|---|---|
@@ -107,7 +107,7 @@ Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), which was split into 
 | [Spec 02d] — Dev/Manual Testing | Lead (Noel) | — |
 | [Spec 02d] — QA Testing | QA (Miko) | — |
 
-**Notes:** Depends on 02a + DEVOPS-6415 (refactored DataCorrectionLogic, incl. the drift fix). Open items: injection point vs the refactored file (O-D1), `$targetYm` derivation for multi-month charges (O-D2), DataCorrection-retirement note (O-D3 — does not reduce scope).
+**Notes:** Depends on 02a + DEVOPS-6415 (refactored DataCorrectionLogic, incl. the drift fix). The DEVOPS-6415 drift fix is the direct precedent for the Lead-retain decision — the correction path must track `CommonUtil`. Open items: injection point vs the refactored file (O-D1), `$targetYm` derivation for multi-month charges (O-D2), DataCorrection-retirement note (O-D3 — "retired soon" does not reduce scope while the batch still exists). **Blocking:** re-confirm the retain decision with Kuroda-san before creating the epic.
 
 ---
 
@@ -115,10 +115,11 @@ Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), which was split into 
 
 - [ ] Confirm with Lead/PM that tickets should be created (this doc is draft-only).
 - [ ] Resolve the G1 items (REF-CAP-12) before creating: 02b refund→bundle pairing (blocker), 02a failure-state + re-run/V-7, 02c linking columns.
-- [ ] Create **3 epics** (02a, 02b, 02c) in ASCA with the titles above. **Do NOT create 02d (dropped).**
+- [ ] **Re-confirm the 02d-retain decision with Kuroda-san** (reverses his REF-CAP-12 §0 drop) before creating the 02d epic.
+- [ ] Create **4 epics** (02a, 02b, 02c, 02d) in ASCA with the titles above — **02d only after Kuroda-san re-confirms**.
 - [ ] Under each epic, create the 6 stories with the `[Spec 02x] —` prefix and assignees.
 - [ ] Link each epic to its requirements draft in `projects/asca/specs/`.
 - [ ] Record the created keys back into this doc and the master timeline.
-- [ ] Order sign-offs 02a → 02b → 02c.
+- [ ] Order sign-offs 02a → 02b → 02c → 02d.
 
 > **Do not create in JIRA without explicit Lead confirmation.** MCP Jira writes are gated per the toolkit workflow.

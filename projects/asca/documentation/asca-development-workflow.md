@@ -67,20 +67,20 @@ Three mandatory gates where work cannot proceed without approval:
 | Spec | Repo(s) | What it delivers |
 |---|---|---|
 | **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | DB schema (11 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
-| **ASCA Spec 02: CAP Integration** — split into 3 sub-specs (confirmed 2026-09-23; reduced from 4 at G1, 2026-09-28) | `accounting_related_system_for_freee` | **02a** CAP Core Injection (`CommonUtil` overwrite + CAP detection) · **02b** Refund Allocation (REF-CAP-09, negative-N) · **02c** AllocationDetail CSV. Authoring order 02a→02b→02c. (Former **02d** DataCorrection Integration **dropped at G1**, REF-CAP-12 §0 — DataCorrection fix batch outdated.) |
+| **ASCA Spec 02: CAP Integration** — split into 4 sub-specs (confirmed 2026-09-23) | `accounting_related_system_for_freee` | **02a** CAP Core Injection (`CommonUtil` overwrite + CAP detection) · **02b** Refund Allocation (REF-CAP-09, negative-N) · **02c** AllocationDetail CSV · **02d** DataCorrection Integration (`allocateForCharge()`). Authoring order 02a→02b→02c→02d. (02d **dropped at G1** then **retained by Lead decision 2026-10-01** — DEVOPS-6415-style drift risk — pending re-confirmation with Kuroda-san.) |
 | **ASCI Spec 01: CIP Integration** (residual-value pricing — REF-CIP-05) | `ls-database-migrations` (seeder) | **No allocation engine for CIP.** Add the Coaching Intensive booking record (`product_id 10025`, `price_flag=3`, ¥71,920 tax-incl) to `mst_new_price_listing`; verify existing daily pro-ration + first-month discount produce the expected independent CIP charges (Lesson / App ¥3,980 / Coaching Intensive ¥71,920). No CIP detection, no split formula, no `mst_alloc_reference_prices` CIP rows. Likely a single small spec. |
 
-> **Spec 02 split confirmed (2026-09-23), reduced to 3 at G1 (2026-09-28):** the sub-specs above are each their own `.kiro/specs/` folder + branch + PR + G1/G2/G3 gate set (flat naming per the Spec 01 precedent). Originally four; **02d (DataCorrection) dropped at G1** (REF-CAP-12 §0). See `docs/asc-projects-master-timeline.md` (Spec Overview) for the sizing rationale.
+> **Spec 02 split confirmed (2026-09-23) — four sub-specs:** each is its own `.kiro/specs/` folder + branch + PR + G1/G2/G3 gate set (flat naming per the Spec 01 precedent). **02d was dropped at G1 (2026-09-28, REF-CAP-12 §0) then retained by Lead decision (2026-10-01)** — DEVOPS-6415-style drift risk; re-confirm with Kuroda-san. See `docs/asc-projects-master-timeline.md` (Spec Overview) for the sizing rationale.
 >
 > **ASCI reduced (REF-CIP-05, 2026-09-17):** CIP dropped proportional allocation entirely — it now books separate, already-priced charges through existing pro-ration. The earlier "CIP detection strategy / ¥84,020 reference price" scope is withdrawn. See technical design §1c.
 
-**ASCA Spec 02 sub-specs (confirmed 2026-09-28; reduced to 3 at G1 — 02d dropped, REF-CAP-12 §0):**
+**ASCA Spec 02 sub-specs (confirmed 2026-09-28; 02d dropped at G1 then retained by Lead decision 2026-10-01):**
 - **Spec 02a:** CAP Core Injection (`CommonUtil` overwrite + CAP detection) — the prerequisite spine
 - **Spec 02b:** Refund Allocation (REF-CAP-09, negative-N)
 - **Spec 02c:** AllocationDetail CSV (reporting layer)
-- ~~**Spec 02d:** DataCorrection Integration~~ — **DROPPED at G1 (2026-09-28, REF-CAP-12 §0)**: Kuroda-san — DataCorrection fix batch outdated. Draft archived under `archive/projects/asca/specs/`.
+- **Spec 02d:** DataCorrection Integration (`allocateForCharge()`) — **dropped at G1 (REF-CAP-12 §0) → retained by Lead decision (2026-10-01)**, DEVOPS-6415-style drift risk, re-confirm with Kuroda-san
 
-Author/gate order 02a → 02b → 02c. Each is its own epic + branch + PR + G1/G2/G3 gate set. Requirements drafts: `projects/asca/specs/asca-spec-02{a,b,c}-*/requirements.md` (submitted to Kuroda-san for G1, 2026-09-28). **G1 returned 4 items to resolve** (REF-CAP-12): 02b CAP refund→bundle pairing (blocker), 02a mid-run failure-state + re-run/V-7, 02c linking columns; **CIP-refund split** (REF-CIP-06) home **on hold** pending Kuroda-san's refund-type-ID answer.
+Author/gate order 02a → 02b → 02c → 02d. Each is its own epic + branch + PR + G1/G2/G3 gate set. Requirements drafts: `projects/asca/specs/asca-spec-02{a,b,c,d}-*/requirements.md` (submitted to Kuroda-san for G1, 2026-09-28). **G1 returned 4 items to resolve** (REF-CAP-12): 02b CAP refund→bundle pairing (blocker), 02a mid-run failure-state + re-run/V-7, 02c linking columns; plus the **02d-retain re-confirmation**. **CIP-refund split** (REF-CIP-06) home **on hold** pending Kuroda-san's refund-type-ID answer.
 
 ---
 
@@ -113,8 +113,9 @@ Epic: ASCA-13 — [Spec 01] — Foundation (8 stories — Coding spans 2 repos)
 ├── Story: ASCA-20 — [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
 └── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Miko)
 
-# Spec 02 = 3 separate epics (one per sub-spec) — confirmed 2026-09-28; reduced from 4 at G1 (02d dropped, REF-CAP-12 §0). NOT YET CREATED.
-# Each epic carries the standard 6-story set. Author/gate order: 02a → 02b → 02c.
+# Spec 02 = 4 separate epics (one per sub-spec) — confirmed 2026-09-28. NOT YET CREATED.
+# 02d was dropped at G1 (REF-CAP-12 §0) then retained by Lead decision (2026-10-01) — re-confirm with Kuroda-san before creating its epic.
+# Each epic carries the standard 6-story set. Author/gate order: 02a → 02b → 02c → 02d.
 Epic: [Spec 02a] — CAP Core Injection (6 stories — accounting repo)
 ├── Story: [Spec 02a] — Requirements + Sign-off            → PM (Kuroda-san)
 ├── Story: [Spec 02a] — Architecture (Design + Tasks)      → Lead (Noel)
@@ -129,7 +130,8 @@ Epic: [Spec 02b] — Refund Allocation (6 stories — accounting repo)
 Epic: [Spec 02c] — AllocationDetail CSV (6 stories — accounting repo)
 └── (same 6-story set)
 
-# [Spec 02d] — DataCorrection Integration: DROPPED at G1 (2026-09-28, REF-CAP-12 §0) — DataCorrection fix batch outdated. Epic not created; draft archived.
+Epic: [Spec 02d] — DataCorrection Integration (6 stories — accounting repo)
+└── (same 6-story set; smallest — one scoped allocateForCharge() call site. Dropped at G1 then retained by Lead decision 2026-10-01 — re-confirm with Kuroda-san before creating.)
 
 # ASCI Project (separate JIRA project — reuses ASCA foundation)
 Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREATED
@@ -160,7 +162,7 @@ main
     ├── feature/ASCA/ASCA-{t}-spec02a-cap-core-injection  (CommonUtil overwrite + detection)
     ├── feature/ASCA/ASCA-{t}-spec02b-refund-allocation   (negative-N, REF-CAP-09)
     ├── feature/ASCA/ASCA-{t}-spec02c-allocation-detail-csv (CSV via Archiver/Mailer)
-    │   (02d datacorrection branch dropped — sub-spec dropped at G1, REF-CAP-12 §0)
+    ├── feature/ASCA/ASCA-{t}-spec02d-datacorrection      (allocateForCharge injection — retained by Lead 2026-10-01, re-confirm w/ Kuroda-san)
     ├── feature/ASCI/ASCI-{t}-spec01-cip-integration      (CIP detection + config)
     ├── release/ASCA/dev04                                (deploy for QA)
     └── release/ASCA/prod                                 (production release)
@@ -180,7 +182,8 @@ main
 ```
 1. Scaffolding (steering) → PR → ASCA-master             ← merge FIRST (all specs inherit steering)
 
-2. DEVOPS-6415 → main → merge main into ASCA-master       ← pull in the refactor after QA passes
+2. DEVOPS-6415 → main → merge main into ASCA-master       ← ✅ DONE: 6415+6596 to prod 2026-09-28;
+                                                             main merged into ASCA-master 2026-10-01
                                                              (needed by Spec 02, NOT Foundation)
 
 3. Foundation:
