@@ -8,7 +8,7 @@
 | **Date** | 2026-09-28 (Authored) · 2026-09-30 (Executed) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
-| **Status** | ✅ Executed 2026-09-30 by Yijun-san (DevOps) — 8 rows deleted before the 10/01 PRE. Post-cleanup PRE verification + September FINAL still upcoming (see below). |
+| **Status** | ✅ Cleanup executed 2026-09-30 by Yijun-san (DevOps) — 8 rows deleted. ✅ 10/01 PRE verified (Noel, 2026-10-01) — `product_id=38` now in the monthly-rate table, not daily. ⏳ September FINAL scheduled 10/02 18:00 JST. |
 | **Audience** | DevOps (executor), Kuroda-san (PM), Patrick-san (SDM) |
 | **Related** | `docs/asc-projects-master-timeline.md`; `projects/ascm/documentation/02-asc-project-changelog.md` §8 |
 
@@ -35,10 +35,10 @@ Executed by **Yijun-san (DevOps)** on **2026-09-30**, within the "finish during 
 - **Part B/C (transaction):** `DELETE` affected **4 + 4 = 8 rows** (4 from `log_daily_rate_calculation_zipan`, 4 from `log_daily_rate_calculation_pre_zipan`). Step 7 pre-commit verification showed `remaining_final = 0` and `remaining_pre = 0`; transaction **committed**. Part C final confirmation: both counts = 0.
 - **Result:** the 8 stale `product_id = 38` daily rows (charges 14265–14268) are removed. Delete-only — no re-run.
 
-**Still upcoming (post-cleanup checkpoints — not yet done):**
+**Post-cleanup checkpoints:**
 
-- **10/01 PRE verification** — due by **10/02 15:00 JST**. Noel to review: `log_monthly_rate_calculation_pre` has 202609 rows for 14265/14266 (total = 20, paid_price = ¥41,580 each); 202609 PRE sum for order 10030672 = ¥112,860; no `product_id = 38` rows in the daily table.
-- **September FINAL run** — **10/02 (Fri) 18:00 JST** (MonthlyRateCalculationCommand + SendJournalsDataCommand; moved by Kuroda-san for quarterly closing).
+- ✅ **10/01 PRE verification — DONE (Noel, 2026-10-01).** The 10/01 PRE batch ran; Metabase confirms **`product_id = 38` now lands in the monthly-rate table (`log_monthly_rate_calculation_pre`), not the daily table** — i.e. the new 20-lesson plan is routed through the monthly pipeline as intended, and no `product_id = 38` rows remain in the daily table. Expected reference figures that were checked against: 202609 rows for 14265/14266 (total = 20, paid_price = ¥41,580 each); 202609 PRE sum for order 10030672 = ¥112,860.
+- ⏳ **September FINAL run — scheduled 10/02 (Fri) 18:00 JST** (MonthlyRateCalculationCommand + SendJournalsDataCommand; moved by Kuroda-san for quarterly closing). Not yet run as of this update.
 
 ---
 

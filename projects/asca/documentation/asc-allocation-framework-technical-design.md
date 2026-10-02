@@ -92,7 +92,9 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 
 Foundation (Spec 01, in execution) delivers the engine + schema. **CAP integration (Spec 02) is split into four independently shippable sub-specs** — per spec-driven sizing (one feature = one spec = one PR; ≤15 tasks; ≤3-page design). Flat folder naming matches the Spec 01 precedent (`asca-spec-01-foundation`):
 
-> **02d status (2026-10-01):** 02d was **dropped at G1** (2026-09-28, REF-CAP-12 §0 — Kuroda-san, DataCorrection fix batch outdated), then **retained by Lead decision (2026-10-01)**. Rationale: even if `DataCorrectionCommand` is retired soon, until it actually is, leaving the DataCorrection path without the CAP allocation injection re-creates the same silent-drift class of bug that **DEVOPS-6415** had to fix (DataCorrectionLogic had diverged from `CommonUtil`). Keeping 02d holds all three write paths consistent. **To be re-confirmed with Kuroda-san** before promotion.
+> **02d status (2026-10-01):** 02d was **dropped at G1** (2026-09-28, REF-CAP-12 §0 — Kuroda-san, DataCorrection fix batch outdated), then **retained by Lead decision (2026-10-01)**. Rationale: even if `DataCorrectionCommand` is retired soon, until it actually is, leaving the DataCorrection path without the CAP allocation injection re-creates the same silent-drift class of bug that **DEVOPS-6415** had to fix (DataCorrectionLogic had diverged from `CommonUtil`). Keeping 02d holds all three write paths consistent — **so we implement the 02d change regardless of whether DataCorrection is used or retired.**
+>
+> **Re-confirmation deferred (noted 2026-10-02):** Kuroda-san is on **sick leave since 2026-09-30**, so his re-confirmation of the retain can't happen yet. Noel will raise it at the **next DSM, Monday 2026-10-05**. This does **not** block implementation — the Lead decision stands and the 02d change is in scope; the DSM is to inform/confirm, not to gate the work. (The JIRA 02d epic creation is the only thing held until he re-confirms.)
 
 | Sub-spec | Folder | Design sections it implements | Injection surface |
 |---|---|---|---|

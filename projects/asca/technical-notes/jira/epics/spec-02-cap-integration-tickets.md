@@ -93,7 +93,7 @@ Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 
 ## Epic 4 — [Spec 02d] — DataCorrection Integration — ⚠️ dropped at G1 → RETAINED by Lead decision (2026-10-01)
 
-> **Dropped at G1, retained by Lead.** Kuroda-san dropped 02d at G1 review (2026-09-28) — "since this fix batch has been outdated I think we don't need to handle this." **Lead decision (2026-10-01): retain 02d.** Reasoning: even if `DataCorrectionCommand` is retired soon, until it is, leaving the DataCorrection path without the CAP allocation injection re-creates the same silent-drift class of bug that **DEVOPS-6415** had to fix (DataCorrectionLogic had diverged from `CommonUtil` — missing the monthly-plan skip + `tax_free`/`country_id`/`gross_amount`). On the safe side we implement 02d so all three write paths stay consistent. **Re-confirm with Kuroda-san before creating this epic.** The 02a Req 5.4 reference to 02d is kept.
+> **Dropped at G1, retained by Lead.** Kuroda-san dropped 02d at G1 review (2026-09-28) — "since this fix batch has been outdated I think we don't need to handle this." **Lead decision (2026-10-01): retain 02d.** Reasoning: even if `DataCorrectionCommand` is retired soon, until it is, leaving the DataCorrection path without the CAP allocation injection re-creates the same silent-drift class of bug that **DEVOPS-6415** had to fix (DataCorrectionLogic had diverged from `CommonUtil` — missing the monthly-plan skip + `tax_free`/`country_id`/`gross_amount`). On the safe side we implement 02d so all three write paths stay consistent. The 02a Req 5.4 reference to 02d is kept. **Re-confirm with Kuroda-san before creating this epic** — he is on **sick leave since 2026-09-30**, so Noel will raise it at the **next DSM, Monday 2026-10-05**. The implementation work is not blocked (the Lead decision stands); only the epic creation waits on his re-confirm.
 
 **Requirements draft:** `projects/asca/specs/asca-spec-02d-datacorrection-integration/requirements.md`
 **Scope:** Scoped `allocateForCharge()` after the `addDaily` INSERT in the private `DataCorrectionLogic::createDailyRateCalculation()`; CAP-only (non-Zipan branch), try/catch isolation. Smallest sub-spec (one call site).
@@ -115,7 +115,7 @@ Draft the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 
 - [ ] Confirm with Lead/PM that tickets should be created (this doc is draft-only).
 - [ ] Resolve the G1 items (REF-CAP-12) before creating: 02b refund→bundle pairing (blocker), 02a failure-state + re-run/V-7, 02c linking columns.
-- [ ] **Re-confirm the 02d-retain decision with Kuroda-san** (reverses his REF-CAP-12 §0 drop) before creating the 02d epic.
+- [ ] **Re-confirm the 02d-retain decision with Kuroda-san** (reverses his REF-CAP-12 §0 drop) before creating the 02d epic — raise at the **2026-10-05 DSM** (he is on sick leave since 09-30).
 - [ ] Create **4 epics** (02a, 02b, 02c, 02d) in ASCA with the titles above — **02d only after Kuroda-san re-confirms**.
 - [ ] Under each epic, create the 6 stories with the `[Spec 02x] —` prefix and assignees.
 - [ ] Link each epic to its requirements draft in `projects/asca/specs/`.
