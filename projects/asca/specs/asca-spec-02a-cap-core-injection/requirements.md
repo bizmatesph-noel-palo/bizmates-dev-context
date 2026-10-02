@@ -6,11 +6,11 @@
 
 ## Introduction
 
-This spec wires the ASCA allocation engine (built in Spec 01 Foundation) into the live accounting batch for **CAP plans only**. It is the **first of three Spec 02 sub-specs** (02a Core Injection → 02b Refund → 02c AllocationDetail CSV) and is the prerequisite spine the other two build on. (A former 02d DataCorrection Integration was **dropped at G1**, 2026-09-28, REF-CAP-12 §0 — DataCorrection fix batch outdated.)
+This spec wires the ASCA allocation engine (built in Spec 01 Foundation) into the live accounting batch for **CAP plans only**. It is the **first of four Spec 02 sub-specs** (02a Core Injection → 02b Refund → 02c AllocationDetail CSV → 02d DataCorrection) and is the prerequisite spine the other three build on. (02d was dropped at G1 on 2026-09-28 per REF-CAP-12 §0, then **retained by Lead decision 2026-10-01** — DEVOPS-6415-style drift risk — pending re-confirmation with Kuroda-san.)
 
 Scope is the single injection into `CommonUtil::createDailyRateCalculation()`: after the existing step that writes the un-allocated amount **N** to the daily-rate log, call `RevenueAllocationService::allocate()` to detect CAP bundles, compute the split, and overwrite the log rows in place with the allocated amounts **P**, so that everything downstream (sum aggregation, Freee journals, CSVs, balance transition) inherits P with no further change. This is **Scenario D (injection) + Option 1 (Overwrite)**.
 
-This sub-spec delivers a working, testable CAP injection for the Pre (速報) and Final batches. It deliberately excludes refund handling and the AllocationDetail CSV — each is its own sub-spec. (The DataCorrection path is no longer in Spec 02 scope — former 02d dropped at G1.)
+This sub-spec delivers a working, testable CAP injection for the Pre (速報) and Final batches. It deliberately excludes refund handling, the AllocationDetail CSV, and the DataCorrection injection — each is its own sub-spec.
 
 ### Design decisions (confirmed — carried from the technical design)
 
@@ -31,7 +31,7 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 
 - **Refund / negative-N allocation** → Spec 02b (REF-CAP-09).
 - **AllocationDetail CSV** (config entry + `RevenueAllocationCsvService` + adding the file to the email zip) → Spec 02c.
-- **DataCorrectionLogic injection** (`allocateForCharge()` after the addDaily INSERT) → **out of Spec 02 scope** — former 02d dropped at G1 (2026-09-28, REF-CAP-12 §0); the DataCorrection fix batch is outdated. `DataCorrectionLogic` keeps its DEVOPS-6415 drift fix but gets no allocation injection.
+- **DataCorrectionLogic injection** (`allocateForCharge()` after the addDaily INSERT) → Spec 02d. (02d was dropped at G1 then **retained by Lead decision 2026-10-01** — DEVOPS-6415-style drift risk — pending re-confirmation with Kuroda-san.)
 - **CIP** anything → out of the engine entirely (REF-CIP-05); only the defensive skip is in scope here.
 - **Freee-mapping data** for the App product_type (the `mst_code_change` / `mst_rule_for_journals` rows) — a data/verification item, not code in this sub-spec (tracked as an Open Item).
 
@@ -105,7 +105,7 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 1. THE injection SHALL cause `DailyRateCalculationPreCommand` (Pre) to allocate the `_pre` tables via the shared `CommonUtil` call.
 2. THE injection SHALL cause `SendJournalsDataCommand` (Final) to allocate the live tables via the same call.
 3. THE system SHALL NOT add a separate injection for Pre vs Final — both are covered by the single `CommonUtil::createDailyRateCalculation()` change.
-4. THE `DataCorrectionCommand` path is explicitly NOT covered here (it has its own private daily-rate creation) and is **out of Spec 02 scope** — the former 02d sub-spec was dropped at G1 (2026-09-28, REF-CAP-12 §0; DataCorrection fix batch outdated).
+4. THE `DataCorrectionCommand` path is explicitly NOT covered here (it has its own private daily-rate creation) — it is Spec 02d. (02d was dropped at G1 then **retained by Lead decision 2026-10-01**, pending re-confirmation with Kuroda-san.)
 
 ### Requirement 6: No regression to existing (non-CAP) output
 
