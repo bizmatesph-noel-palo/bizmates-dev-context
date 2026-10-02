@@ -1,0 +1,13 @@
+{
+  "name": "Authorization Guard",
+  "version": "1.0.0",
+  "description": "Before any write (create/edit file, code, or gated spec artifact), re-checks that the user explicitly authorized it THIS turn. Blocks acting on a stated plan.",
+  "when": {
+    "type": "preToolUse",
+    "toolTypes": ["write"]
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "AUTHORIZATION CHECK before this write. Ask yourself: did the user, IN THIS TURN, explicitly tell me to create or edit THIS artifact NOW? A stated plan is NOT authorization. Phrases like 'I plan to...', 'I'll start with...', 'next I want to...', 'we need to generate X' are CONTEXT, not a go signal. Gated spec artifacts (requirements.md, design.md, tasks.md) must come from the spec-driven workflow with review gates, never one-shot from a prompt unless explicitly told this turn. Documentation/grooming/investigation tasks produce reference snippets INSIDE the doc/ticket, never applied edits. If the user did NOT give an explicit 'generate / write / implement / apply / proceed' for this exact artifact this turn: DO NOT write. Stop and ask: 'You described a plan but haven't given me the go to produce this yet. Want me to proceed, or hold?' Only continue the write if authorization this turn is explicit and unambiguous."
+  }
+}
