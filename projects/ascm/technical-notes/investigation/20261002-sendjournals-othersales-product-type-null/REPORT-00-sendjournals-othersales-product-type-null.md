@@ -8,11 +8,12 @@
 | **Date** | 2026-10-02 |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
-| **Status** | Active — root cause identified (code-confirmed); one data-identification item open |
-| **Severity** | High — the September **FINAL** (確定) journal run aborted; no Freee journals were submitted for the affected run |
+| **Status** | ✅ **Resolved** — root cause confirmed; fixed via a separate DEVOPS ticket deployed together with DEVOPS-6415 + DEVOPS-6596. September FINAL re-run by DevOps and completed successfully. |
+| **Severity** | High — the September **FINAL** (確定) journal run aborted; no Freee journals submitted for the affected run |
 | **Environment** | Production |
 | **Command** | `SendJournalsDataCommand` (Final / 確定) |
 | **Occurred** | 2026-10-02 18:00:41 JST (the rescheduled September FINAL run) |
+| **Resolved** | 2026-10 (week of 10-02) — a separate DEVOPS ticket (deployed together with DEVOPS-6415 + DEVOPS-6596) contained the code fix. DevOps re-ran the monthly and send-journal commands post-deploy; both completed successfully. |
 | **Audience** | Management, Accounting, Dev team |
 
 ---
@@ -162,3 +163,26 @@ The **mechanism** is confirmed in code. The **specific offending record** has **
 - `app/Models/MstRuleForJournals.php` — `getMstRuleForJournals()` (returns null on no match).
 - Git: commit `6bfedd2c` (DEVOPS-6415) is the latest change to `SendJournalsDataLogic.php`; its diff does not touch the failing method.
 - Related schedule context: `docs/asc-projects-master-timeline.md` (the 2026-10-02 18:00 FINAL run); `projects/asca/technical-notes/investigation/20260928-zpr-daily-table-cleanup/REPORT-00-zpr-daily-table-cleanup.md` (unrelated prior September step).
+
+---
+
+## 10. Resolution (confirmed — week of 2026-10-02)
+
+### What fixed it
+
+The issue was resolved by two DEVOPS tickets that were deployed to production together with DEVOPS-6415 (ASCM Refactor) and DEVOPS-6596 (ZPR):
+
+| Ticket | Branch | Merged | What it changed |
+|---|---|---|---|
+| **DEVOPS-6274** | `feature/DEVOPS/DEVOPS-6274-2` | 2026-09-24 | **The actual fix.** Eliminated the `mst_code_change` dynamic lookup for Zipan's freee product type in `ZipanUtil.php`. The old code called `MstCodeChange::getChangeCodeToFreeeCode()` per `product_type`, which returned null for new/unmapped Zipan products (e.g. Corp Other Program, product_type=4). Replaced with `config('code.freeeProductType.zipan')` — a fixed config value. This means Zipan journal resolution no longer depends on per-product master-data rows being present. (Harvey-san, `bizmatesph-harvey-tapang`.) |
+| **DEVOPS-6284** | `feature/DEVOPS/DEVOPS-6284` | 2026-09-28 | Added `191155084` (Zipan ロールプレイテスト Freee code) to `freeeZipanCodes` in `config/code.php`, supporting the same Zipan OtherSales product family. Also added `SendFreeeJournals2Test` and `ZipanUtilTest` regression tests. (Yijun-san.) |
+
+**The crash was a Zipan OtherSales product type resolution issue**, not a Bizmates product issue. `ZipanUtil.php` was calling `MstCodeChange::getChangeCodeToFreeeCode()` with a `product_type` for which no `mst_code_change` row existed — returning null — then the downstream journal rule lookup and property read crashed in the same way described in §3. DEVOPS-6274 fixed this by removing the dynamic lookup entirely for the Zipan path.
+
+Both tickets were already in production before the 2026-10-02 FINAL run. After the combined deploy (DEVOPS-6415 + 6596 + 6274 + 6284), DevOps re-ran both the **monthly calculation command** and the **`SendJournalsDataCommand` (Final)**. Both completed successfully. The September FINAL journals were submitted to Freee.
+
+### Follow-up items (post-resolution)
+
+- **Code hardening (§7, item 5):** DEVOPS-6274 addressed the Zipan path by removing the per-product dynamic lookup entirely (fixed config value). The broader null-guard pattern for other call sites in `SendJournalsDataLogic.php` (§5a recurrence history) remains a recommended short-term item for the Bizmates path.
+- **ASCA-master updated:** the latest changes (including DEVOPS-6274 + 6284) have been pulled into the `feature/ASCA/ASCA-master` branch.
+- **Investigation accuracy note:** an intermediate follow-up report (`REPORT-01`) identified the wrong specific cause (Bizmates products 10016/10018/10019 missing `mst_code_change` rows). The real issue was in the **Zipan** path in `ZipanUtil.php`, not the Bizmates path in `SendJournalsDataLogic.php`. See `REPORT-01` (retraction banner) and `REPORT-02` for the full account.

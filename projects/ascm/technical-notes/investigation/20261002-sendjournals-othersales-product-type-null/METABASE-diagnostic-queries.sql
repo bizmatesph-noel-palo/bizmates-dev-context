@@ -267,3 +267,78 @@ ORDER BY rule_found ASC, os.product_id, os.order_no;
 --    If a flagged row looks surprising, verify that product's mst_code_change
 --    rows directly.
 -- ============================================================================
+
+
+-- ============================================================================
+-- FOLLOW-UP 2 — classify the 3 unmapped products (10016, 10018, 10019).
+--
+-- Why: CHECK 5 showed these three resolve to a NULL Freee product type because
+-- they have no mst_code_change (master_data_type = 1) row. The question is WHY
+-- the mapping is missing — in particular whether these are ZIPAN products (whose
+-- Freee product-type mappings may never have been seeded on the Bizmates side).
+--
+-- Note on data source: getOtherSalesJournals() resolves product_type via the
+-- *Bizmates* mst_product (default connection). There is ALSO a separate Zipan
+-- mst_product on the `zipan` connection. mst_product has no explicit tenant
+-- column, so classification is by name + by which tenant's table the product_id
+-- actually lives in. The resolved comparison product 10017 (which DID map) uses
+-- Freee code 191155084 — a value in config code.freeeZipanCodes (Zipan) — and is
+-- product_type = 11, the SAME product_type as 10016/10018/10019. That is a hint
+-- (not proof) these three are the same Zipan family.
+--
+-- All SELECTs — read-only, Metabase-safe.
+-- ============================================================================
+
+
+-- ----------------------------------------------------------------------------
+-- CHECK 6a — the 3 unmapped products in the BIZMATES mst_product (default DB).
+-- Look at name / name_en / product_type / department_id to identify them.
+-- (Compare with the two that mapped: 10007 and 10017.)
+-- ----------------------------------------------------------------------------
+SELECT product_id, name, name_en, product_type, lesson_type, lesson_volume, department_id
+FROM mst_product
+WHERE product_id IN (10016, 10018, 10019,  10007, 10017)
+ORDER BY product_id;
+
+
+-- ----------------------------------------------------------------------------
+-- CHECK 6b — do these product_ids exist in the ZIPAN mst_product?
+-- Run against the Zipan database/connection (in Metabase, pick the Zipan DB;
+-- or qualify the schema name if both are on one server, e.g. zipan.mst_product).
+-- If they exist here (and/or NOT in Bizmates), that supports "these are Zipan
+-- products" as the reason their Bizmates-side Freee mapping was never set up.
+-- ----------------------------------------------------------------------------
+SELECT product_id, name, name_en, product_type, lesson_type, lesson_volume, department_id
+FROM mst_product   -- Zipan connection / zipan schema
+WHERE product_id IN (10016, 10018, 10019, 10017)
+ORDER BY product_id;
+
+
+-- ----------------------------------------------------------------------------
+-- CHECK 6c — what mst_code_change (master_data_type = 1, productType) rows DO
+-- exist for the product_type = 11 family, to see the pattern of what is mapped
+-- vs missing. (10017 -> 191155084 is the Zipan code that worked.)
+-- ----------------------------------------------------------------------------
+SELECT cc.product_id, cc.code, cc.freee_code, cc.item_name, mp.name, mp.product_type
+FROM mst_code_change cc
+LEFT JOIN mst_product mp ON mp.product_id = cc.product_id
+WHERE cc.master_data_type = 1
+  AND (mp.product_type = 11 OR cc.product_id IN (10016, 10018, 10019, 10007, 10017))
+ORDER BY cc.product_id;
+
+
+-- ----------------------------------------------------------------------------
+-- INTERPRETATION (CHECK 6)
+--  * If 6a shows the three products with Zipan-looking names / they live in the
+--    Zipan mst_product (6b) and/or the mapped sibling 10017 is a Zipan product
+--    (Freee code 191155084 ∈ freeeZipanCodes), then the likely reason the mapping
+--    is MISSING is that these are ZIPAN OtherSales products and their Bizmates-side
+--    mst_code_change (master_data_type = 1) productType rows were never seeded —
+--    i.e. a Zipan master-data onboarding gap, not a one-off per-product omission.
+--  * In that case the fix guidance changes: the correct Freee product type for
+--    10016/10018/10019 is a ZIPAN product type, and the matching journal rule's
+--    segment2_id would be a Z_* tag (e.g. Z_B2B = 261932), NOT the Bizmates B2B
+--    tag 261928. Accounting confirms the exact values.
+--  * If 6a/6b show them as ordinary Bizmates products, then it is a plain
+--    per-product mapping omission and the Bizmates B2B path (261928) applies.
+-- ============================================================================
