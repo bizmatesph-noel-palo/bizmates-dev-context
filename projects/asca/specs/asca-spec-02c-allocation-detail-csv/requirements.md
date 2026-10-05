@@ -56,7 +56,7 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 1. THE system SHALL add an `allocationDetailFile` entry to `config/const.php` with `fileName`, `name` (display name), and `headerItem` (ordered header list).
 2. THE `fileName` SHALL follow the convention `{YYYYMM}_10_AllocationDetail({execDate}).csv`, where `{YYYYMM}` is the target month and `{execDate}` is today (Ymd).
-3. THE `headerItem` SHALL define, in order, these 15 columns: コンテンツ (service), 対象年月 (target_ym), プロジェクト (bundle_type label — `cap`/`cip`), 生徒ID (student_id), 部署ID (department_id), 発注番号 (order_no), プランID (plan_id), プロダクトID (product_id), プロダクトタイプ (product_type), 契約種類 (contract_type), 参照価格 (reference_price / L), 配分比率 (ratio), 元金額(N) (original_amount), 配分後金額(P) (allocated_amount), ステータス (run status).
+3. THE `headerItem` SHALL define, in order, these **18 columns** (updated per REF-CAP-12 §1 #4): コンテンツ (service), 対象年月 (target_ym), プロジェクト (bundle_type label — `cap`/`cip`), 生徒ID (student_id), 部署ID (department_id), 発注番号 (order_no), プランID (plan_id), **チャージID (charge_id)**, プロダクトID (product_id), プロダクトタイプ (product_type), **バンドルID (bundle/group id)**, **行種別 (row_kind — `normal`/`refund`)**, 契約種類 (contract_type), 参照価格 (reference_price / L), 配分比率 (ratio), 元金額(N) (original_amount), 配分後金額(P) (allocated_amount), ステータス (run status).
 4. THE config entry SHALL be readable via the existing `CommonUtil::getCsvFileInfo('allocationDetailFile')`.
 
 ### Requirement 2: Generate the CSV from allocation data
@@ -67,11 +67,14 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 1. THE system SHALL provide `RevenueAllocationCsvService::createAllocationDetailFile(string $targetYm, bool $preFlg = false): array` returning `[$fileName, $displayName]`, in the `App\Libs\RevenueAllocation` namespace (NOT `CommonUtil`).
 2. THE service SHALL read the month's allocation rows from `log_alloc_prorations` (joined for charge/plan context), or from `v_alloc_prorations_active` for the active Final run.
-3. THE system SHALL emit one row per product per group (i.e. per `log_alloc_prorations` row), mapping each to the 15 configured columns.
-4. THE プロジェクト column SHALL render the `bundle_type` label (`cap` / `cip`), not the raw TINYINT.
-5. WHERE `order_no` or `department_id` is present, THE system SHALL populate それ; contract types include B2C / B2B / B2B2C / Partner and SHALL be rendered from `contract_type`.
-6. THE system SHALL write the file via the existing `CommonUtil::createCsvFile()` (fputcsv) to `storage_path('app/public/')` (`config('const.filedirectory')`), **UTF-8 with a BOM** (`EF BB BF`) for Excel compatibility.
-7. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
+3. THE system SHALL emit one row per product per group (i.e. per `log_alloc_prorations` row), mapping each to the 18 configured columns.
+4. THE `charge_id` column SHALL be populated from `log_alloc_prorations.charge_id` so rows can be matched against `DailyRateCalculation.csv` and the source charge. (Added per REF-CAP-12 §1 #4.)
+5. THE bundle/group ID column SHALL be populated from `log_alloc_prorations.group_id` (or `bundle_id` via the group) so the coaching and App rows of the same bundle are unambiguously linked. (Added per REF-CAP-12 §1 #4.)
+6. THE row_kind column SHALL be `normal` for a positive-N charge and `refund` for a negative-N charge, so callers can filter refund rows without inspecting amounts. (Added per REF-CAP-12 §1 #4.)
+7. THE プロジェクト column SHALL render the `bundle_type` label (`cap` / `cip`), not the raw TINYINT.
+8. WHERE `order_no` or `department_id` is present, THE system SHALL populate それ; contract types include B2C / B2B / B2B2C / Partner and SHALL be rendered from `contract_type`.
+9. THE system SHALL write the file via the existing `CommonUtil::createCsvFile()` (fputcsv) to `storage_path('app/public/')` (`config('const.filedirectory')`), **UTF-8 with a BOM** (`EF BB BF`) for Excel compatibility.
+10. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
 
 ### Requirement 3: Attach to the existing zip and email (guarded)
 
@@ -124,6 +127,6 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 | # | Item | Status / ask |
 |---|---|---|
-| O-C1 | **Column set final confirmation** — the 15 columns above match the technical design; confirm Accounting needs no additional column (e.g. paid_at, tax_free) in the breakdown. | Confirm the header list is complete for Accounting's reconciliation. |
+| **O-G1-4** | **[G1 feedback — REF-CAP-12 §1 #4] Column set was missing linking columns.** The original 15-column list did not allow the coaching and App rows of the same bundle to be linked, and had no `charge_id` to match rows against `DailyRateCalculation.csv`. Updated to 18 columns: `charge_id`, `bundle/group id`, and `row_kind` added. **Confirm the final Japanese column labels for these three new columns with Accounting before sign-off.** |
 | O-C2 | **Sequence number `10`** in the filename — confirm `10` does not collide with an existing CSV sequence in the monthly set. | Verify against the current file list at design time (non-blocking for sign-off). |
 | O-C3 | **Pre vs Final content** — whether the Pre (速報) breakdown should read `_pre` proration rows or the same source; assumes `$preFlg` selects the preliminary context. | Confirm the Pre file should reflect preliminary allocation, consistent with the other 速報版 CSVs. |

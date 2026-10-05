@@ -139,6 +139,34 @@ The rule, per REF-CAP-09, is deliberately simple: a refund is **the same allocat
 1. THE audit record SHALL retain, for each in-scope refund charge: target month, charge identifier, product identifier, contract type where available, original recognized N (negative), applied weights, and allocated P_app / P_coaching. (Persistence tables are Spec 01; 02b asserts negatives are captured the same way.)
 2. WHEN a refund month is re-run, THE system SHALL produce identical P values (N invariant), consistent with the idempotency guarantee in 02a.
 
+### Requirement 9: Refund charge → bundle pairing (G1 blocker — REF-CAP-12 §1 #1)
+
+**User Story:** As the allocation engine, I need to know which original bundle a refund charge belongs to so that I can find the App companion and write P_app correctly.
+
+> ⚠️ **This requirement is the G1 blocker** identified by Kuroda-san (REF-CAP-12 §1 #1). The pairing mechanism, interaction with the 1+1 check, and where negative P_app is written are **open items pending resolution at the 2026-10-05 DSM**. The acceptance criteria below capture the problem statement and the decisions that must be made; they will be finalized once Kuroda-san confirms the approach.
+
+#### Background (from REF-CAP-12 §1 #1)
+
+A refund charge is a clone of the original coaching charge — it keeps `start_date`/`end_date`/`order_no`/`plan_id`; only `paid_price`, `paid_at`, and `transaction_id` change. The standard pairing rule (match coaching + app by `start_date` AND `end_date`) fails for refunds in two cases:
+
+- **(i) Same-month refund:** the original contract still covers the execution month — existing coaching (+) and app (+) rows are already there. The execution month then has 2 coaching rows (+/−) and 1 App row, failing the 1+1 check and skipping the whole bundle including that month's normal allocation.
+- **(ii) Later-month refund:** the contract period has ended — no App row exists in the execution month, so pairing fails and there is no log row to write P_app into.
+
+#### Decisions required (open — to be resolved at G1)
+
+1. **Refund linkage:** how is a refund charge linked to its original bundle? (e.g. via `log_refund_history` original/refund charge IDs, or `trn_prorated_refund_charge.refund_charge_id`.)
+2. **1+1 interaction:** how does the refund interact with the 1+1 cardinality check — does it bypass the check using the linkage, or does it add a virtual App companion row?
+3. **Where negative P_app is written:** is a new App log row inserted in the execution month? If so, what is the impact on the existing CSVs / Freee / PayPal sums / 02c?
+4. **R-12 no-netting:** positive and negative charges must never be netted; each must be allocated independently.
+
+#### Acceptance Criteria (to be completed post-DSM)
+
+1. THE system SHALL link a refund charge to its original bundle via **[mechanism TBD — pending DSM resolution]**.
+2. THE system SHALL handle both the same-month refund case (i) and the later-month refund case (ii) without skipping the normal bundle allocation.
+3. THE system SHALL write negative P_app to **[location TBD — pending DSM resolution]** so that `P_coaching + P_app = N` (negative N) is satisfied.
+4. THE system SHALL NOT net a positive and negative charge for the same bundle; each SHALL be allocated independently (R-12).
+5. THE system SHALL include acceptance tests for both case (i) and case (ii).
+
 ## Confirmed Decisions (settled — for the approver's reference)
 
 | # | Decision | Source |
@@ -155,6 +183,7 @@ The rule, per REF-CAP-09, is deliberately simple: a refund is **the same allocat
 
 | # | Item | Status / ask |
 |---|---|---|
+| **O-G1-1** | **[G1 feedback — REF-CAP-12 §1 #1 — BLOCKER] Refund charges won't pair with the App row under the standard 1+1 check.** Two cases: (i) same-month refund → 2 coaching rows + 1 App → 1+1 check fails, skipping the whole bundle; (ii) later-month refund → no App row in execution month → pairing fails, no row to write P_app into. Requires decisions on: linkage mechanism (`log_refund_history`?), 1+1 interaction, where negative P_app is written, R-12 no-netting, acceptance tests for both cases. **Blocking G1 sign-off — must be resolved at 2026-10-05 DSM.** See Req 9. |
 | O-R1 | **Shareholder cashback cap for CAP/CIP** — new CAP/CIP-specific cap amounts are under executive discussion; until decided, proceed with the existing **¥19,800** coaching cap. | Confirm we implement against ¥19,800 for now (REF-CAP-09 open item, owner Kuroda-san). |
 | O-R2 | **Post-refund recognition of the original positive charge** (non-blocking) — the reconciliation assumes existing ASC keeps recognizing the original positive charge's remaining days after a cooling-off refund, so the refund-month net self-corrects later. | Engineering to confirm existing ASC does not truncate the positive charge on cooling-off (owner: Engineering / Miyaji-san). Accounting accepted proceeding on this basis. |
 | O-R3 | **Consumption-tax-exemption calculation path** — expected `paid amount incl. tax × 10/110`, but the controller path/calculation is not yet fully confirmed. | Confirm the Admin Refund flow's exact calculation so 02b consumes the correct negative (REF-CAP-09 R-04). |

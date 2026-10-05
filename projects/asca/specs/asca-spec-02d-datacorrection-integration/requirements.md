@@ -3,6 +3,8 @@
 **ASCA Spec 02d — DataCorrection Integration**
 
 > **Staging note:** Dev-context draft pending PM sign-off (Kuroda-san, G1). On approval it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02d-datacorrection-integration/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks from this draft.
+>
+> **Status (2026-10-05):** Kuroda-san **dropped 02d at G1** (2026-09-28, REF-CAP-12 §0) — his view: the DataCorrection batch is outdated and the fix is not needed. **Lead decision (2026-10-01): RETAIN 02d** — omitting the allocation call here re-creates the DEVOPS-6415-style drift risk (DataCorrectionLogic has its own private daily-rate path that would bypass the allocation, leaving a corrected-in CAP charge un-split). **Re-confirmation with Kuroda-san is required at the 2026-10-05 DSM** before the 02d epic is created in JIRA.
 
 ## Introduction
 

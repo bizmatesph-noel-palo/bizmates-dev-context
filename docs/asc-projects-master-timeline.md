@@ -414,11 +414,12 @@ Dev Team:                 ║═════════════════
                                                                      Dec 17
 ```
 
-> **Actuals overlay (as of 2026-09-30 — planned baseline above is unchanged):**
+> **Actuals overlay (as of 2026-10-05 — planned baseline above is unchanged):**
 > - **ASCM Refactor + ZPR** → ✅ shipped to production together **2026-09-28** (met the pre-Oct-1 deadline).
-> - **ZPR daily-table cleanup** → ✅ executed by Yijun-san **2026-09-30** (delete-only, 8 rows); 10/01 PRE verification + 10/02 18:00 JST September FINAL still upcoming.
-> - **Foundation (Spec 01)** → 🔄 in execution in both repos (Throy accounting, Cristoff ls-db); awaiting PRs → G3. ~1.5–2 wks behind baseline, absorbed by the W12–W15 buffer.
-> - **ASCA Spec 02** → at G1 (submitted 09-28). **4 sub-specs (02a–02d)** — 02d dropped at G1 (REF-CAP-12 §0) then **retained by Lead 2026-10-01** (re-confirm w/ Kuroda-san). Four G1 items pending (02b refund-pairing blocker; 02a failure-state + re-run/V-7; 02c linking columns); CIP-refund split home on hold. DEVOPS 6415/6596 merged into ASCA-master 2026-10-01.
+> - **ZPR daily-table cleanup + September FINAL** → ✅ complete. Cleanup 2026-09-30 (Yijun-san). PRE verified 10/01. FINAL crashed 10/02 (Zipan path bug) → fixed by DEVOPS-6274 + DEVOPS-6284 → re-run completed.
+> - **Foundation (Spec 01)** → ✅ code complete. ASCA-16 (ls-db) + ASCA-17 (accounting) merged to ASCA-master. G3 review done — one fix pending (ASCA-34, Cristoff). ~1.5–2 wks behind baseline, absorbed by W12–W15 buffer.
+> - **Steering files (ASCA-10)** → ✅ updated + PR sent 2026-10-05.
+> - **ASCA Spec 02** → at G1. 4 open items; Spec 02 G1 DSM today (2026-10-05, Kuroda-san back). Design/tasks start once G1 resolves.
 
 ### Detailed Dev Gantt (Week by Week)
 
@@ -733,8 +734,11 @@ ASC is NOT blocked by upstream timelines:
 | **2026/09/30** | **✅ ZPR daily-table cleanup executed** by Yijun-san (DevOps) — 8 stale `product_id=38` rows removed from the Zipan daily tables (delete-only), before the 10/01 PRE. Spec 02 doc-alignment sweep (02d drop → 3 sub-specs; CIP-refund on-hold status). |
 | **2026/10/01** | **02d RETAINED by Lead decision** (reverses the REF-CAP-12 §0 drop; DEVOPS-6415-style drift risk, re-confirm w/ Kuroda-san) → Spec 02 back to 4 sub-specs. **DEVOPS 6415/6596 merged `main` → `feature/ASCA/ASCA-master`.** DEV04 QA-prep tickets ASCA-30–33 created under ASCA-9. |
 | 2026/10/01 | ✅ ZPR **PRE batch ran**; Noel verified (Metabase) `product_id=38` now in the monthly-rate table, not daily. |
-| ⏳ **2026/10/02 18:00 JST** | **September FINAL run** (moved by Kuroda-san for quarterly closing; supersedes any "10/03 FINAL" reference). |
-| ~2026/10/02 | ASC Shared Foundation complete (🔄 in execution as of 09-23; coding both repos, awaiting PRs → G3) |
+| ✅ **2026/10/02** | **September FINAL resolved** — initially crashed (Zipan product-type resolution null in `ZipanUtil.php`); fixed by DEVOPS-6274 (Harvey-san) + DEVOPS-6284 (Yijun-san), deployed alongside 6415/6596. DevOps re-ran; both monthly + send-journal commands completed. Investigation: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`. |
+| ✅ **2026/10/02** | **Spec 01 G3 review completed** — ASCA-16 (ls-db) + ASCA-17 (accounting) confirmed merged to ASCA-master. Repo 1 (engine): RECOMMEND PASS conditional. Repo 2 (schema): RECOMMEND CHANGES — `v_alloc_prorations_active` missing `run_type = Final` (Req 14.2). ASCA-34 raised for Cristoff (G3 fix). Report: `projects/asca/technical-notes/investigation/20261002-spec01-g3-code-review/REPORT-00-spec01-g3-code-review.md`. |
+| ✅ **2026/10/05** | **Steering files updated** (ASCA-10) — aligned to REF-CIP-05 + REF-CAP-11. PR sent to `feature/ASCA/ASCA-master` (branch `feature/ASCA/ASCA-10-steering-files-update`). |
+| ⏳ **2026/10/05** | **Spec 02 G1 DSM** — Kuroda-san back from sick leave. 4 items to resolve: 02b refund→bundle pairing (blocker), 02a failure-state + re-run/V-7, 02c linking columns, 02d retain re-confirmation. Requirements.md updates + G1 pass pending this DSM. |
+| ~2026/10/02 | ASC Shared Foundation complete (✅ code done; G3 pending ASCA-34 merge) |
 | ~2026/10/30 | ASCA CAP dev complete |
 | ~2026/11/02 | 🔴 All Souls' Day (W10 loses 1 day) |
 | ~2026/11/13 | ASCI CIP dev complete |

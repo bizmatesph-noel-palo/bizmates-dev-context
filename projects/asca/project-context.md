@@ -6,13 +6,14 @@
 
 ---
 
-## Current State (as of 2026-10-02)
+## Current State (as of 2026-10-05)
 
-- **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**, so the refactored injection surface (ArchiverService/MailerService + refactored `DataCorrectionLogic`) is now in the ASCA base — unblocks the Spec 02 design/tasks phase (02c + 02d).
-- **ZPR daily-table cleanup:** ✅ executed by Yijun-san (DevOps) **2026-09-30** — 8 stale `product_id=38` rows removed from the Zipan daily tables (delete-only). ✅ **10/01 PRE verified (Noel)** — Metabase confirms `product_id=38` now lands in the monthly-rate table, not daily. Upcoming: the **September FINAL (10/02 18:00 JST, today)**. Runbook: `projects/asca/technical-notes/investigation/20260928-zpr-daily-table-cleanup/REPORT-00-zpr-daily-table-cleanup.md`.
-- **Foundation (Spec 01):** 🔄 in execution in both repos (Throy accounting, Cristoff ls-db); awaiting PRs → G3.
-- **DEV04 QA test-data prep:** QA requested CAP/CIP upstream code on DEV04 for ASCA test data. 4 tasks under ASCA-9 — [ASCA-30](https://bizmates.atlassian.net/browse/ASCA-30) (DB reimport) → [ASCA-31](https://bizmates.atlassian.net/browse/ASCA-31) (repos main/master) → [ASCA-32](https://bizmates.atlassian.net/browse/ASCA-32) (CAP `feature/CAP/CAP-base`) → [ASCA-33](https://bizmates.atlassian.net/browse/ASCA-33) (CIP TBA). Delegated; parallel with Spec 02 G1.
-- **Spec 02 (CAP Integration):** at G1 (submitted 2026-09-28). **4 sub-specs — 02a Core Injection · 02b Refund · 02c AllocationDetail CSV · 02d DataCorrection.** 02d was **dropped at G1** (Kuroda-san, REF-CAP-12 §0 — DataCorrection fix batch outdated) then **retained by Lead decision 2026-10-01** — leaving the DataCorrection path without the CAP allocation re-creates the DEVOPS-6415 drift risk, so we implement it regardless. **Re-confirm with Kuroda-san at the 2026-10-05 DSM** (he's on sick leave since 09-30) before creating its epic — implementation isn't blocked, only the epic creation waits. G1 returned 4 items to resolve: 02b CAP refund→bundle pairing (**blocker**), 02a failure-state + re-run/V-7, 02c linking columns; plus the 02d-retain re-confirmation. **CIP refunds ARE split** by a fixed per-type rule (REF-CIP-06) but the home (02b / new sub-spec / ASCI) is **on hold** pending Kuroda-san's refund-type-identification answer.
+- **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**.
+- **ZPR daily-table cleanup + September FINAL:** ✅ all complete. Data cleanup executed 2026-09-30 (Yijun-san). 10/01 PRE verified. September FINAL (10/02) initially crashed — root cause was a Zipan product-type resolution issue in `ZipanUtil.php`; fixed by **DEVOPS-6274** (Harvey-san) + **DEVOPS-6284** (Yijun-san), deployed alongside 6415/6596. DevOps re-ran after deploy — both monthly and send-journal commands completed successfully. Investigation reports: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`.
+- **Foundation (Spec 01):** ✅ **Code complete** — ASCA-16 (ls-db, Cristoff) and ASCA-17 (accounting, Throy) both merged to `feature/ASCA/ASCA-master`. **G3 review done (2026-10-02, ASCA-18)** — one fix pending: [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) (Cristoff, `v_alloc_prorations_active` missing `run_type = Final` filter + view test). ASCA-18 closes as G3 passed once ASCA-34 is merged and reviewed.
+- **Steering files (ASCA-10):** ✅ updated to REF-CIP-05 + REF-CAP-11. PR sent to `feature/ASCA/ASCA-master` (branch `feature/ASCA/ASCA-10-steering-files-update`), 2026-10-05.
+- **DEV04 QA test-data prep:** [ASCA-30](https://bizmates.atlassian.net/browse/ASCA-30) → [ASCA-31](https://bizmates.atlassian.net/browse/ASCA-31) → [ASCA-32](https://bizmates.atlassian.net/browse/ASCA-32) → [ASCA-33](https://bizmates.atlassian.net/browse/ASCA-33). Delegated; parallel, not on critical path.
+- **Spec 02 (CAP Integration):** G1 submitted 2026-09-28, **4 open items pending Kuroda-san sign-off** (he's back from sick leave — **10/05 DSM today**). Items: 02b refund→bundle pairing (**blocker**), 02a failure-state (#2) + re-run/V-7 (#3), 02c linking columns (#4), 02d retain re-confirmation. Requirements.md files are drafts — **do not start design/tasks until G1 resolves**. CIP-refund split home (REF-CIP-06) on hold pending Kuroda-san's refund-type-identification answer.
 
 ---
 
@@ -91,6 +92,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 | [ASCA-16](https://bizmates.atlassian.net/browse/ASCA-16) | Story | ASCA-13 | [Spec 01] — Coding (ls-db migrations) | Dev (Throy) |
 | [ASCA-17](https://bizmates.atlassian.net/browse/ASCA-17) | Story | ASCA-13 | [Spec 01] — Coding (accounting application) | Dev (Throy) |
 | [ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18) | Story | ASCA-13 | [Spec 01] — Code Review | Lead · G3 |
+| [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) | Sub-task | ASCA-18 | [G3 Fix] v_alloc_prorations_active — add run_type = Final filter + view test | Cristoff · pending |
 | [ASCA-19](https://bizmates.atlassian.net/browse/ASCA-19) | Story | ASCA-13 | [Spec 01] — QA Testing | QA (Miko) |
 | [ASCA-20](https://bizmates.atlassian.net/browse/ASCA-20) | Story | ASCA-13 | [Spec 01] — Dev/Manual Testing | Lead |
 
