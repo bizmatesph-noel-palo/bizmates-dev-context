@@ -14,6 +14,21 @@
 
 > ⚠️ **Verbatim source document.** This is Kuroda-san's requirement as delivered, preserved in full. Our interpretation/impact analysis lives separately in `projects/asca/` — do not edit this content; it is the source of truth.
 
+> ## ⚠️ PARTIALLY SUPERSEDED — read with the later docs
+>
+> This is the **original (2026-09-08)** refund spec. Several of its normative statements were reversed by later decisions. The verbatim body below is preserved as a historical record, but **do NOT treat the following as current:**
+>
+> | REF-CAP-09 item (below) | Superseded by | Current rule |
+> |---|---|---|
+> | **R-05 / R-11 + §10** — contract-overlap refund (prorated by overlap days) | REF-CIP-06 §3.8 (2026-09-28) | A contract overlap produces **NO refund**. |
+> | **R-04 / R-08 + §5** — "cooling-off 10% refund" as a distinct type | REF-CIP-06 §3.3 (2026-09-28); REF-CAP-13 §2 | There is no "cooling-off 10%" type. Cooling-off is a **90% refund** (10% fee retained). |
+> | **R-16 + §1 + §10** — CIP lesson plans 1029–1032 use **three-way** (Lesson/Coaching/App) allocation | REF-CIP-05 (2026-09-17); REF-CIP-06 §3.10 | CIP is **out of the allocation engine** for normal charges. Lesson plans book **three independent charges** (no three-way split). There is **no `ThreeWayAllocationFormula`** (confirmed at Spec 01 G3). |
+> | **§8** — CIP full-refund acceptance example (−75,900 → App −3,917 / Coaching −71,983, using the old 66,500 weight) | REF-CIP-07 (2026-10-05); REF-CIP-06 §3.4/§3.5 | CIP refunds split by the **fixed ratio** `App = FLOOR(refund × 3,980 / 75,900)`; shareholder = Coaching-only. |
+>
+> **Still current from this doc:** R-01 (same formula +/−, true floor toward −∞, `ΣP = N`), R-03/R-07 (execution-month lump, no spread-back), R-12 (per-charge, no combined monthly ratio), R-13 (contract-type change), R-14/R-15 (shareholder cashback: cloned negative, Coaching line in scope, don't sum split CSV rows), and the ¥19,800 interim cap.
+>
+> **Authoritative chain:** REF-CAP-09 (base) → REF-CIP-05 (CIP residual-value) → REF-CIP-06 (refund patterns, overlap/cooling-off corrections) → REF-CAP-12 (Spec 02 G1) → REF-CAP-13 (Spec 02 Round 2) → REF-CIP-07 (CIP refund-type detection). The 02b spec (`projects/asca/specs/asca-spec-02b-refund-allocation/`) already reflects the corrected rules.
+
 ---
 
 ## CAP / CIP Refund Allocation Requirements
