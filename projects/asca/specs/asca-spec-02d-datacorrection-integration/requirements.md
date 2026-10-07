@@ -1,133 +1,136 @@
 # Requirements Document
 
-**ASCA Spec 02d — DataCorrection Integration**
+**ASCA Spec 02d — DataCorrection Command Decommission**
 
 > **Staging note:** Dev-context draft pending PM sign-off (Kuroda-san, G1). On approval it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02d-datacorrection-integration/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks from this draft.
 >
-> **Status (2026-10-05):** Kuroda-san **dropped 02d at G1** (2026-09-28, REF-CAP-12 §0) — his view: the DataCorrection batch is outdated and the fix is not needed. **Lead decision (2026-10-01): RETAIN 02d** — omitting the allocation call here re-creates the DEVOPS-6415-style drift risk (DataCorrectionLogic has its own private daily-rate path that would bypass the allocation, leaving a corrected-in CAP charge un-split). **Re-confirmation with Kuroda-san is required at the 2026-10-05 DSM** before the 02d epic is created in JIRA.
+> **Scope change (2026-10-05):** 02d was originally scoped as "inject allocation into `DataCorrectionLogic`". It has been **repurposed** to **disable/deprecate `DataCorrectionCommand`** instead. Rationale and decision trail in the Introduction. The original allocation-injection scope is **dropped** (recorded in "Superseded original scope" below so the history is traceable).
 
 ## Introduction
 
-This spec extends CAP allocation to the **manual correction batch** (`DataCorrectionCommand` → `DataCorrectionLogic`). It is the **last of four Spec 02 sub-specs** (02a Core Injection → 02b Refund → 02c CSV → **02d DataCorrection**) and is the smallest — one scoped allocation call at one site.
+This spec **decommissions the manual correction batch** (`DataCorrectionCommand` → `DataCorrectionLogic`) so that the one accounting path that would bypass CAP allocation can no longer run. It is the **last of the four Spec 02 sub-specs** (02a Core Injection → 02b Refund → 02c CSV → **02d DataCorrection Decommission**).
 
-`DataCorrectionLogic` has its **own private copy** of the daily-rate creation logic (`createDailyRateCalculation()`, the `addDaily` operation) that reads `trn_charge` and writes the un-allocated amount **N** to `log_daily_rate_calculation` directly — it does NOT call `CommonUtil::createDailyRateCalculation()`, so 02a's injection does not reach it. Without this sub-spec, a correction that **adds** a CAP coaching charge (`addDaily`) would bypass allocation entirely: the full N stays as coaching revenue and the App companion stays 0.
+### Why this changed from "inject" to "disable"
 
-This sub-spec adds a **scoped** allocation call — `RevenueAllocationService::allocateForCharge($chargeId, $targetYm)` — after the `addDaily` INSERT loop, so a corrected-in charge is allocated the same way the normal batch would, but **only for that charge's bundle**, not the whole month.
+`DataCorrectionLogic` has its **own private copy** of the daily-rate creation logic (`addDaily` → private `createDailyRateCalculation()`) that writes the un-allocated amount **N** directly to `log_daily_rate_calculation`, bypassing `CommonUtil::createDailyRateCalculation()` and therefore 02a's injection. The original 02d plan was to add a scoped `allocateForCharge()` call there so a corrected-in CAP charge would still be split.
 
-### Why scoped, and why only the `addDaily` path
+That plan assumed the command is in use. It is not:
 
-Verified against the current `DataCorrectionLogic` (`execute()` routing by `target_data`):
+- **Wu-san (2026-08-28):** `DataCorrectionCommand` is no longer used in operation. Accounting correction requests (via Redmine) are handled by DevOps running SQL directly on the DB, ~once a month.
+- **Harvey-san (2026-10-05, verbatim, confirming for Kuroda-san):**
+  - "No, this command hasn't been used for months." Corrections now follow a Confluence runbook: Accounting sends a CSV, DevOps generates INSERT/UPDATE/DELETE SQL from it. (Sample ticket: DEVOPS-6706.)
+  - "We only use direct SQL Execution."
+  - "I don't think the command for data correction is needed in the future since this is outdated and needs a constant update every time there's a structure change in a table."
 
-- **`daily` → `correctDailyRateCalculation()`** — reads/updates **existing** `log_daily_rate_calculation` rows. Those were already written and allocated by the normal batch → **safe as-is, no injection.**
-- **`addDaily` → `createDailyRateCalculation()` (private, ~line 346)** — reads `trn_charge` and writes **raw N** to the log. This is the **only** correction path that introduces un-allocated N → **the only path needing the allocation call.**
-- Balance/deposit/addBalance/balanceAmount paths do not write daily-rate rows → out of scope.
+Because DevOps corrections run **direct SQL with post-allocation amounts**, there is no un-allocated-N path to protect there either. So:
 
-The correction batch performs **incremental** fixes to an already-completed month; it does NOT delete-and-rebuild the month (unlike `CommonUtil::createDailyRateCalculation()`). Therefore the call MUST be **scoped to the single charge** (`allocateForCharge`), never the full-month `allocate()` — a full rebuild is not the intent of a correction and would wipe the month.
+- **Injecting allocation** would maintain a dead code path forever (and, per Harvey-san, one that needs re-work on every table-structure change) — pure liability.
+- **Leaving the command runnable but un-injected** would keep exactly the drift risk the Lead originally wanted to avoid (someone runs it, a CAP charge is written un-split).
+- **Disabling the command** removes the risk permanently at near-zero maintenance cost — the path cannot bypass allocation because it cannot execute.
+
+Kuroda-san's standing guidance (REF-CAP-12 §0, REF-CAP-13 §4): *"If the concern is someone running the command by accident, disabling it or marking it deprecated in code would be enough."*
+
+### Decision trail
+
+| Date | Position |
+|---|---|
+| 2026-09-28 (REF-CAP-12 §0) | Kuroda-san: drop 02d — DataCorrection batch is outdated. |
+| 2026-10-01 | Lead: **retain** 02d — DEVOPS-6415-style drift risk if the path runs un-injected. |
+| 2026-10-05 (REF-CAP-13 §4) | Kuroda-san: command already unused (Wu-san 08-28); keep 02d out of scope, or disable/deprecate if the concern is accidental execution. |
+| 2026-10-05 (Harvey-san, in-thread) | DevOps confirms: unused for months, direct SQL only, no future need. |
+| 2026-10-05 (Lead) | **Repurpose 02d: decommission the command** (disable + deprecate) rather than inject allocation or silently drop. Keeps the drift risk closed and the audit trail intact. |
 
 ### Design decisions (confirmed)
 
-- **Injection point:** after the `foreach ($ContractDateLists ...) { LogDailyRateCalculation::create(...) }` loop in the private `DataCorrectionLogic::createDailyRateCalculation()` (`addDaily`).
-- **Scoped allocation:** `app(RevenueAllocationService::class)->allocateForCharge($trnCharge->id, $targetYm)` (Spec 01 provides `allocateForCharge`; 02d only wires it in). `$targetYm` = the period just written (first key of `$ContractDateLists`).
-- **CAP-only / Bizmates-only:** guard to the non-Zipan branch (`$data->containts !== 'Zipan'`). The existing Zipan branch (`LogDailyRateCalculationZipan::create`) is untouched — CAP/CIP are Bizmates-only.
-- **Failure isolation:** wrap in try/catch with the stable tag `[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)`; on failure the correction's N still lands and the batch continues (same posture as 02a).
-- **No new command, no schema change, no Zipan change.**
+- **Disable execution.** `DataCorrectionCommand` SHALL NOT run its correction logic. The chosen mechanism (early guarded exit in `handle()` with a clear deprecation message, and/or removal from any schedule/registration) is a design-phase detail — the requirement is that invoking it performs no data write and clearly states it is decommissioned.
+- **Deprecate in code.** `DataCorrectionCommand` and `DataCorrectionLogic` SHALL be marked deprecated (docblock + a one-line log on invocation) pointing to the current DevOps direct-SQL correction process (Confluence runbook; e.g. DEVOPS-6706).
+- **No allocation injection.** The original `allocateForCharge()` injection into `DataCorrectionLogic` is **NOT** implemented — the path is being removed, not maintained.
+- **No schema change, no Zipan change, no change to the normal Pre/Final batches.**
 
 ### Dependencies
 
-- **Spec 01 Foundation merged** — provides `RevenueAllocationService::allocateForCharge(int $chargeId, string $targetYm)`, the `log_alloc_*` tables, and the run lifecycle. 02d adds no engine logic — it only calls.
-- **02a (CAP Core Injection) merged** — establishes the allocation pattern and the overwrite semantics 02d reuses at charge scope.
-- **DEVOPS-6415 present in the ASCA base (prerequisite).** 6415 fixed a pre-existing **drift** in this private method: it lacked the `BizmatesMonthlyPlanEnum::exists()` skip and the `tax_free` / `country_id` / `gross_amount` fields that `CommonUtil` has. 02d builds on the corrected method — so the ASCM refactor must be in the base before implementation. (These requirements are authored against the pre-6415 code that is currently in the branch; the injection point and routing are unchanged by the refactor — see Open Items.)
+- **None blocking.** This sub-spec removes a path; it does not depend on the allocation engine. (It is grouped under Spec 02 because it closes the last DataCorrection-related allocation concern.)
+- Informational: the current DevOps correction process is the Confluence runbook referenced by Harvey-san (CSV → generated SQL), with DEVOPS-6706 as a representative ticket.
 
 ### Out of scope (explicit)
 
-- **The `daily` / correct path** (`correctDailyRateCalculation`) — safe as-is; no injection.
-- **Balance/deposit/addBalance/balanceAmount** correction paths — no daily-rate write.
-- **Zipan** corrections — untouched.
-- **The 6415 drift fix itself** (monthly-plan skip + missing fields) — that is DEVOPS-6415, a prerequisite, not 02d.
-- **Full-month re-allocation** — deliberately not used here (correction is incremental).
-- **Refund corrections' allocation math** — the split rules live in 02b; 02d just routes an added charge through `allocateForCharge`, which applies whatever the engine computes (including negatives if the added charge is negative).
+- **Injecting allocation into `DataCorrectionLogic`** — the original 02d scope, now dropped (see "Superseded original scope").
+- **Deleting the command's source files** — deprecation + disabling execution is sufficient; a later cleanup can remove the files if desired. (Design may choose removal, but it is not required.)
+- **The DevOps direct-SQL correction process** — owned by DevOps; this spec does not change it.
+- **The normal Pre / Final batches and 02a's injection** — unaffected.
+- **Zipan** — untouched.
 
-**Reference:** current `app/Libs/DataCorrectionLogic.php` (`execute()` routing; private `createDailyRateCalculation()` ~line 346); technical design §8 (second injection point) / §9 (scoped allocation); Spec 01 `allocateForCharge`.
+**Reference:** current `app/Libs/DataCorrectionLogic.php` + `app/Console/Commands/DataCorrectionCommand.php`; REF-CAP-12 §0, REF-CAP-13 §4 (Kuroda-san); Harvey-san's 2026-10-05 confirmation; DevOps correction runbook (Confluence) + DEVOPS-6706.
 
 ## Glossary
 
-- **`addDaily`** — the correction operation (`target_data`) that adds a new daily-rate row from a `trn_charge`, handled by the private `createDailyRateCalculation()`.
-- **`allocateForCharge(chargeId, targetYm)`** — the Spec 01 scoped entry point: detects whether the given charge is part of a CAP bundle, finds its pair in the log, computes P, and overwrites just that pair.
-- **Scoped allocation** — allocating only the bundle containing the corrected charge, leaving other bundles in the month untouched.
+- **`DataCorrectionCommand`** — the artisan command that imports a `correction_{YYYYMM}.csv` and applies manual corrections via `DataCorrectionLogic`. Being decommissioned by this spec.
+- **Decommission** — disable execution + mark deprecated in code, so the command cannot run and its status is clear to future developers. (Not necessarily source-file deletion.)
+- **DevOps direct-SQL correction** — the current process that replaced the command: Accounting sends a CSV, DevOps generates and runs INSERT/UPDATE/DELETE SQL (Confluence runbook), using post-allocation amounts.
 
 ---
 
 ## Requirements
 
-### Requirement 1: Inject scoped allocation into the `addDaily` correction path
+### Requirement 1: Disable execution of `DataCorrectionCommand`
 
-**User Story:** As accounting, I need a CAP charge added via correction to be allocated like a normal batch charge so that a manual fix doesn't leave coaching revenue un-split.
-
-#### Acceptance Criteria
-
-1. THE system SHALL call `RevenueAllocationService::allocateForCharge($trnCharge->id, $targetYm)` in the private `DataCorrectionLogic::createDailyRateCalculation()`, positioned **after** the loop that writes the daily-rate rows (`LogDailyRateCalculation::create($condition)`).
-2. THE system SHALL resolve `RevenueAllocationService` through the container (`app(RevenueAllocationService::class)`).
-3. THE `$targetYm` passed SHALL be the period just written (e.g. the first key of `$ContractDateLists`).
-4. THE call SHALL be scoped to the single charge (`allocateForCharge`); THE system SHALL NOT call the full-month `allocate()` here.
-5. THE existing INSERT loop and all other correction operations SHALL remain unchanged.
-
-### Requirement 2: Only the `addDaily` path is affected
-
-**User Story:** As accounting, I need the other correction operations to behave exactly as today so that only the un-allocated-write path changes.
+**User Story:** As the accounting system owner, I need the unused manual-correction command to be unable to write data, so that no one can bypass CAP allocation by running it.
 
 #### Acceptance Criteria
 
-1. THE `daily` correction path (`correctDailyRateCalculation`) SHALL be unchanged (it updates already-allocated rows).
-2. THE balance / deposit / addBalance / balanceAmount paths SHALL be unchanged (they write no daily-rate rows).
-3. ONLY the `addDaily` path SHALL gain the allocation call.
+1. WHEN `DataCorrectionCommand` is invoked, THE system SHALL NOT execute the correction logic (no `addDaily`/`daily`/balance writes, no `log_daily_rate_calculation` writes).
+2. WHEN `DataCorrectionCommand` is invoked, THE system SHALL emit a clear message stating the command is decommissioned and pointing to the current DevOps direct-SQL correction process, AND SHALL exit without error-ing the surrounding tooling (a controlled no-op exit, not a fatal crash).
+3. THE command SHALL be removed from any automated schedule/registration that could trigger it (if such a registration exists), so it is not run unattended.
+4. THE normal Pre and Final batches and 02a's injection SHALL be entirely unaffected by this change.
 
-### Requirement 3: CAP-only / Zipan untouched
+### Requirement 2: Deprecate `DataCorrectionCommand` / `DataCorrectionLogic` in code
 
-**User Story:** As accounting, I need the change confined to the Bizmates CAP flow so that Zipan corrections are unaffected.
-
-#### Acceptance Criteria
-
-1. THE allocation call SHALL execute only on the non-Zipan branch (`$data->containts !== 'Zipan'`).
-2. THE existing Zipan branch (`LogDailyRateCalculationZipan::create`) SHALL be unchanged, and no allocation SHALL run for Zipan corrections.
-3. WHERE the added charge is not part of a CAP bundle, `allocateForCharge` SHALL be a no-op for allocation purposes (detection finds no bundle) and the correction SHALL complete normally. (Detection is Spec 01; 02d asserts a non-CAP charge is not mis-handled.)
-
-### Requirement 4: Failure isolation
-
-**User Story:** As an operator, I need an allocation failure during correction to never break the correction so that the fix still lands.
+**User Story:** As a future developer, I need the correction command clearly marked as deprecated so that I don't revive or extend a dead path by mistake.
 
 #### Acceptance Criteria
 
-1. THE `allocateForCharge` call SHALL be wrapped in try/catch.
-2. IF it throws, THEN THE system SHALL log `[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)` with the exception message, and the correction batch SHALL continue.
-3. WHEN allocation has failed, THE corrected-in row SHALL still contain N (the correction's write is preserved), i.e. today's behaviour.
-4. THE failure SHALL NOT roll back the correction or abort processing of other correction rows beyond the existing error-handling in `execute()`.
+1. THE `DataCorrectionCommand` and `DataCorrectionLogic` classes SHALL carry a deprecation docblock noting: decommissioned on CAP allocation work (ASCA, 2026-10), unused since ≥2026-08 (Wu-san) and confirmed 2026-10-05 (Harvey-san), replaced by the DevOps direct-SQL correction process.
+2. THE deprecation note SHALL reference the current process (Confluence runbook; representative ticket DEVOPS-6706).
+3. A one-line log entry SHALL be written if the command is invoked, so any attempted use is visible.
 
-### Requirement 5: Consistency with the normal batch
+### Requirement 3: No allocation injection, no schema or Zipan change
 
-**User Story:** As accounting, I need a corrected-in CAP charge to end up with the same allocated figures the normal batch would have produced so that corrections and normal runs agree.
+**User Story:** As accounting, I need this change to remove a path only, not alter allocation or other tenants, so that it is safe and minimal.
 
 #### Acceptance Criteria
 
-1. WHEN a CAP coaching charge is added via `addDaily`, THE resulting log rows SHALL carry the allocated P values (coaching reduced, App raised) equivalent to what the normal batch would produce for that bundle.
-2. THE overwrite SHALL keep `P_coaching + P_app = N` for the corrected bundle.
-3. THE correction's downstream steps (its sum/journal/CSV handling) SHALL inherit the allocated values from the overwritten log rows with no additional change.
-4. WHEN the same correction is applied again, THE allocation SHALL be idempotent (N invariant), consistent with 02a.
+1. THE system SHALL NOT add an `allocateForCharge()` (or any allocation) call into `DataCorrectionLogic` — the original 02d injection scope is dropped.
+2. THE system SHALL NOT change any database schema.
+3. THE system SHALL NOT change the Zipan correction branch or any Zipan behaviour.
+4. THE system SHALL NOT change `CommonUtil::createDailyRateCalculation()` or any 02a-touched code.
+
+### Requirement 4: Reversibility note (if the command is ever revived)
+
+**User Story:** As a maintainer, I need a recorded condition for revival so that if DataCorrection is ever needed again, the allocation gap is reconsidered.
+
+#### Acceptance Criteria
+
+1. THE deprecation note SHALL state that IF `DataCorrectionCommand` is ever re-enabled, the CAP-allocation injection (the original 02d scope: scoped `allocateForCharge()` on the `addDaily` path) MUST be reconsidered before it is used, so a revived command does not reintroduce the un-allocated-N drift.
 
 ## Confirmed Decisions (settled — for the approver's reference)
 
 | # | Decision | Source |
 |---|---|---|
-| Injection site | After the `addDaily` INSERT loop in private `createDailyRateCalculation()` | Current code; §8 |
-| Scoped, not full | `allocateForCharge` only — correction is incremental, never rebuild-the-month | §9 |
-| Path selectivity | Only `addDaily`; `daily`/balance paths unchanged | `execute()` routing (verified) |
-| Tenant | Non-Zipan branch only; Zipan untouched | Current code |
-| Failure mode | try/catch → correction keeps N, batch continues | §8 |
-| Drift fix | `BizmatesMonthlyPlanEnum` skip + missing fields = DEVOPS-6415 prerequisite, not 02d | §8; DEVOPS-6415 |
+| Scope | **Decommission** (disable + deprecate) `DataCorrectionCommand`, NOT inject allocation | Lead 2026-10-05, on Kuroda-san's option (REF-CAP-13 §4) |
+| Command unused | Confirmed unused for months; corrections via DevOps direct SQL | Wu-san 2026-08-28; Harvey-san 2026-10-05 |
+| Replacement process | Accounting CSV → DevOps generated INSERT/UPDATE/DELETE SQL (Confluence runbook) | Harvey-san 2026-10-05 (DEVOPS-6706) |
+| Mechanism | Guarded no-op exit + deprecation docblock/log; schedule removal if any | Design-phase detail |
+| No injection | Original `allocateForCharge()` scope dropped | Lead 2026-10-05 |
+| Blast radius | Pre/Final batches, 02a injection, schema, Zipan all untouched | This spec |
+
+## Superseded original scope (recorded for traceability — NOT to implement)
+
+The original 02d ("DataCorrection Integration") would have added a scoped `RevenueAllocationService::allocateForCharge($chargeId, $targetYm)` call after the `addDaily` INSERT loop in the private `DataCorrectionLogic::createDailyRateCalculation()`, CAP-only, non-Zipan, with `[REVENUE_ALLOCATION] EXECUTION FAILED! (DataCorrection)` failure isolation. That approach is **not implemented** — the command is being decommissioned instead. If the command is ever revived, this is the injection to reconsider (Req 4).
 
 ## Open Items (for the approver)
 
 | # | Item | Status / ask |
 |---|---|---|
-| O-D1 | **Injection point vs the DEVOPS-6415-refactored `DataCorrectionLogic`.** These requirements are grounded on the pre-6415 code currently in the branch; the `addDaily` routing and injection site are unchanged by the refactor, but the exact surrounding lines (field set, monthly-plan skip) differ post-6415. | Design phase must confirm the injection line against the refactored file (pull 6415 from `main` first). Non-blocking for requirements sign-off. |
-| O-D2 | **`$targetYm` derivation** — using the first key of `$ContractDateLists` assumes the added charge maps to one target month; a charge spanning months would produce multiple keys. | Confirm `allocateForCharge` should run per written period, or that addDaily charges are single-month in practice. Design-phase detail. |
-| O-D3 | **DataCorrection retirement (unverified).** There is an unconfirmed suggestion the DataCorrection batch may eventually be retired (DevOps applying corrections via direct SQL). | This does NOT reduce 02d scope — we implement the injection regardless so all affected commands allocate consistently. Recorded only for awareness (per Spec 01 note (2)-6). |
+| O-D1 | **Disable mechanism** — guarded no-op exit in `handle()` vs. unregistering the command vs. both. | Design-phase detail. Confirm the preferred mechanism; the requirement is only that it cannot write data and states it is decommissioned. |
+| O-D2 | **Source-file removal vs. deprecate-in-place.** This spec requires deprecate + disable; full file deletion is optional. | Confirm whether Accounting/DevOps want the files removed now or left deprecated for one release first. |
+| O-D3 | **Kuroda-san final word.** Kuroda-san said he would confirm with Harvey-san and "share the result in this thread." Harvey-san has now confirmed (unused, direct SQL only, no future need) in that thread. | Confirm Kuroda-san's explicit go-ahead to proceed with decommission before the 02d epic is created in JIRA. |
