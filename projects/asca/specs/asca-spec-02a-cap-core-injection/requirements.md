@@ -71,6 +71,9 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 2. IF a CIP plan (1028–1032) or any plan with no registered allocation formula is encountered, THEN the run SHALL skip it with a warning (V-3) and SHALL NOT fail. (CIP uses no engine — REF-CIP-05.)
 3. THE injection SHALL NOT alter the Zipan path in any way (CAP/CIP are Bizmates-only; `ZipanUtil` is untouched).
 4. WHERE no CAP bundles exist for the target month, THE allocation SHALL complete as a no-op (run recorded, zero records) and the batch SHALL proceed unchanged.
+5. **(V-3 skip visibility — REF-CAP-13 §3)** WHEN a bundle is skipped (V-3: ambiguous/incomplete pairing, non-zero App, CIP, no formula, or no reference price), THE system SHALL record the **skipped-bundle count and the skip reason** on the run (`log_alloc_calculation_runs` or an associated record), so Accounting can see what was skipped and why without reading the application logs.
+6. **(No reference-price row — REF-CAP-13 §3)** WHERE a month has no applicable `mst_alloc_reference_prices` row (price resolved on the last day of `target_ym` finds nothing), THE system SHALL skip every bundle with the reason "no reference price" as a **no-op** (run completes, nothing overwritten) — it SHALL NOT be treated as a failure. (This is the behaviour before the `effective_from` price window opens; see Req 6.)
+7. **(Standalone App exclusion — REF-CAP-13 §3)** THE allocation SHALL exclude a standalone App charge (`product_id 10012`) that is not part of a CAP bundle; there SHALL be an acceptance test asserting a standalone App charge is not allocated.
 
 ### Requirement 3: Overwrite semantics (Option 1) and idempotency
 
@@ -81,8 +84,10 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 1. WHEN allocation runs, THE system SHALL overwrite the coaching row's `paid_price` with `P_coaching` and the app row's `paid_price` with `P_app` in the daily-rate log, in place.
 2. THE system SHALL define `N = Σ(paid_price)` across the bundle (coaching + app) so that re-running the batch for the same month produces identical P values (idempotent).
 3. WHEN the batch (Pre or Final) is re-run for the same `target_ym`, THE resulting P values SHALL be identical to the first run.
-4. THE system SHALL guarantee `P_coaching + P_app = N` for every bundle after overwrite.
-5. THE step that builds the sum SHALL read the overwritten (P) values, so `log_sum_calculation` (or `_pre`), Freee journals, CSVs, and balance transition inherit P with no change to those code paths.
+4. **(Re-run vs V-7 — REF-CAP-13 #3)** WHEN re-running an already-allocated month, THE system SHALL first restore N for each bundle from `log_alloc_prorations.original_paid_price` (the pre-allocation snapshot) before recomputing, AND SHALL apply the V-7 "App `paid_price` ≠ 0 ⇒ skip" check to that restored (pre-allocation) value only — NOT to the already-overwritten P value in the log. This makes a re-run reproduce the first run's P instead of skipping already-allocated bundles.
+5. THE system SHALL guarantee `P_coaching + P_app = N` for every bundle after overwrite.
+6. THE step that builds the sum SHALL read the overwritten (P) values, so `log_sum_calculation` (or `_pre`), Freee journals, CSVs, and balance transition inherit P with no change to those code paths.
+7. THERE SHALL be an acceptance test that re-runs an already-allocated month and asserts the P values are identical to the first run (the snapshot-restore path above is exercised, not the V-7 skip).
 
 ### Requirement 4: Failure isolation
 
@@ -90,11 +95,14 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 
 #### Acceptance Criteria
 
+> **Mid-run failure model (REF-CAP-13 #2 — option b, confirmed by Kuroda-san 2026-10-05):** each bundle pair is written **atomically**; a failed pair keeps its N; the run finishes as **completed-with-errors** carrying a list of the failed pairs. There is NO whole-run rollback. This matches 02b Req 6 ("SHALL NOT block unrelated CAP records").
+
 1. THE allocation call SHALL be wrapped in try/catch at the injection point.
-2. IF the allocation throws, THEN THE system SHALL log the failure with a stable, greppable tag (`[REVENUE_ALLOCATION] EXECUTION FAILED!`) including the exception message and trace, and THE batch SHALL continue to the sum-building step.
-3. WHEN allocation has failed, THE daily-rate log SHALL still contain N (the pre-allocation values), so the batch produces exactly today's un-allocated output.
-4. THE failure SHALL be recorded in the run lifecycle (`log_alloc_calculation_runs` status = Failed) so it is visible to accounting without inspecting logs. (Run-lifecycle write is Spec 01; this sub-spec asserts a failure surfaces there.)
-5. THE system SHALL NOT require manual intervention to keep the batch running after an allocation failure.
+2. THE system SHALL write each bundle pair (coaching + app) atomically — a mid-way failure on one pair SHALL NOT leave one side overwritten and the other not; that pair rolls back to its N.
+3. WHEN a bundle pair fails, THE daily-rate log SHALL still contain **N for that pair** (the pre-allocation values), so the failed pair produces today's un-allocated output while successfully-allocated pairs keep their P. (This supersedes the earlier "whole log keeps N" wording — only the failed pairs keep N.)
+4. IF one or more pairs fail, THEN THE system SHALL log each failure with a stable, greppable tag (`[REVENUE_ALLOCATION] EXECUTION FAILED!`) including the exception message and the failing `charge_id` / `order_no`, AND THE batch SHALL continue to the sum-building step.
+5. THE run SHALL be recorded in the run lifecycle (`log_alloc_calculation_runs`) as **completed-with-errors** (not a blanket Failed) with the list of failed pairs attached, so it is visible to accounting without inspecting logs. A run with zero failures is recorded as completed. (Run-lifecycle write is Spec 01; this sub-spec asserts the completed-with-errors state + failed-pair list surface there.)
+6. THE system SHALL NOT require manual intervention to keep the batch running after a pair-level allocation failure.
 
 ### Requirement 5: Batch coverage (Pre + Final via the single point)
 
@@ -105,7 +113,7 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 1. THE injection SHALL cause `DailyRateCalculationPreCommand` (Pre) to allocate the `_pre` tables via the shared `CommonUtil` call.
 2. THE injection SHALL cause `SendJournalsDataCommand` (Final) to allocate the live tables via the same call.
 3. THE system SHALL NOT add a separate injection for Pre vs Final — both are covered by the single `CommonUtil::createDailyRateCalculation()` change.
-4. THE `DataCorrectionCommand` path is explicitly NOT covered here (it has its own private daily-rate creation) — it is Spec 02d. (02d was dropped at G1 then **retained by Lead decision 2026-10-01**, pending re-confirmation with Kuroda-san.)
+4. THE `DataCorrectionCommand` path is explicitly NOT covered here (it has its own private daily-rate creation) — it is Spec 02d. (02d: Kuroda-san asked to drop it at Round 2 (REF-CAP-13 §4 — `DataCorrectionCommand` already unused per Wu-san 08-28); **Lead is holding the retain pending clarification with Kuroda-san** — 02d scope unchanged for now.)
 
 ### Requirement 6: No regression to existing (non-CAP) output
 
@@ -116,7 +124,17 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 1. WHEN the batch runs on a month with no CAP charges, THE generated log, sum, journals, and CSVs SHALL be identical to pre-injection output.
 2. THE system SHALL NOT change how existing ASC determines whether or when any charge is recognized; it only splits an already-recognized CAP amount.
 3. THE ¥0 App companion charge SHALL continue to be written by the existing "write N" step (paid_price 0); the overwrite then raises it to `P_app`, which then passes the existing `paid_price != 0` gate in the Freee sender with no change to that sender.
-4. A smoke run of Pre and Final on DEV04 SHALL complete with `DATA CREATION COMPLETED SUCCESSFULLY!` and no new errors.
+4. A smoke run of Pre and Final on DEV04 SHALL complete with `DATA CREATION COMPLETED SUCCESSFULLY!` and no new errors. **(REF-CAP-13 §3)** Reference prices for the test month MUST be seeded on DEV04 so the smoke run actually allocates (not a no-op).
+
+### Requirement 7: Reference-price window and source of truth (REF-CAP-13 §3)
+
+**User Story:** As accounting, I need CAP allocation to start from the beta release month and I need a clear statement of which run is authoritative, so that December beta revenue is split and reporting reads the right run.
+
+#### Acceptance Criteria
+
+1. THE initial `mst_alloc_reference_prices` rows for CAP SHALL use `effective_from = 2026-12-01` (NOT 2027-01-01). CAP beta release is 2026-12-01 (general release 12/8–10); the first close after release is `target_ym = 2026-12` (run in early January) and the price is resolved on the **last day of `target_ym`**. With `effective_from = 2027-01-01`, that resolution finds no row and December CAP revenue would stay 100% on Coaching. Beta purchases are booked as normal revenue, so the earlier date is correct (and harmless if the schedule slips — no CAP charges can exist before the beta).
+2. THE seeder and the Spec 01 references that currently state `2027-01-01` SHALL be updated to `2026-12-01`. (Cross-repo: ls-db CAP reference-price seeder + Spec 01 requirements/design references.)
+3. **Source of truth:** the **active Final run is authoritative** for a given `target_ym`; the Pre (速報) run is **preliminary**. Downstream reads (e.g. `v_alloc_prorations_active`, the AllocationDetail CSV) reflect the active Final run.
 
 ## Confirmed Decisions (settled — for the approver's reference, not to re-open)
 
@@ -127,7 +145,10 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 | Injection point | `CommonUtil::createDailyRateCalculation()` covers Pre + Final | Decisions log #3; §8 |
 | N definition | Σ(paid_price) across bundle (idempotent) | Kuroda-san 2026-08-14 |
 | Scope | CAP-only (1016–1027); CIP out of engine | REF-CIP-05 |
-| Failure mode | try/catch → today's behaviour, run marked Failed | §8 |
+| Failure mode | Per-pair atomic; failed pairs keep N; run = completed-with-errors + failed-pair list (NOT whole-run rollback) | REF-CAP-13 #2 (option b) |
+| Re-run vs V-7 | Restore N from `original_paid_price` snapshot; apply V-7 to restored value only | REF-CAP-13 #3 |
+| Reference-price start | `effective_from = 2026-12-01` (CAP beta release), not 2027-01-01 | REF-CAP-13 §3 |
+| Source of truth | Active Final run authoritative; Pre preliminary | REF-CAP-13 §3 |
 | Tenant | Bizmates only; Zipan untouched | Decisions log #8 |
 
 ## Open Items (for the approver)
@@ -136,5 +157,6 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 |---|---|---|
 | O-A | App Freee-mapping rows (`mst_code_change` code→freee_code, `mst_rule_for_journals` for the App product_type 100) must exist for App journals to route correctly once `P_app > 0`. | Data verification, not code in 02a. Confirm the rows exist on the target environment before go-live (may need an ls-db seeder). Does Accounting confirm the App routes on the Bizmates contract-type path? |
 | O-B | Exact placement relative to any ASCM-refactor changes inside/around `CommonUtil::createDailyRateCalculation()`. | Design-phase detail; requires the DEVOPS-refactored base checked out. Non-blocking for requirements sign-off. |
-| **O-G1-2** | **[G1 feedback — REF-CAP-12 §1 #2] Mid-run failure state is underspecified.** Req 4.3 says the log SHALL still contain N after a failure, but nothing requires a rollback. If `allocate()` throws after overwriting some bundles, the log holds a mix of N and P, the run is Failed, and 02c omits the breakdown CSV. Two options presented by Kuroda-san: **(a)** the whole run is one transaction — log rolls back to N on failure; **(b)** each bundle pair is written atomically, failed pairs keep N, run is recorded as completed-with-errors with a list of failed pairs. **Pending Lead decision and Kuroda-san sign-off at G1.** Req 4 will be updated once option is chosen. |
-| **O-G1-3** | **[G1 feedback — REF-CAP-12 §1 #3] Re-run idempotency (Req 3.3) conflicts with V-7.** Req 3.3 says re-running for the same `target_ym` SHALL produce identical P values. Technical design V-7: if an App row has non-zero `paid_price`, mark the bundle incomplete (V-3) and skip. On a re-run, App rows already hold `P_app ≠ 0` from the first run → V-7 skips them → re-run does not reproduce the first run's output. Resolution options: restore N from `log_alloc_prorations.original_paid_price` before recomputing; or apply V-7 only to pre-allocation values. A "re-run an already-allocated month" acceptance test is also required. **Pending Lead decision and Kuroda-san sign-off at G1.** Req 3 will be updated once option is chosen. |
+| ~~O-G1-2~~ ✅ | **RESOLVED (REF-CAP-13 #2) — option (b).** Mid-run failure now specified in Req 4: per-pair atomic, failed pairs keep N, run = completed-with-errors + failed-pair list. No whole-run rollback. |
+| ~~O-G1-3~~ ✅ | **RESOLVED (REF-CAP-13 #3).** Re-run restores N from `log_alloc_prorations.original_paid_price` and applies V-7 to the restored value only (Req 3.4); re-run acceptance test added (Req 3.7). |
+| O-D | **(REF-CAP-13 §3)** V-7 premise — "App (`10022`) `paid_price = 0` confirmed on real data" — must be verified. | Data verification; add to Dependencies. Confirm against production data before go-live that the App companion charge is written with `paid_price = 0` so the overwrite (not a skip) is the correct path. |

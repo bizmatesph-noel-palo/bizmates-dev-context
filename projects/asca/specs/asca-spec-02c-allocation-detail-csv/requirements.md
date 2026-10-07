@@ -56,7 +56,7 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 1. THE system SHALL add an `allocationDetailFile` entry to `config/const.php` with `fileName`, `name` (display name), and `headerItem` (ordered header list).
 2. THE `fileName` SHALL follow the convention `{YYYYMM}_10_AllocationDetail({execDate}).csv`, where `{YYYYMM}` is the target month and `{execDate}` is today (Ymd).
-3. THE `headerItem` SHALL define, in order, these **18 columns** (updated per REF-CAP-12 §1 #4): コンテンツ (service), 対象年月 (target_ym), プロジェクト (bundle_type label — `cap`/`cip`), 生徒ID (student_id), 部署ID (department_id), 発注番号 (order_no), プランID (plan_id), **チャージID (charge_id)**, プロダクトID (product_id), プロダクトタイプ (product_type), **バンドルID (bundle/group id)**, **行種別 (row_kind — `normal`/`refund`)**, 契約種類 (contract_type), 参照価格 (reference_price / L), 配分比率 (ratio), 元金額(N) (original_amount), 配分後金額(P) (allocated_amount), ステータス (run status).
+3. THE `headerItem` SHALL define, in order, these **18 columns** (updated per REF-CAP-12 §1 #4; tax-basis labels + 行種別 labels per REF-CAP-13 §3): コンテンツ (service), 対象年月 (target_ym), プロジェクト (bundle_type label — `cap`/`cip`), 生徒ID (student_id), 部署ID (department_id), 発注番号 (order_no), プランID (plan_id), **チャージID (charge_id)**, プロダクトID (product_id), プロダクトタイプ (product_type), **バンドルID (bundle/group id)**, **行種別 (row_kind — `通常`/`返金`)**, 契約種類 (contract_type label — see Req 2.8), **参照価格(税抜)** (reference_price / L, tax-exclusive), 配分比率 (ratio), **元金額(税込)** (original_amount N, tax-inclusive), **配分後金額(税込)** (allocated_amount P, tax-inclusive), ステータス (per-row status — see Req 4.4).
 4. THE config entry SHALL be readable via the existing `CommonUtil::getCsvFileInfo('allocationDetailFile')`.
 
 ### Requirement 2: Generate the CSV from allocation data
@@ -70,11 +70,12 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 3. THE system SHALL emit one row per product per group (i.e. per `log_alloc_prorations` row), mapping each to the 18 configured columns.
 4. THE `charge_id` column SHALL be populated from `log_alloc_prorations.charge_id` so rows can be matched against `DailyRateCalculation.csv` and the source charge. (Added per REF-CAP-12 §1 #4.)
 5. THE bundle/group ID column SHALL be populated from `log_alloc_prorations.group_id` (or `bundle_id` via the group) so the coaching and App rows of the same bundle are unambiguously linked. (Added per REF-CAP-12 §1 #4.)
-6. THE row_kind column SHALL be `normal` for a positive-N charge and `refund` for a negative-N charge, so callers can filter refund rows without inspecting amounts. (Added per REF-CAP-12 §1 #4.)
+6. THE 行種別 (row_kind) column SHALL render `通常` for a positive-N charge and `返金` for a negative-N charge, so callers can filter refund rows without inspecting amounts. (Added per REF-CAP-12 §1 #4; labels confirmed REF-CAP-13 §3.)
 7. THE プロジェクト column SHALL render the `bundle_type` label (`cap` / `cip`), not the raw TINYINT.
-8. WHERE `order_no` or `department_id` is present, THE system SHALL populate それ; contract types include B2C / B2B / B2B2C / Partner and SHALL be rendered from `contract_type`.
-9. THE system SHALL write the file via the existing `CommonUtil::createCsvFile()` (fputcsv) to `storage_path('app/public/')` (`config('const.filedirectory')`), **UTF-8 with a BOM** (`EF BB BF`) for Excel compatibility.
-10. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
+8. THE 契約種類 (contract type) column SHALL render a label from `contract_type` using the fixed map **0 = B2C, 1 = B2B, 2 = B2B2C/B2E** (REF-CAP-13 §3). "Partner" SHALL NOT appear — it cannot be derived from `contract_type` and is dropped from this CSV (if a Partner breakout is ever needed, a source column must be specified first).
+9. WHERE `order_no` or `department_id` is present, THE system SHALL populate それ.
+10. THE system SHALL write the file via the existing `CommonUtil::createCsvFile()` (fputcsv) to `storage_path('app/public/')` (`config('const.filedirectory')`), **UTF-8 with a BOM** (`EF BB BF`) for Excel compatibility.
+11. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
 
 ### Requirement 3: Attach to the existing zip and email (guarded)
 
@@ -83,12 +84,13 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 #### Acceptance Criteria
 
 1. IN `createSendMailAttacheFile()` of both `SendJournalsDataLogic` (Final) and `DailyRateCalculationPreLogic` (Pre), after the existing CSVs, THE system SHALL add the AllocationDetail file to `$fileNameList` as `$fileNameList[$fileName] = $displayName`.
-2. THE addition SHALL be guarded by a completed-run check (`LogAllocCalculationRun::hasCompletedRun($targetYm)`): only when an allocation run completed for the month is the file generated and added.
-3. IF no completed allocation run exists for the month (allocation absent or failed), THEN THE system SHALL omit the file, AND the rest of the zip and the email SHALL be produced unchanged.
-4. THE system SHALL pass `$preFlg` so the Pre logic generates the `_pre`-context file and the Final logic the final-context file.
-5. THE file SHALL be zipped and emailed by the existing `ArchiverService` / `MailerService` path with no change to those services beyond receiving one more entry in `$fileNameList`.
-6. THE system SHALL NOT add a new email, a new mail type, or a new `mst_mail_template` row; the file rides the existing 速報版 / 確定版 email.
-7. THE `$fileNameList` display name SHALL appear in the email template's file list (via `$contents->fileList`) exactly like the existing CSVs.
+2. THE addition SHALL be guarded by a **per-run-type** completed check (`LogAllocCalculationRun::hasCompletedRun($targetYm, $runType)`): the Final email includes the file only when the **Final** run for the month is completed (or completed-with-errors); the Pre email only when the **Pre** run is. A completed Pre run SHALL NOT cause the Final email to attach a CSV when the Final run failed. (Per REF-CAP-13 §3 — a shared guard could let the Final email pick up a Pre-run CSV.)
+3. THE guard SHALL treat **completed-with-errors** (the per-pair failure state from 02a Req 4) as **completed** for the purpose of emitting the file — the file IS produced, and the failed pairs appear in it (see Req 4.4). Only a run that is absent or wholly Failed causes the file to be omitted.
+4. IF no qualifying completed/completed-with-errors run exists for the month+run-type (allocation absent or wholly failed), THEN THE system SHALL omit the file, AND the rest of the zip and the email SHALL be produced unchanged.
+5. THE system SHALL pass `$preFlg` so the Pre logic generates the `_pre`-context file and the Final logic the final-context file. (O-C3: the Pre file reflects the Pre run, consistent with the other 速報版 CSVs.)
+6. THE file SHALL be zipped and emailed by the existing `ArchiverService` / `MailerService` path with no change to those services beyond receiving one more entry in `$fileNameList`.
+7. THE system SHALL NOT add a new email, a new mail type, or a new `mst_mail_template` row; the file rides the existing 速報版 / 確定版 email.
+8. THE `$fileNameList` display name SHALL appear in the email template's file list (via `$contents->fileList`) exactly like the existing CSVs.
 
 ### Requirement 4: Reproducibility and consistency with existing CSVs
 
@@ -99,7 +101,7 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 1. THE 配分後金額(P) values in this CSV SHALL equal the allocated amounts the existing DailyRateCalculation / CalculationSummary CSVs show for the same charges (both read post-overwrite data).
 2. THE 参照価格 (L), 配分比率 (ratio), and 元金額(N) columns SHALL be sufficient to recompute 配分後金額(P) via the documented floor formula (the ASCA-8 breakdown recomputes an identical floored P — no ¥1 divergence).
 3. THE system SHALL NOT modify the existing CSVs' format or content.
-4. THE ステータス column SHALL reflect the allocation run's status for the month.
+4. THE ステータス column SHALL be **per-row**, not a single run-level value (REF-CAP-13 §3). Because the file is only emitted for completed / completed-with-errors runs, a run-level status would always read "Completed" and hide the detail. Each row SHALL carry one of: **allocated** (`配分済`), **skipped** with its reason (`スキップ：<理由>` — e.g. ambiguous pairing, non-zero App, no reference price), or **failed** (`失敗` — a pair that errored under 02a Req 4). Skipped bundles SHALL be included as rows so Accounting can see what was not allocated and why.
 
 ### Requirement 5: Tenant and scope safety
 
@@ -127,6 +129,6 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 | # | Item | Status / ask |
 |---|---|---|
-| **O-G1-4** | **[G1 feedback — REF-CAP-12 §1 #4] Column set was missing linking columns.** The original 15-column list did not allow the coaching and App rows of the same bundle to be linked, and had no `charge_id` to match rows against `DailyRateCalculation.csv`. Updated to 18 columns: `charge_id`, `bundle/group id`, and `row_kind` added. **Confirm the final Japanese column labels for these three new columns with Accounting before sign-off.** |
+| ~~O-G1-4~~ ✅ | **RESOLVED (REF-CAP-13 §3).** Column set updated to 18 columns (charge_id, bundle/group id, row_kind). Kuroda-san confirmed the Japanese labels (チャージID / バンドルID / 行種別 (通常 / 返金)) are fine as drafted — no separate check with Accounting needed. Tax-basis labels (参照価格(税抜) / 元金額(税込) / 配分後金額(税込)) and the contract-type label map added per the same feedback. |
 | O-C2 | **Sequence number `10`** in the filename — confirm `10` does not collide with an existing CSV sequence in the monthly set. | Verify against the current file list at design time (non-blocking for sign-off). |
-| O-C3 | **Pre vs Final content** — whether the Pre (速報) breakdown should read `_pre` proration rows or the same source; assumes `$preFlg` selects the preliminary context. | Confirm the Pre file should reflect preliminary allocation, consistent with the other 速報版 CSVs. |
+| ~~O-C3~~ ✅ | **RESOLVED (REF-CAP-13 §3).** Agreed — the Pre file reflects the Pre run, consistent with the other 速報版 CSVs. `$preFlg` selects the preliminary context (Req 3.5). |
