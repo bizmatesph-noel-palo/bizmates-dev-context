@@ -8,7 +8,7 @@
 | **Date** | 2026-10-05 (Created) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (decision analysis, drafting) |
-| **Status** | Accepted (pending Kuroda-san's explicit in-thread go-ahead — see Status) |
+| **Status** | **Accepted** — Kuroda-san confirmed in-thread 2026-10-05 (low priority) |
 | **Audience** | Kuroda-san (PM, decision), Patrick-san (SDM, awareness), DevOps (Harvey-san), Dev team |
 | **Affects** | ASCA Spec 02d (`asca-spec-02d-datacorrection-integration`) |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) |
@@ -91,7 +91,7 @@ Kuroda-san, twice (REF-CAP-12 §0, REF-CAP-13 §4): *"If the concern is someone 
 
 ## Status
 
-**Accepted by the Lead (2026-10-05)**, conditional on Kuroda-san's explicit go-ahead in the Spec 02 thread. Kuroda-san's position was "if unused, disable it and keep 02d out of scope" and the "unused" condition is now confirmed by Harvey-san in the same thread — so this reads as a satisfied conditional. The 02d JIRA epic should not be created until Kuroda-san posts the explicit confirmation (tracked as 02d O-D3).
+**Accepted.** Kuroda-san gave explicit in-thread confirmation on 2026-10-05 (PM): "Reusing 02d to disable the command at low priority sounds good. … 02d becomes 'disable DataCorrectionCommand' only (e.g. fail fast with a 'deprecated' message). The `allocateForCharge()` injection in DataCorrectionLogic is no longer needed." The usage check is closed (Harvey-san). The 02d JIRA epic may now be created (**low priority**). Cross-reference cleanups he requested (02a Req 5.4, 02b out-of-scope, README, technical design §1d) were applied 2026-10-08.
 
 ---
 

@@ -4,7 +4,7 @@
 
 > **Staging note:** Dev-context draft pending PM sign-off (Kuroda-san, G1). On approval it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02d-datacorrection-integration/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks from this draft.
 >
-> **Scope change (2026-10-05):** 02d was originally scoped as "inject allocation into `DataCorrectionLogic`". It has been **repurposed** to **disable/deprecate `DataCorrectionCommand`** instead. Rationale and decision trail in the Introduction. The original allocation-injection scope is **dropped** (recorded in "Superseded original scope" below so the history is traceable).
+> **Scope change (2026-10-05, confirmed by Kuroda-san 2026-10-05 PM):** 02d was originally scoped as "inject allocation into `DataCorrectionLogic`". It has been **repurposed** to **disable `DataCorrectionCommand`** (fail fast with a deprecated message) instead. Kuroda-san confirmed in-thread: "02d becomes 'disable DataCorrectionCommand' only … the `allocateForCharge()` injection in DataCorrectionLogic is no longer needed." **Low priority.** Rationale and decision trail in the Introduction. The original allocation-injection scope is **dropped** (recorded in "Superseded original scope" below so the history is traceable).
 
 ## Introduction
 
@@ -133,4 +133,4 @@ The original 02d ("DataCorrection Integration") would have added a scoped `Reven
 |---|---|---|
 | O-D1 | **Disable mechanism** — guarded no-op exit in `handle()` vs. unregistering the command vs. both. | Design-phase detail. Confirm the preferred mechanism; the requirement is only that it cannot write data and states it is decommissioned. |
 | O-D2 | **Source-file removal vs. deprecate-in-place.** This spec requires deprecate + disable; full file deletion is optional. | Confirm whether Accounting/DevOps want the files removed now or left deprecated for one release first. |
-| O-D3 | **Kuroda-san final word.** Kuroda-san said he would confirm with Harvey-san and "share the result in this thread." Harvey-san has now confirmed (unused, direct SQL only, no future need) in that thread. | Confirm Kuroda-san's explicit go-ahead to proceed with decommission before the 02d epic is created in JIRA. |
+| ~~O-D3~~ ✅ | **RESOLVED (2026-10-05).** Kuroda-san gave explicit in-thread go-ahead: "Reusing 02d to disable the command at low priority sounds good … 02d becomes 'disable DataCorrectionCommand' only." The usage check is closed (Harvey-san). The 02d epic may now be created (low priority). He also requested the cross-ref cleanups (02a Req 5.4, 02b out-of-scope, README, technical design §1d) — all applied 2026-10-08. |

@@ -35,7 +35,6 @@ The rule, per REF-CAP-09, is deliberately simple: a refund is **the same allocat
 
 - **CIP refunds** — the CIP refund split (fixed per-type rule, REF-CIP-06 / REF-CIP-07) is **handled separately and is on hold** pending its home decision (extend 02b / new sub-spec / ASCI). Out of scope here. (This is CAP-only; CIP regular charges use no engine per REF-CIP-05, but CIP refunds ARE split — not "no split".)
 - **The AllocationDetail CSV** (which will surface refund rows) → Spec 02c.
-- **DataCorrection-driven refunds** → not applicable: 02d is now a **decommission** of `DataCorrectionCommand` (the command is confirmed unused), not an allocation injection. No refund handling is added there.
 - **Reversal (record_kind = 2)** — a post-release Phase 4 item, not 02b.
 - **Changing how existing ASC decides whether/when a charge is recognized** — only the split of an already-recognized amount is in scope.
 

@@ -114,7 +114,7 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 1. THE injection SHALL cause `DailyRateCalculationPreCommand` (Pre) to allocate the `_pre` tables via the shared `CommonUtil` call.
 2. THE injection SHALL cause `SendJournalsDataCommand` (Final) to allocate the live tables via the same call.
 3. THE system SHALL NOT add a separate injection for Pre vs Final — both are covered by the single `CommonUtil::createDailyRateCalculation()` change.
-4. THE `DataCorrectionCommand` path is explicitly NOT covered here (it has its own private daily-rate creation) — it is Spec 02d. (02d: Kuroda-san asked to drop it at Round 2 (REF-CAP-13 §4 — `DataCorrectionCommand` already unused per Wu-san 08-28); **Lead is holding the retain pending clarification with Kuroda-san** — 02d scope unchanged for now.)
+4. THE `DataCorrectionCommand` path is explicitly NOT covered here (it has its own private daily-rate creation). It is **disabled by Spec 02d** (decommission — confirmed by Kuroda-san 2026-10-05), so it is out of allocation scope entirely: no injection is needed because the command will no longer run.
 
 ### Requirement 6: No regression to existing (non-CAP) output
 
