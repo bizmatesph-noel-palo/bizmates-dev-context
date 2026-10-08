@@ -2,11 +2,11 @@
 
 **ASCA Spec 02a — CAP Core Injection**
 
-> **Staging note:** This is a **dev-context draft** pending PM sign-off (Kuroda-san, G1). On approval it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks from this draft.
+> **Staging note:** Dev-context draft, **Round-3 — submitted for PM sign-off (Kuroda-san)**. Round-1 (REF-CAP-12) and Round-2 (REF-CAP-13) feedback are folded in; Kuroda-san's Round-2 note said 02a is "good to go once the minor cleanups are done" — those cleanups (Dependencies updated to merged state, V-7 premise into Dependencies, O-A as a data check) are applied here. On sign-off it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks until sign-off.
 
 ## Introduction
 
-This spec wires the ASCA allocation engine (built in Spec 01 Foundation) into the live accounting batch for **CAP plans only**. It is the **first of four Spec 02 sub-specs** (02a Core Injection → 02b Refund → 02c AllocationDetail CSV → 02d DataCorrection) and is the prerequisite spine the other three build on. (02d was dropped at G1 on 2026-09-28 per REF-CAP-12 §0, then **retained by Lead decision 2026-10-01** — DEVOPS-6415-style drift risk — pending re-confirmation with Kuroda-san.)
+This spec wires the ASCA allocation engine (built in Spec 01 Foundation) into the live accounting batch for **CAP plans only**. It is the **first of four Spec 02 sub-specs** (02a Core Injection → 02b Refund → 02c AllocationDetail CSV → 02d DataCorrection) and is the prerequisite spine 02b and 02c build on. (02d was **repurposed on 2026-10-05** from "inject allocation into DataCorrectionLogic" to "**decommission `DataCorrectionCommand`**" — the command is confirmed unused, Wu-san 08-28 + Harvey-san 10-05; see the 02d spec + `ASCA-ADR-20261005-datacorrection-decommission.md`. 02d no longer depends on 02a.)
 
 Scope is the single injection into `CommonUtil::createDailyRateCalculation()`: after the existing step that writes the un-allocated amount **N** to the daily-rate log, call `RevenueAllocationService::allocate()` to detect CAP bundles, compute the split, and overwrite the log rows in place with the allocated amounts **P**, so that everything downstream (sum aggregation, Freee journals, CSVs, balance transition) inherits P with no further change. This is **Scenario D (injection) + Option 1 (Overwrite)**.
 
@@ -24,14 +24,15 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 
 ### Dependencies
 
-- **Spec 01 Foundation must be merged** (both halves): the engine (`RevenueAllocationService::allocate(string $targetYm, bool $preFlg)`), the `log_alloc_*` / `mst_alloc_*` tables, the plan-detection enums, the run-lifecycle service, and the reference-price seeder. This sub-spec only **calls** that engine — it adds no engine logic.
-- **DEVOPS updates (6415 + 6596) present in the ASCA base.** Not required to author these requirements (behaviour only), but the design/tasks phase needs the ASCM-refactored files (`CommonUtil` is unaffected by the refactor, but the surrounding batch classes are). Pull from `main` once 6415/6596 are released there.
+- **Spec 01 Foundation must be merged** (both halves): the engine (`RevenueAllocationService::allocate(string $targetYm, bool $preFlg)`), the `log_alloc_*` / `mst_alloc_*` tables, the plan-detection enums, the run-lifecycle service, and the reference-price seeder. This sub-spec only **calls** that engine — it adds no engine logic. ✅ Merged (ASCA-16 + ASCA-17) to `feature/ASCA/ASCA-master`.
+- **DEVOPS updates (6415 + 6596) present in the ASCA base.** ✅ Released to production 2026-09-28 and merged `main` → `feature/ASCA/ASCA-master` on 2026-10-01, so the ASCM-refactored files are already in the ASCA base — no "pull from main" step remains for the design/tasks phase. (`CommonUtil` itself is unaffected by the refactor; the surrounding batch classes carry the ArchiverService/MailerService extraction.)
+- **V-7 premise — App (`10022`) `paid_price = 0` confirmed on real data.** The overwrite path assumes the App companion charge is written with `paid_price = 0` (so V-7's "App ≠ 0 ⇒ skip" is the exception, not the norm). This must be verified against production data before go-live. (Was O-D; folded into Dependencies per REF-CAP-13 §3.)
 
 ### Out of scope (explicit — belongs to sibling sub-specs)
 
 - **Refund / negative-N allocation** → Spec 02b (REF-CAP-09).
 - **AllocationDetail CSV** (config entry + `RevenueAllocationCsvService` + adding the file to the email zip) → Spec 02c.
-- **DataCorrectionLogic injection** (`allocateForCharge()` after the addDaily INSERT) → Spec 02d. (02d was dropped at G1 then **retained by Lead decision 2026-10-01** — DEVOPS-6415-style drift risk — pending re-confirmation with Kuroda-san.)
+- **DataCorrection** → Spec 02d, now scoped to **decommissioning `DataCorrectionCommand`** (disable + deprecate), not injecting allocation into it. The original `allocateForCharge()` injection is dropped — the command is confirmed unused (Wu-san 08-28, Harvey-san 10-05).
 - **CIP** anything → out of the engine entirely (REF-CIP-05); only the defensive skip is in scope here.
 - **Freee-mapping data** for the App product_type (the `mst_code_change` / `mst_rule_for_journals` rows) — a data/verification item, not code in this sub-spec (tracked as an Open Item).
 
@@ -155,8 +156,8 @@ This sub-spec delivers a working, testable CAP injection for the Pre (速報) an
 
 | # | Item | Status / ask |
 |---|---|---|
-| O-A | App Freee-mapping rows (`mst_code_change` code→freee_code, `mst_rule_for_journals` for the App product_type 100) must exist for App journals to route correctly once `P_app > 0`. | Data verification, not code in 02a. Confirm the rows exist on the target environment before go-live (may need an ls-db seeder). Does Accounting confirm the App routes on the Bizmates contract-type path? |
-| O-B | Exact placement relative to any ASCM-refactor changes inside/around `CommonUtil::createDailyRateCalculation()`. | Design-phase detail; requires the DEVOPS-refactored base checked out. Non-blocking for requirements sign-off. |
+| O-A | App Freee-mapping rows (`mst_code_change` code→freee_code, `mst_rule_for_journals` for the App product_type 100) must exist for App journals to route correctly once `P_app > 0`. | **Data check only** (REF-CAP-13 §3 — no Accounting sign-off needed). Confirm the App Freee-mapping rows exist on the target environment before go-live (may need an ls-db seeder). Not code in 02a. |
+| O-B | Exact placement relative to the ASCM-refactor changes inside/around `CommonUtil::createDailyRateCalculation()`. | Design-phase detail. The refactored base is already in `feature/ASCA/ASCA-master` (6415/6596 merged 10-01). Non-blocking for requirements sign-off. |
 | ~~O-G1-2~~ ✅ | **RESOLVED (REF-CAP-13 #2) — option (b).** Mid-run failure now specified in Req 4: per-pair atomic, failed pairs keep N, run = completed-with-errors + failed-pair list. No whole-run rollback. |
 | ~~O-G1-3~~ ✅ | **RESOLVED (REF-CAP-13 #3).** Re-run restores N from `log_alloc_prorations.original_paid_price` and applies V-7 to the restored value only (Req 3.4); re-run acceptance test added (Req 3.7). |
-| O-D | **(REF-CAP-13 §3)** V-7 premise — "App (`10022`) `paid_price = 0` confirmed on real data" — must be verified. | Data verification; add to Dependencies. Confirm against production data before go-live that the App companion charge is written with `paid_price = 0` so the overwrite (not a skip) is the correct path. |
+| ~~O-D~~ ✅ | **RESOLVED (REF-CAP-13 §3).** V-7 premise ("App 10022 `paid_price = 0` confirmed on real data") moved into Dependencies as a pre-go-live data check. |

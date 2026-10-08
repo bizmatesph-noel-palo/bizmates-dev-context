@@ -2,9 +2,9 @@
 
 **ASCA Spec 02b — Refund Allocation**
 
-> **Staging note:** Dev-context draft pending PM sign-off (Kuroda-san, G1). On approval it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02b-refund-allocation/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks from this draft.
+> **Staging note:** Dev-context draft, **Round-3 — submitted for PM sign-off (Kuroda-san)**. Round-1 (REF-CAP-12) and Round-2 (REF-CAP-13) feedback are folded in; Kuroda-san's Round-2 note said 02b is "good to go once the minor cleanups are done" — those cleanups are applied here. On sign-off it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02b-refund-allocation/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks until sign-off.
 >
-> **Reviewer note:** This is the risk-carrying sub-spec — REF-CAP-09 is the normative source and still has one open item (the CAP/CIP-specific shareholder cap, under executive discussion). Please confirm the Open Items table.
+> **Reviewer note:** The G1 blocker (refund→bundle pairing) is resolved in Req 9 (REF-CAP-13 #1). Remaining open items are the interim shareholder cap (¥19,800, O-R1) and a couple of design-phase confirmations — none blocking sign-off. The CIP refund split is out of scope here (on hold, see Scope).
 
 ## Introduction
 
@@ -12,7 +12,7 @@ This spec extends CAP allocation to **refund (negative-amount) charges**. It is 
 
 The rule, per REF-CAP-09, is deliberately simple: a refund is **the same allocation, with a negative N**. There is no separate refund formula and no separate pipeline — the negative charge enters the same entry point as a positive charge, is split by the same weight ratio, and is written back the same way. The only behaviours that need explicit statement are the ones unique to negatives: a true mathematical floor toward −∞, recognition as a single lump in the refund's execution month (never spread back to the original recognition months), and correct handling of the specific refund scenarios accounting issues.
 
-**Scope: CAP only.** Per REF-CIP-05, CIP does not use the allocation engine (it books separate, already-priced charges), so CIP refunds are out of scope here — a CIP refund is simply a negative charge on an already-priced CIP line, pro-rated by the existing logic, with no split. The earlier REF-CAP-09 §10/R-16 "CIP 3-way refund" is therefore not implemented.
+**Scope: CAP only.** Per REF-CIP-05, CIP regular charges do not use the allocation engine. **CIP _refunds_, however, ARE split by a fixed per-type rule (REF-CIP-06 / REF-CIP-07) — the CIP refund split is handled separately and is on hold pending its home decision; it is out of scope here.** This sub-spec is CAP-only. The earlier REF-CAP-09 §10/R-16 "CIP 3-way refund" is not implemented (superseded by REF-CIP-05/06).
 
 ### Design decisions (confirmed — from REF-CAP-09, normative)
 
@@ -33,9 +33,9 @@ The rule, per REF-CAP-09, is deliberately simple: a refund is **the same allocat
 
 ### Out of scope (explicit)
 
-- **CIP refunds** — CIP uses no engine (REF-CIP-05); a CIP refund is a negative on an already-priced line, handled by existing pro-ration. No 3-way refund.
+- **CIP refunds** — the CIP refund split (fixed per-type rule, REF-CIP-06 / REF-CIP-07) is **handled separately and is on hold** pending its home decision (extend 02b / new sub-spec / ASCI). Out of scope here. (This is CAP-only; CIP regular charges use no engine per REF-CIP-05, but CIP refunds ARE split — not "no split".)
 - **The AllocationDetail CSV** (which will surface refund rows) → Spec 02c.
-- **DataCorrection-driven refunds** → Spec 02d (scoped `allocateForCharge()`).
+- **DataCorrection-driven refunds** → not applicable: 02d is now a **decommission** of `DataCorrectionCommand` (the command is confirmed unused), not an allocation injection. No refund handling is added there.
 - **Reversal (record_kind = 2)** — a post-release Phase 4 item, not 02b.
 - **Changing how existing ASC decides whether/when a charge is recognized** — only the split of an already-recognized amount is in scope.
 
@@ -47,7 +47,7 @@ The rule, per REF-CAP-09, is deliberately simple: a refund is **the same allocat
 - **Execution month** — the calendar month containing the refund charge's `paid_at`.
 - **Fixed/capped refund** — full, cooling-off (90% refund, 10% fee retained), tax-exemption, or shareholder cashback; amount fixed/capped before allocation.
 _(The "Overlap refund" entry was removed per REF-CAP-13 §2 / REF-CIP-06 §2.4/§3.8: a contract overlap does not produce a refund.)_
-- **Shareholder cashback** — a cloned negative Coaching charge from the bulk-CSV process; Coaching-only, capped at ¥19,800.
+- **Shareholder cashback** — a cloned negative Coaching charge from the bulk-CSV process. Only the **Coaching cashback line** enters CAP allocation (and for CAP it is split Coaching/App by the formula); the cap (¥19,800) is applied upstream by Accounting. (REF-CAP-13 §3 — "Coaching cashback line only", not "Coaching-only"; CIP shareholder is Coaching-only but that is out of scope here.)
 
 ---
 
