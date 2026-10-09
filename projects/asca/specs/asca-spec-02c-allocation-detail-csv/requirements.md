@@ -2,7 +2,9 @@
 
 **ASCA Spec 02c — AllocationDetail CSV**
 
-> **Staging note:** Dev-context draft pending PM sign-off (Kuroda-san, G1). On approval it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02c-allocation-detail-csv/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks from this draft.
+> **Staging note:** Dev-context draft, **submitted for Kuroda-san's 2nd review**. Round-1 (REF-CAP-12 #4 linking columns) and Round-2 (REF-CAP-13 §3 + the 02c schema-decision thread) feedback are folded in. The skipped/failed-row source is the new **`log_alloc_bundle_outcomes`** table (Option A — approved by Kuroda-san 2026-10-05, bundle-keyed; see `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`). On sign-off it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02c-allocation-detail-csv/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks until sign-off.
+>
+> **Depends on a pending Spec 01 change-request:** the `log_alloc_bundle_outcomes` table (ls-db) must be created before 02c can be implemented. It is raised as a small additive change-request (like ASCA-34) after Kuroda-san's 2nd review.
 
 ## Introduction
 
@@ -17,16 +19,17 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 - **Delivery (O-6, resolved 2026-08-17):** added to the **existing zip** and the **existing 速報版 / 確定版 email** — no separate/third email, no separate command, no new `mst_mail_template` row. A Metabase saved query on `log_alloc_prorations` is a separate post-deployment deliverable (not code in this sub-spec).
 - **Generation location:** a `RevenueAllocation`-namespace service (`RevenueAllocationCsvService::createAllocationDetailFile($targetYm, $preFlg)`), NOT `CommonUtil` (that file is already oversized).
 - **Config-driven:** a new `allocationDetailFile` entry in `config/const.php` (`fileName` / `name` / `headerItem`), read via the existing `CommonUtil::getCsvFileInfo()` and written via the existing `CommonUtil::createCsvFile()` (fputcsv). No new CSV-writing mechanism.
-- **Source of truth:** `log_alloc_prorations` (joined for charge/plan context), or `v_alloc_prorations_active` for the active Final run.
+- **Source of truth — two tables, same run:** **allocated** rows from `log_alloc_prorations` (or `v_alloc_prorations_active` for the active Final run), and **skipped/failed** rows from `log_alloc_bundle_outcomes` for that same run. (Updated per the 02c schema decision — the money table stays money-only; exceptions live in the outcomes table. See Req 2.2 / 2.12.)
 - **File conventions:** filename `{YYYYMM}_10_AllocationDetail({execDate}).csv` — `{YYYYMM}` = target month (previous month from exeDate), `{execDate}` = today (Ymd), `10` = sequence number. **UTF-8 with BOM** (`EF BB BF`) for Excel. Stored in `storage_path('app/public/')` (from `config('const.filedirectory')`).
-- **Guarded emission:** the file is added only when an allocation run completed for the month (`LogAllocCalculationRun::hasCompletedRun($targetYm)`); a failed/absent allocation simply omits the file — the rest of the zip and the email are unaffected.
+- **Guarded emission — per run type:** the file is added only when the matching run completed (`LogAllocCalculationRun::hasCompletedRun($targetYm, $runType)` — Final for the 確定版 email, Pre for the 速報版); **completed-with-errors counts as completed**; an absent or wholly-Failed run omits the file, and the rest of the zip and email are unaffected. (Updated per REF-CAP-13 §3 + the 02c review — see Req 3.2/3.3.)
 - **CAP-only.** ZipanUtil's `addZipanData()` appends Zipan rows to the *existing* Bizmates CSVs, but allocation adds nothing to the Zipan path. CIP is not in the engine (REF-CIP-05); rows are whatever the CAP run produced.
 
 ### Dependencies
 
-- **02a (CAP Core Injection) merged** — the CSV reads the `log_alloc_*` rows a completed allocation run produced; without injection there is nothing to report.
+- **02a (CAP Core Injection) merged** — the CSV reads the `log_alloc_*` rows a completed allocation run produced; without injection there is nothing to report. 02a also writes the per-bundle skip/fail rows (02a Req 4.8) this CSV reads for exception rows.
 - **Spec 01 Foundation merged** — `log_alloc_prorations` / `log_alloc_calculation_runs` (and the `hasCompletedRun` check), plus `LogAllocProration` reads.
-- **DEVOPS-6415 present in the ASCA base** — the CSV is hooked into `$fileNameList` on the path now handled by the extracted `ArchiverService` / `MailerService`. Design/tasks need those refactored files checked out (pull from `main` once released). Requirements (this doc) do not.
+- **`log_alloc_bundle_outcomes` table (pending Spec 01 change-request)** — the CSV reads skipped/failed exception rows from it. It must be created (ls-db migration + model) before 02c is implemented. Approved (Option A, 2026-10-05); ticket raised after Kuroda-san's 2nd review. See `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
+- **DEVOPS-6415 present in the ASCA base** — the CSV is hooked into `$fileNameList` on the path handled by the extracted `ArchiverService` / `MailerService`. ✅ already merged into `feature/ASCA/ASCA-master` (2026-10-01).
 
 ### Out of scope (explicit)
 
@@ -67,8 +70,8 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 1. THE system SHALL provide `RevenueAllocationCsvService::createAllocationDetailFile(string $targetYm, bool $preFlg = false): array` returning `[$fileName, $displayName]`, in the `App\Libs\RevenueAllocation` namespace (NOT `CommonUtil`).
 2. THE service SHALL read from **two sources, for the same run** (REF-CAP-13 02c review point 4): (a) **allocated** rows from `log_alloc_prorations` (joined for charge/plan context), or `v_alloc_prorations_active` for the active Final run; and (b) **skipped/failed** rows from `log_alloc_bundle_outcomes` for that same run. Both reads are scoped to the same run so allocated and exception rows are consistent (the active Final run, or the Pre run).
-3. THE system SHALL emit one row per allocated product (per `log_alloc_prorations` row) **and** one row per skipped/failed bundle (per `log_alloc_bundle_outcomes` row), mapping each to the 18 configured columns.
-4. THE `charge_id` column SHALL be populated from `log_alloc_prorations.charge_id` so rows can be matched against `DailyRateCalculation.csv` and the source charge. (Added per REF-CAP-12 §1 #4.)
+3. THE system SHALL emit one row per allocated product (per `log_alloc_prorations` row) **and** one row per skipped/failed bundle (per `log_alloc_bundle_outcomes` row), all against the same 18-column layout. **Allocated** rows populate every column (per-product + allocation values); **exception** rows populate only the bundle-identity + status columns and leave the per-product/allocation columns blank (see Req 2.12).
+4. FOR an **allocated** row, THE `charge_id` column SHALL be populated from `log_alloc_prorations.charge_id` so rows can be matched against `DailyRateCalculation.csv` and the source charge. (For an **exception** row the charge-id source differs — see Req 2.12.) (Added per REF-CAP-12 §1 #4.)
 5. THE bundle/group ID column SHALL be populated from `log_alloc_prorations.group_id` (or `bundle_id` via the group) so the coaching and App rows of the same bundle are unambiguously linked. (Added per REF-CAP-12 §1 #4.)
 6. THE 行種別 (row_kind) column SHALL render `通常` for a positive-N charge and `返金` for a negative-N charge, so callers can filter refund rows without inspecting amounts. (Added per REF-CAP-12 §1 #4; labels confirmed REF-CAP-13 §3.)
 7. THE プロジェクト column SHALL render the `bundle_type` label (`cap` / `cip`), not the raw TINYINT.
@@ -76,11 +79,16 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 9. WHERE `order_no` or `department_id` is present, THE system SHALL populate それ.
 10. THE system SHALL write the file via the existing `CommonUtil::createCsvFile()` (fputcsv) to `storage_path('app/public/')` (`config('const.filedirectory')`), **UTF-8 with a BOM** (`EF BB BF`) for Excel compatibility.
 11. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
-12. **(Exception-row content — REF-CAP-13 02c review point 4)** FOR a skipped/failed row (sourced from `log_alloc_bundle_outcomes`), THE system SHALL populate the columns from the outcome row's charge ids, with:
-    - **元金額(税込)** — read from the **daily-rate log** (the un-split N still sitting there for that charge), so Accounting can see the amount left un-allocated;
-    - **配分後金額(税込)** — **blank** (no allocation happened);
-    - **参照価格 / 配分比率** — blank (no allocation computed);
-    - **行種別** — `通常` / `返金` from the outcome row's `row_kind` / `refund_charge_id`;
+12. **(Exception-row content — REF-CAP-13 02c review point 4)** An **exception row** (one per `log_alloc_bundle_outcomes` row) uses the **same 18 columns** as an allocated row, but — because the outcome table carries no product/money data — only the bundle-identity and status columns are populated; the per-product and allocation columns are blank. Specifically:
+    - **コンテンツ / 対象年月 / プロジェクト** — from the outcome row (`bundle_type` → label).
+    - **生徒ID / 部署ID / 発注番号 / プランID** — from the outcome row's bundle-key columns (`student_id` / `department_id` where available / `order_no` / `plan_id`).
+    - **チャージID** — the outcome row's `coaching_charge_id` (the bundle's anchor charge); where only an App side exists (later-month refund, case ii), `app_charge_id`. (This is the exception-row source for the `charge_id` column referenced in Req 2.4.)
+    - **バンドルID** — blank (no `log_alloc_groups` row is created for a skipped/failed bundle).
+    - **プロダクトID / プロダクトタイプ** — blank (the outcome is per-bundle, not per-product).
+    - **参照価格(税抜) / 配分比率** — blank (no allocation was computed).
+    - **元金額(税込)** — read from the **daily-rate log** (the un-split N still sitting there for the bundle's coaching charge), so Accounting can see the amount left un-allocated.
+    - **配分後金額(税込)** — **blank** (no allocation happened).
+    - **行種別** — `通常` / `返金` from the outcome row's `row_kind` / `refund_charge_id`.
     - **ステータス** — `スキップ：<理由>` or `失敗` from the outcome row's `outcome` + `reason_code`.
 
 ### Requirement 3: Attach to the existing zip and email (guarded)
