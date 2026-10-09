@@ -8,7 +8,7 @@
 | **Date** | 2026-10-08 |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
-| **Status** | Proposed — awaiting Kuroda-san's decision |
+| **Status** | ✅ **Approved by Kuroda-san 2026-10-05** (Option A, bundle-keyed) — revised per his 4 points; 02c pending his 2nd review before the table change-request is raised |
 | **Decision owner** | Hayato Kuroda (PM — schema owner) |
 | **Audience** | Kuroda-san (decision), Patrick-san (awareness), Dev team |
 | **Affects** | ASCA Spec 01 (schema), Spec 02a (recording), Spec 02c (AllocationDetail CSV) |
@@ -125,11 +125,11 @@ Option A costs one additive table on an **unreleased** schema (Spec 01 is merged
 
 ---
 
-## 7. Proposed schema (Option A) — for your review
+## 7. Schema (Option A) — APPROVED 2026-10-05 (bundle-keyed), revised per Kuroda-san's points
 
-Consistent with the existing `log_alloc_*` conventions (connection `bizmates_mysql`, `log_*` prefix for batch-generated data, FK to the run, commented columns, index on run).
+> ✅ **Kuroda-san approved Option A on 2026-10-05** with the **bundle-keyed** shape (`coaching_charge_id` + `app_charge_id`, both nullable) and agreed `log_alloc_prorations` stays money-only. Table below revised per his four points: column types matched to the existing alloc tables, a refund marker added, and the failure-classification + outside-transaction + CSV-content rules captured in §7a–§7c.
 
-**Table: `log_alloc_bundle_outcomes`**
+**Table: `log_alloc_bundle_outcomes`** (connection `bizmates_mysql`, `log_*` prefix, FK to the run, commented columns, index on run — matching the existing alloc tables)
 
 | Column | Type | Null | Notes |
 |---|---|---|---|
@@ -137,21 +137,48 @@ Consistent with the existing `log_alloc_*` conventions (connection `bizmates_mys
 | `run_id` | BIGINT UNSIGNED | no | FK → `log_alloc_calculation_runs.id` |
 | `bundle_type` | TINYINT | no | 1=CAP / 2=CIP (matches existing tables) |
 | `target_ym` | CHAR(6) | no | YYYYMM |
-| `student_id` | INT | yes | bundle grouping key part (for traceability in the CSV) |
-| `plan_id` | INT | yes | bundle grouping key part |
-| `order_no` | VARCHAR(64) | yes | bundle grouping key part (NULL for B2C/B2E) |
-| `coaching_charge_id` | BIGINT UNSIGNED | yes | the coaching charge of the considered bundle, when known |
-| `app_charge_id` | BIGINT UNSIGNED | yes | the app charge, when known |
-| `outcome` | TINYINT | no | 1=skipped / 2=failed (reserve others; **not** 2=reversal — that lives elsewhere) |
-| `reason_code` | VARCHAR(64) | no | e.g. `no_formula`, `non_zero_app`, `ambiguous_pairing`, `unbalanced`, `ref_price_missing`, `product_type_mismatch` |
-| `reason_detail` | TEXT | yes | human-readable detail (the same text that goes to the log) |
-| `created_at` / `updated_at` | DATETIME | no | existing convention |
+| `student_id` | **BIGINT UNSIGNED** | yes | bundle grouping key part. **Type matched to `log_alloc_bundles.student_id`** (was INT in the first draft — Kuroda-san point 4). |
+| `plan_id` | INT | yes | bundle grouping key part (matches `log_alloc_bundles.plan_id`) |
+| `order_no` | VARCHAR(64) | yes | bundle grouping key part, NULL for B2C/B2E (matches `log_alloc_bundles.order_no`) |
+| `coaching_charge_id` | BIGINT UNSIGNED | yes | coaching charge of the considered bundle, when known (bundle-keyed shape, approved) |
+| `app_charge_id` | BIGINT UNSIGNED | yes | app charge of the bundle, when known |
+| `refund_charge_id` | BIGINT UNSIGNED | yes | **set when the outcome is for a refund charge** (02b, linked via `log_refund_history`); NULL for a normal bundle. Drives the CSV 行種別 for exception rows (Kuroda-san point 3). |
+| `row_kind` | TINYINT | no | 1=normal / 2=refund — so the CSV's 行種別 (通常/返金) works for skipped/failed rows too (Kuroda-san point 3). |
+| `outcome` | TINYINT | no | 1=skipped (V-3) / 2=failed (pair-level failure). (Does not collide with the reversal `record_kind=2` convention, which lives on a different table.) |
+| `reason_code` | VARCHAR(64) | no | e.g. `no_formula`, `non_zero_app`, `ambiguous_pairing`, `unbalanced` |
+| `reason_detail` | TEXT | yes | human-readable detail (same text written to the log) |
+| `created_at` / `updated_at` | DATETIME | no | `useCurrent()` / `useCurrentOnUpdate()` (existing convention) |
 
 - **Index:** `(run_id)` and `(run_id, outcome)` for the CSV's per-run read.
 - **FK:** `run_id` → `log_alloc_calculation_runs.id`, `restrict`/`restrict` (matches the other alloc FKs).
-- **No money columns** — this table never carries L/ratio/N/P, so it can never be mistaken for allocation results.
+- **No money columns** — this table never carries L/ratio/N/P, so it can never be mistaken for allocation results. (The un-split amount shown in the CSV for an exception row is read from the daily-rate log at CSV time — see §7c — not stored here.)
 
-> Open question for you: do you want the skip/fail outcomes keyed to the **bundle** (coaching + app charge ids, as above) or to a single `charge_id`? The CSV needs enough to show the operator which bundle was skipped; the two-charge-id shape mirrors how a bundle is identified elsewhere. Happy to go either way.
+### 7a. Failure classification — pair-level vs run-level (Kuroda-san point 1)
+
+The proposal and 02a Req 4 (option b) must agree on which failures stop the whole run and which are per-bundle. Classification, per Kuroda-san's principle (**bundle-specific data = pair-level; configuration = run-level**):
+
+| Validation | Nature | Level | Effect |
+|---|---|---|---|
+| **V-1 — unbalanced group** (ΣP ≠ ΣN for one bundle) | bundle-specific data | **pair-level** | pair rolls back, `outcome = failed` row written, **run continues** → run finishes `completed-with-errors`. CSV shows the failed bundle. |
+| **V-6 — product_type mismatch** (`mst_product` ≠ expected) | configuration / master data | **run-level** | run marked **Failed**, NO CSV. A config error is not a per-bundle problem — it would affect every bundle, so the run stops. |
+| **V-4 — reference price missing / unresolvable** | configuration / master data | **run-level** | run marked **Failed**, NO CSV. Same reasoning as V-6 — a missing price row is a month-wide config gap, not one bundle's data. |
+| **V-3 — no formula / ambiguous / non-zero App (V-7)** | per-bundle, non-fatal | **skip** | `outcome = skipped` row written, run continues. (Existing `return false` behaviour.) |
+
+This is to be **stated in 02a Req 4** (done — see the 02a edit).
+
+### 7b. Write the outcome row OUTSIDE the pair transaction (Kuroda-san point 2)
+
+Because each bundle pair is written atomically and **rolls back on a pair-level failure**, an `outcome = failed` row written *inside* that transaction would roll back with it. Therefore the engine MUST write the outcome row **outside / after** the pair's transaction (in its own commit), so the failure record survives the pair rollback. Skipped (V-3) outcomes have no pair transaction to begin with, so they are simply written as the bundle is skipped.
+
+### 7c. CSV content for exception rows (Kuroda-san point 4)
+
+For a skipped/failed row the CSV fills columns from the charge ids in the outcome table, with these rules:
+
+- **元金額(税込)** — populated from the **daily-rate log** (the un-split N still sitting there), so Accounting can see the amount left un-allocated.
+- **配分後金額(税込)** — **blank** (no allocation happened).
+- **行種別** — `通常` / `返金` from `row_kind` / `refund_charge_id`.
+- **ステータス** — `スキップ：<理由>` or `失敗` from `outcome` + `reason_code`.
+- **Same-run read** — the CSV reads outcomes from the **same run** as the prorations (the active Final run, or the Pre run) so allocated and exception rows are consistent.
 
 ---
 
@@ -164,11 +191,15 @@ Consistent with the existing `log_alloc_*` conventions (connection `bizmates_mys
 
 ---
 
-## 9. The ask
+## 9. Status & next steps
 
-1. **Approve the approach** — A (recommended), B, or C.
-2. If A: confirm the **bundle-keyed vs single-charge-id** shape (§7 open question), and whether the column set covers what Accounting needs to see in the CSV for a skipped/failed bundle.
-3. On approval we raise a small Spec 01 change-request ticket (ls-db) for the table — like ASCA-34 — and update 02a (record per-bundle outcome) and 02c (read from both sources).
+✅ **Approved by Kuroda-san 2026-10-05** — Option A, bundle-keyed shape. His four points (failure classification, outside-transaction write, refund identifiability, CSV exception-row content + type match) are folded into §7/§7a–§7c above.
+
+Next:
+1. Update **02a Req 4** with the pair-level vs run-level failure classification and the per-bundle outcome recording (outside the pair transaction). — done.
+2. Update **02c** to read allocated rows from `log_alloc_prorations` and skipped/failed rows from `log_alloc_bundle_outcomes` (Req 2.2/2.3/5.1), and align the Guard rows. — done.
+3. Send the revised 02c back to Kuroda-san for his second review.
+4. On his OK, raise the Spec 01 change-request ticket (ls-db) for `log_alloc_bundle_outcomes` — like ASCA-34.
 
 ---
 
