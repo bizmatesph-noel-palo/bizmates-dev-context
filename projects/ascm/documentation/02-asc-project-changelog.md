@@ -220,6 +220,8 @@ Summary merge → combines daily + monthly into CalculationSummary
 | `ASC-master` | All fixes through ASC-300 | ✅ Deployed to production (2026-06-18) |
 | `feature/ASC/ASC-301` | Lookahead premature expiry fix | ✅ Merged to ASC-master, deployed to DEV04, QA passed. Awaiting production deployment. |
 | `feature/ASC/ASC-304` | PaypalPaymentSum/PaypalPayment CSV — include monthly rate data | 🔧 Code fix done, awaiting code review. |
+| `feature/DEVOPS/DEVOPS-6415-ASCM-Adjustments` | ASCM refactor (ArchiverService/MailerService + DataCorrectionLogic drift fix) | ✅ Deployed to production (2026-09-28, combined with DEVOPS-6596) |
+| `feature/DEVOPS/DEVOPS-6596-ASCM-ZPR-Adjustments` | ZPR — Zipan 20-lesson plan (product_id 38) → `ZipanMonthlyPlanEnum` | ✅ Deployed to production (2026-09-28, combined with DEVOPS-6415) |
 
 ---
 
@@ -301,3 +303,52 @@ Documented in the Engineering Knowledge Base (19 articles). Key takeaways:
 **ASC-293:** Add type hints to `getMonthLastDate` + `getSegment2Id`.
 
 **ASC-300:** Update Makefile to use docker-compose v1 and support systems using the legacy version.
+
+---
+
+## 8. ASCM Refactor + ZPR (DEVOPS-6415, DEVOPS-6596) — 2026-09
+
+Preparatory maintenance on the ASC accounting codebase, billed under **DEVOPS** (not an ASC ticket), done ahead of the ASCA allocation work. Two DEVOPS tickets, released to production **together** on 2026-09-28.
+
+### DEVOPS-6415 — ASCM Refactor (ArchiverService / MailerService extraction + DataCorrectionLogic drift fix)
+
+| Area | What | Impact |
+|------|------|--------|
+| Extract | `ArchiverService` — zip creation + file cleanup pulled out of the 3 Logic classes | Shared, reusable; consumed later by ASCA (AllocationDetail CSV) |
+| Extract | `MailerService` — email dispatch pulled out of the 3 Logic classes | Shared, reusable |
+| Refactor | `DailyRateCalculationPreLogic`, `SendJournalsDataLogic`, `DataCorrectionLogic` now call the extracted services | Removes duplicated zip/mail code |
+| Fix | `DataCorrectionLogic` drift: added `BizmatesMonthlyPlanEnum::exists()` skip in the private `createDailyRateCalculation()` | Monthly plans no longer written to the daily log via correction (latent bug from the ASCM era) |
+| Fix | `DataCorrectionLogic` drift: added missing `$condition` fields (`tax_free`, `country_id`, `gross_amount`) | Aligns correction path with `CommonUtil` schema |
+| Test | Unit tests for `ArchiverService`, `MailerService`, and the corrected `DataCorrectionLogic` | Regression coverage |
+
+### DEVOPS-6596 — ZPR (Zipan Price Revision) accounting change
+
+| Area | What | Impact |
+|------|------|--------|
+| Enum | Added `MONTHLY_PLAN_PRODUCT_20LPM_1LPD = 38` to `ZipanMonthlyPlanEnum` (+ unit test) | New Zipan 20-lesson plan routes through the monthly-rate pipeline (not daily). Zipan-only; no computation change. |
+
+### Why released together
+
+On the deploy branch, 6596 was stacked on top of 6415 and both were deployed, executed, and QA-tested on DEV04 as one combined set. Releasing together shipped exactly the validated artifact and avoided splitting/re-testing. The Refactor was the higher-risk half (shared batch path); ZPR is a one-line enum add.
+
+### ZPR data-cleanup note (pre-release incident)
+
+Before release, product_id=38 charges paid in August (Kowa Co., order 10030672) had been picked up by the 09/01 (PRE) and 09/03 (FINAL) runs — which target the previous month by `paid_at` — and written to the **Zipan daily** table (target_ym 202609/202610) under the daily formula. Investigation (Metabase) confirmed: the August (202608) sum figure of ¥89,100 was **product_id=18** (a legitimate monthly plan), NOT product_id=38 — so August was not misstated. product_id=38 sat in the daily table for Sept/Oct (¥83,160 each). No Freee journals were sent for these records. The wrong daily rows are corrected by cleanup + regeneration after this release routes 38 as monthly. (Details in the ASCA project thread / master timeline.)
+
+---
+
+## Release Notes — September 2026 (DEVOPS-6415 + DEVOPS-6596)
+
+**Release scope:** DEVOPS-6415 (ASCM refactor — ArchiverService/MailerService extraction + DataCorrectionLogic drift fix + unit tests), DEVOPS-6596 (ZPR — Zipan 20-lesson plan `product_id 38` → `ZipanMonthlyPlanEnum`).
+
+**QA:** Passed. UAT completed. No regression detected.
+
+**Deployed:** 2026-09-28 (production) — released together as one combined package.
+
+**Billed under:** DEVOPS (not ASC). Prep for the ASCA allocation framework. See `docs/asc-projects-master-timeline.md` (Phase 0 / Phase 0.1) and `projects/asca/project-context.md` (ASCM Prep) for cross-project context.
+
+### Main Changes
+
+- **ArchiverService / MailerService** extracted from `DailyRateCalculationPreLogic`, `SendJournalsDataLogic`, `DataCorrectionLogic` — zip creation and email dispatch are now shared services (reused by ASCA's AllocationDetail CSV).
+- **DataCorrectionLogic drift fixed** — the private `createDailyRateCalculation()` (addDaily path) now skips monthly plans (`BizmatesMonthlyPlanEnum::exists()`) and writes the previously-missing `tax_free` / `country_id` / `gross_amount` fields, matching `CommonUtil`.
+- **ZPR** — the new Zipan 20-lesson plan (`product_id 38`) is now recognized as a monthly plan and routed through the monthly-rate pipeline (excluded from the daily path). Zipan-only, no computation change.
