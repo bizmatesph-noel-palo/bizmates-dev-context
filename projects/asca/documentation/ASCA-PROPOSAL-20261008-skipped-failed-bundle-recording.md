@@ -8,7 +8,7 @@
 | **Date** | 2026-10-08 |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
-| **Status** | ✅ **Approved by Kuroda-san 2026-10-05** (Option A, bundle-keyed) — revised per his 4 points; 02c pending his 2nd review before the table change-request is raised |
+| **Status** | ✅ **Approved by Kuroda-san 2026-10-08** (Option A, bundle-keyed) — revised per his 4 points; 02c pending his 2nd review before the table change-request is raised |
 | **Decision owner** | Hayato Kuroda (PM — schema owner) |
 | **Audience** | Kuroda-san (decision), Patrick-san (awareness), Dev team |
 | **Affects** | ASCA Spec 01 (schema), Spec 02a (recording), Spec 02c (AllocationDetail CSV) |
@@ -125,9 +125,9 @@ Option A costs one additive table on an **unreleased** schema (Spec 01 is merged
 
 ---
 
-## 7. Schema (Option A) — APPROVED 2026-10-05 (bundle-keyed), revised per Kuroda-san's points
+## 7. Schema (Option A) — APPROVED 2026-10-08 (bundle-keyed), revised per Kuroda-san's points
 
-> ✅ **Kuroda-san approved Option A on 2026-10-05** with the **bundle-keyed** shape (`coaching_charge_id` + `app_charge_id`, both nullable) and agreed `log_alloc_prorations` stays money-only. Table below revised per his four points: column types matched to the existing alloc tables, a refund marker added, and the failure-classification + outside-transaction + CSV-content rules captured in §7a–§7c.
+> ✅ **Kuroda-san approved Option A on 2026-10-08** with the **bundle-keyed** shape (`coaching_charge_id` + `app_charge_id`, both nullable) and agreed `log_alloc_prorations` stays money-only. Table below revised per his four points: column types matched to the existing alloc tables, a refund marker added, and the failure-classification + outside-transaction + CSV-content rules captured in §7a–§7c.
 
 **Table: `log_alloc_bundle_outcomes`** (connection `bizmates_mysql`, `log_*` prefix, FK to the run, commented columns, index on run — matching the existing alloc tables)
 
@@ -193,7 +193,7 @@ For a skipped/failed row the CSV fills columns from the charge ids in the outcom
 
 ## 9. Status & next steps
 
-✅ **Approved by Kuroda-san 2026-10-05** — Option A, bundle-keyed shape. His four points (failure classification, outside-transaction write, refund identifiability, CSV exception-row content + type match) are folded into §7/§7a–§7c above.
+✅ **Approved by Kuroda-san 2026-10-08** — Option A, bundle-keyed shape. His four points (failure classification, outside-transaction write, refund identifiability, CSV exception-row content + type match) are folded into §7/§7a–§7c above.
 
 Next:
 1. Update **02a Req 4** with the pair-level vs run-level failure classification and the per-bundle outcome recording (outside the pair transaction). — done.

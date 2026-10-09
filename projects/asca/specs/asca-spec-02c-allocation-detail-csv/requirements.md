@@ -70,8 +70,10 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 1. THE system SHALL provide `RevenueAllocationCsvService::createAllocationDetailFile(string $targetYm, bool $preFlg = false): array` returning `[$fileName, $displayName]`, in the `App\Libs\RevenueAllocation` namespace (NOT `CommonUtil`).
 2. THE service SHALL read from **two sources, for the same run** (REF-CAP-13 02c review point 4): (a) **allocated** rows from `log_alloc_prorations` (joined for charge/plan context), or `v_alloc_prorations_active` for the active Final run; and (b) **skipped/failed** rows from `log_alloc_bundle_outcomes` for that same run. Both reads are scoped to the same run so allocated and exception rows are consistent (the active Final run, or the Pre run).
-3. THE system SHALL emit one row per allocated product (per `log_alloc_prorations` row) **and** one row per skipped/failed bundle (per `log_alloc_bundle_outcomes` row), all against the same 18-column layout. **Allocated** rows populate every column (per-product + allocation values); **exception** rows populate only the bundle-identity + status columns and leave the per-product/allocation columns blank (see Req 2.12).
-4. FOR an **allocated** row, THE `charge_id` column SHALL be populated from `log_alloc_prorations.charge_id` so rows can be matched against `DailyRateCalculation.csv` and the source charge. (For an **exception** row the charge-id source differs — see Req 2.12.) (Added per REF-CAP-12 §1 #4.)
+3. THE system SHALL emit **one row per known charge**, for both allocated and exception bundles, against the same 18-column layout:
+    - **Allocated:** one row per `log_alloc_prorations` row (i.e. per allocated product — coaching row, app row).
+    - **Exception (skipped/failed):** one row **per known charge of the bundle** from the `log_alloc_bundle_outcomes` row — a row for `coaching_charge_id`, a row for `app_charge_id`, and/or a row for `refund_charge_id` where each is present. (Per Kuroda-san 2026-10-08 — this makes チャージID / プロダクトID well-defined for exception rows, matching the one-row-per-charge granularity of allocated rows. バンドルID is left blank for exception rows.)
+4. THE `charge_id` column SHALL be populated with the charge the row represents: for an **allocated** row, `log_alloc_prorations.charge_id`; for an **exception** row, the specific `coaching_charge_id` / `app_charge_id` / `refund_charge_id` that row stands for (Req 2.3/2.12). Either way the column matches a single charge against `DailyRateCalculation.csv`. (Added per REF-CAP-12 §1 #4.)
 5. THE bundle/group ID column SHALL be populated from `log_alloc_prorations.group_id` (or `bundle_id` via the group) so the coaching and App rows of the same bundle are unambiguously linked. (Added per REF-CAP-12 §1 #4.)
 6. THE 行種別 (row_kind) column SHALL render `通常` for a positive-N charge and `返金` for a negative-N charge, so callers can filter refund rows without inspecting amounts. (Added per REF-CAP-12 §1 #4; labels confirmed REF-CAP-13 §3.)
 7. THE プロジェクト column SHALL render the `bundle_type` label (`cap` / `cip`), not the raw TINYINT.
@@ -79,14 +81,15 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 9. WHERE `order_no` or `department_id` is present, THE system SHALL populate それ.
 10. THE system SHALL write the file via the existing `CommonUtil::createCsvFile()` (fputcsv) to `storage_path('app/public/')` (`config('const.filedirectory')`), **UTF-8 with a BOM** (`EF BB BF`) for Excel compatibility.
 11. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
-12. **(Exception-row content — REF-CAP-13 02c review point 4)** An **exception row** (one per `log_alloc_bundle_outcomes` row) uses the **same 18 columns** as an allocated row, but — because the outcome table carries no product/money data — only the bundle-identity and status columns are populated; the per-product and allocation columns are blank. Specifically:
+12. **(Exception-row content — REF-CAP-13 02c review point 4; one-row-per-charge per Kuroda-san 2026-10-08)** Each **exception row** represents **one known charge** of a skipped/failed bundle (coaching, app, or refund — Req 2.3), using the same 18 columns. Column population:
     - **コンテンツ / 対象年月 / プロジェクト** — from the outcome row (`bundle_type` → label).
     - **生徒ID / 部署ID / 発注番号 / プランID** — from the outcome row's bundle-key columns (`student_id` / `department_id` where available / `order_no` / `plan_id`).
-    - **チャージID** — the outcome row's `coaching_charge_id` (the bundle's anchor charge); where only an App side exists (later-month refund, case ii), `app_charge_id`. (This is the exception-row source for the `charge_id` column referenced in Req 2.4.)
-    - **バンドルID** — blank (no `log_alloc_groups` row is created for a skipped/failed bundle).
-    - **プロダクトID / プロダクトタイプ** — blank (the outcome is per-bundle, not per-product).
+    - **チャージID** — the specific charge this row represents (`coaching_charge_id`, `app_charge_id`, or `refund_charge_id`).
+    - **プロダクトID** — the product for that charge (10005/10015 for coaching, 10022 for app) where known; blank if it cannot be determined.
+    - **バンドルID** — **blank** (no `log_alloc_groups` row is created for a skipped/failed bundle).
+    - **プロダクトタイプ** — blank (not resolved; the bundle was not allocated).
     - **参照価格(税抜) / 配分比率** — blank (no allocation was computed).
-    - **元金額(税込)** — read from the **daily-rate log** (the un-split N still sitting there for the bundle's coaching charge), so Accounting can see the amount left un-allocated.
+    - **元金額(税込)** — read from the **daily-rate log** for that charge (the un-split N still sitting there), so Accounting can see the amount left un-allocated.
     - **配分後金額(税込)** — **blank** (no allocation happened).
     - **行種別** — `通常` / `返金` from the outcome row's `row_kind` / `refund_charge_id`.
     - **ステータス** — `スキップ：<理由>` or `失敗` from the outcome row's `outcome` + `reason_code`.
