@@ -6,14 +6,30 @@
 
 ---
 
-## Current State (as of 2026-10-05)
+## Current State (as of 2026-10-09)
 
 - **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**.
 - **ZPR daily-table cleanup + September FINAL:** ✅ all complete. Data cleanup executed 2026-09-30 (Yijun-san). 10/01 PRE verified. September FINAL (10/02) initially crashed — root cause was a Zipan product-type resolution issue in `ZipanUtil.php`; fixed by **DEVOPS-6274** (Harvey-san) + **DEVOPS-6284** (Yijun-san), deployed alongside 6415/6596. DevOps re-ran after deploy — both monthly and send-journal commands completed successfully. Investigation reports: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`.
-- **Foundation (Spec 01):** ✅ **Code complete** — ASCA-16 (ls-db, Cristoff) and ASCA-17 (accounting, Throy) both merged to `feature/ASCA/ASCA-master`. **G3 review done (2026-10-02, ASCA-18)** — one fix pending: [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) (Cristoff, `v_alloc_prorations_active` missing `run_type = Final` filter + view test). ASCA-18 closes as G3 passed once ASCA-34 is merged and reviewed.
+- **Foundation (Spec 01):** ✅ **Code complete** — ASCA-16 (ls-db, Cristoff) and ASCA-17 (accounting, Throy) both merged to `feature/ASCA/ASCA-master`. **G3 ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)) In Progress** — one fix outstanding: [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) (Cristoff, `v_alloc_prorations_active` missing `run_type = Final` filter + view test) is **committed but NOT yet merged** to `feature/ASCA/ASCA-master`. **Next action:** verify/merge ASCA-34, then close G3.
 - **Steering files (ASCA-10):** ✅ updated to REF-CIP-05 + REF-CAP-11. PR sent to `feature/ASCA/ASCA-master` (branch `feature/ASCA/ASCA-10-steering-files-update`), 2026-10-05.
 - **DEV04 QA test-data prep:** [ASCA-30](https://bizmates.atlassian.net/browse/ASCA-30) → [ASCA-31](https://bizmates.atlassian.net/browse/ASCA-31) → [ASCA-32](https://bizmates.atlassian.net/browse/ASCA-32) → [ASCA-33](https://bizmates.atlassian.net/browse/ASCA-33). Delegated; parallel, not on critical path.
-- **Spec 02 (CAP Integration):** G1 submitted 2026-09-28, **4 open items pending Kuroda-san sign-off** (he's back from sick leave — **10/05 DSM today**). Items: 02b refund→bundle pairing (**blocker**), 02a failure-state (#2) + re-run/V-7 (#3), 02c linking columns (#4), 02d retain re-confirmation. Requirements.md files are drafts — **do not start design/tasks until G1 resolves**. CIP-refund split home (REF-CIP-06) on hold pending Kuroda-san's refund-type-identification answer.
+- **Spec 02 (CAP Integration) — G1 status:**
+  - **02a, 02b, 02d:** ✅ **SIGNED OFF by Kuroda-san (2026-10-05)**.
+  - **02c:** approved **pending Kuroda-san's 2nd review** of the latest edits (sent 2026-10-09; **awaiting reply**).
+  - **02a PROMOTED to the code repo this session (2026-10-09):** `accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/` with a valid single-line `.config.kiro` (`specId` + `workflowType: requirements-first` + `specType: feature`). requirements.md promoted as-is (signed-off, not regenerated). **Next action:** use the spec UI "Continue to Design" to generate design.md (G2). **Design 02a before 02b** (02b builds on 02a's injected path).
+- **02d repurposed** from "inject allocation into DataCorrectionLogic" to **DECOMMISSION `DataCorrectionCommand`** (disable + deprecate) — command confirmed unused (Wu-san 08-28, Harvey-san 10-05). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
+- **02c schema change-request (pending):** 02c needs a new ls-db table **`log_alloc_bundle_outcomes`** (Option A, bundle-keyed, approved 2026-10-08) to source skipped/failed CSV rows. The money table (`log_alloc_prorations`) stays money-only. **Raise this as a small Spec 01 change-request ticket (like ASCA-34) ONLY after Kuroda-san confirms 02c.** Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
+- **CIP-refund split home:** still **open** — extend 02b / new sub-spec / ASCI undecided. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio); the home decision is on hold pending the scope decision.
+
+### Immediate next actions
+1. Generate 02a **design.md** via the spec UI "Continue to Design" (G2). Do NOT regenerate requirements.md — signed off.
+2. Verify/merge **ASCA-34** into `feature/ASCA/ASCA-master`, then close Spec 01 **G3 (ASCA-18)**.
+3. On Kuroda-san's 02c confirm → raise the `log_alloc_bundle_outcomes` Spec 01 CR ticket, then promote 02c.
+
+### Key source docs (Spec 02)
+- **REF-CAP-12** — G1 round 1 feedback
+- **REF-CAP-13** — G1 round 2 feedback
+- **REF-CIP-07** — CIP refund-type detection
 
 ---
 
@@ -92,7 +108,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 | [ASCA-16](https://bizmates.atlassian.net/browse/ASCA-16) | Story | ASCA-13 | [Spec 01] — Coding (ls-db migrations) | Dev (Throy) |
 | [ASCA-17](https://bizmates.atlassian.net/browse/ASCA-17) | Story | ASCA-13 | [Spec 01] — Coding (accounting application) | Dev (Throy) |
 | [ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18) | Story | ASCA-13 | [Spec 01] — Code Review | Lead · G3 |
-| [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) | Sub-task | ASCA-18 | [G3 Fix] v_alloc_prorations_active — add run_type = Final filter + view test | Cristoff · pending |
+| [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) | Sub-task | ASCA-18 | [G3 Fix] v_alloc_prorations_active — add run_type = Final filter + view test | Cristoff · **committed, NOT yet merged** to `feature/ASCA/ASCA-master` — verify/merge to close G3 |
 | [ASCA-19](https://bizmates.atlassian.net/browse/ASCA-19) | Story | ASCA-13 | [Spec 01] — QA Testing | QA (Miko) |
 | [ASCA-20](https://bizmates.atlassian.net/browse/ASCA-20) | Story | ASCA-13 | [Spec 01] — Dev/Manual Testing | Lead |
 
@@ -108,6 +124,17 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 > **Shared DEV04 env note:** ASCA-21/22 are ASCA infrastructure tasks under the Scaffolding epic. ZPR (DEVOPS-6596) hit them first during Cristoff's command execution. Both now resolved — ZPR DEV04 run and ASCA Foundation testing are unblocked.
 
 > Also on the board (pre-existing, not created here): ASCA-1–6 (time-logging buckets), ASCA-7 (Pre-Phase/ASCM link, DEVOPS-6415), ASCA-8 (Metabase breakdown). All unassigned unless noted.
+
+### Spec 02 (CAP Integration) epics + stories
+
+Created in JIRA as **two epics, each with 6 stories** (ASCA-38–50), currently **unassigned**. Flat per-sub-spec gate sets matching the Spec 01 precedent.
+
+| Key | Type | Parent | Summary |
+|---|---|---|---|
+| [ASCA-37](https://bizmates.atlassian.net/browse/ASCA-37) | Epic | — | [Spec 02a] — CAP Core Injection (6 stories) |
+| [ASCA-44](https://bizmates.atlassian.net/browse/ASCA-44) | Epic | — | [Spec 02b] — Refund Allocation (6 stories) |
+
+> Stories ASCA-38–50 sit under ASCA-37 / ASCA-44 (Requirements/G1, Architecture/G2, Coding ×N, Code Review/G3, QA, Dev test — the Spec 01 gate shape). 02c and 02d epics are **not yet created** — 02c pends Kuroda-san's 2nd review; 02d (decommission) is low priority.
 
 ---
 
@@ -134,3 +161,7 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 | Base system context (ASCM) | `projects/ascm/project-context.md` |
 | ASCM knowledge base | `projects/ascm/knowledge-base/` |
 | Plans & products reference | `domain-knowledge/plans-and-products.md` |
+| Spec 02 sub-spec index + promotion checklist | `projects/asca/specs/README.md` |
+| 02a requirements (promoted) | `accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/requirements.md` |
+| 02d decommission ADR + usage note | `projects/asca/documentation/ASCA-ADR-20261005-datacorrection-decommission.md`, `…/ASCA-NOTE-20261005-datacorrection-usage-confirmation.md` |
+| 02c skipped/failed-bundle recording proposal | `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md` |
