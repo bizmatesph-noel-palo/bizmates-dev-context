@@ -6,7 +6,7 @@
 
 ---
 
-## Current State (as of 2026-10-09)
+## Current State (as of 2026-10-12)
 
 - **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**.
 - **ZPR daily-table cleanup + September FINAL:** ✅ all complete. Data cleanup executed 2026-09-30 (Yijun-san). 10/01 PRE verified. September FINAL (10/02) initially crashed — root cause was a Zipan product-type resolution issue in `ZipanUtil.php`; fixed by **DEVOPS-6274** (Harvey-san) + **DEVOPS-6284** (Yijun-san), deployed alongside 6415/6596. DevOps re-ran after deploy — both monthly and send-journal commands completed successfully. Investigation reports: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`.
@@ -16,15 +16,22 @@
 - **Spec 02 (CAP Integration) — G1 status:**
   - **02a, 02b, 02d:** ✅ **SIGNED OFF by Kuroda-san (2026-10-05)**.
   - **02c:** approved **pending Kuroda-san's 2nd review** of the latest edits (sent 2026-10-09; **awaiting reply**).
-  - **02a PROMOTED to the code repo this session (2026-10-09):** `accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/` with a valid single-line `.config.kiro` (`specId` + `workflowType: requirements-first` + `specType: feature`). requirements.md promoted as-is (signed-off, not regenerated). **Next action:** use the spec UI "Continue to Design" to generate design.md (G2). **Design 02a before 02b** (02b builds on 02a's injected path).
+  - **02a in the code repo** (`accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/`), valid single-line `.config.kiro` (`specId` + `workflowType: requirements-first` + `specType: feature`).
+    - **requirements.md** — committed on branch `feature/ASCA/ASCA-38-spec-2a-requirements` (ASCA-38, pushed to origin). Promoted as-is from the signed-off version, not regenerated.
+    - **design.md (G2)** — ✅ **generated + committed (2026-10-12)** on branch `feature/ASCA/ASCA-39-spec-2a-architecture` (ASCA-39, HEAD, not yet pushed). Grounded against the actual batch code + Spec 01 engine; validated against the authoritative technical design (§8/§9) — aligned with the current REF-CAP-12/13 decisions (the §8/§9 *code samples* are the superseded 2026-08 version).
+    - ⚠️ **Design surfaced three 02a→Spec 01 dependencies** (02a is larger than the framework's original "thin call at the injection point" framing; all three follow from the per-bundle failure-isolation decision, REF-CAP-13 #2) — **open, need coordination/sign-off before the 02a tasks phase:**
+      1. **`COMPLETED_WITH_ERRORS` run status + `RunLifecycleService::finalizeWithErrors()`** — Spec 01's `RunStatus` is CREATING/COMPLETED/FAILED only (all-or-nothing); the per-bundle model needs a "mostly succeeded, these pairs failed" state.
+      2. **`log_alloc_bundle_outcomes` table + `LogAllocBundleOutcome` model** — one row per skipped (V-3) / failed (V-1) bundle. **This is the same table already tracked below as the 02c-driven Spec 01 CR** (`ASCA-PROPOSAL-20261008`); 02a now **also** depends on it, so the CR covers both 02a and 02c.
+      3. **Reference-price `effective_from` → 2026-12-01** in the Spec 01 / ls-db CAP seeder — the current 2027-01-01 value leaves the first close (`target_ym = 2026-12`) with no resolvable price (silent V-4), so December CAP revenue would stay 100% on Coaching.
+    - **Next action:** confirm the three Spec 01 extensions with PM/engineering, then generate 02a **tasks.md** (the user runs task generation manually). **Design 02a before 02b** (02b builds on 02a's injected path) — unchanged.
 - **02d repurposed** from "inject allocation into DataCorrectionLogic" to **DECOMMISSION `DataCorrectionCommand`** (disable + deprecate) — command confirmed unused (Wu-san 08-28, Harvey-san 10-05). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
-- **02c schema change-request (pending):** 02c needs a new ls-db table **`log_alloc_bundle_outcomes`** (Option A, bundle-keyed, approved 2026-10-08) to source skipped/failed CSV rows. The money table (`log_alloc_prorations`) stays money-only. **Raise this as a small Spec 01 change-request ticket (like ASCA-34) ONLY after Kuroda-san confirms 02c.** Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
+- **02c schema change-request (pending):** 02c needs a new ls-db table **`log_alloc_bundle_outcomes`** (Option A, bundle-keyed, approved 2026-10-08) to source skipped/failed CSV rows. The money table (`log_alloc_prorations`) stays money-only. **Now also required by 02a** (surfaced in 02a design, 2026-10-12 — see the Spec 02 02a bullet above): the CR covers both 02a and 02c. Since 02a is signed off and its design is complete, this table is no longer gated solely on the 02c confirm — it can be raised as a small Spec 01 CR ticket (like ASCA-34) as part of confirming the 02a→Spec 01 extensions. Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
 - **CIP-refund split home:** still **open** — extend 02b / new sub-spec / ASCI undecided. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio); the home decision is on hold pending the scope decision.
 
 ### Immediate next actions
-1. Generate 02a **design.md** via the spec UI "Continue to Design" (G2). Do NOT regenerate requirements.md — signed off.
+1. ✅ 02a **design.md** generated + committed (2026-10-12, ASCA-39). **Now:** confirm the three 02a→Spec 01 extensions (run status + `finalizeWithErrors()`, `log_alloc_bundle_outcomes` table, reference-price `effective_from` fix) with PM/engineering, then generate 02a **tasks.md** (run manually). Do NOT regenerate requirements.md — signed off.
 2. Verify/merge **ASCA-34** into `feature/ASCA/ASCA-master`, then close Spec 01 **G3 (ASCA-18)**.
-3. On Kuroda-san's 02c confirm → raise the `log_alloc_bundle_outcomes` Spec 01 CR ticket, then promote 02c.
+3. Raise the `log_alloc_bundle_outcomes` Spec 01 CR ticket — now needed by **both 02a (design-complete) and 02c**; no longer gated solely on the 02c confirm. Then promote 02c once Kuroda-san confirms.
 
 ### Key source docs (Spec 02)
 - **REF-CAP-12** — G1 round 1 feedback
