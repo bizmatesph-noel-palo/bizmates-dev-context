@@ -144,8 +144,9 @@ The primary code repo goes first because that's where specs and code changes liv
 
 After opening the workspace, paste this single prompt to fully load Kiro:
 
+**For ASCA (ASC for CAP) — the current active project:**
 ```
-Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
+Learn the agentic-toolkit and bizmates-dev-context, then read projects/asca/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
 ```
 
 After this one prompt, Kiro has:
@@ -157,8 +158,10 @@ After this one prompt, Kiro has:
 **You're ready to work.**
 
 > For other projects, replace the `project-context.md` path:
+> - ASCA: `projects/asca/project-context.md`
+> - ASCI: `projects/asci/project-context.md`
 > - ASCM: `projects/ascm/project-context.md`
-> - ASCH: `projects/asch/project-context.md`
+> - ASCH (cancelled): `projects/asch/project-context.md`
 
 ---
 
@@ -185,15 +188,14 @@ Specs span multiple sessions. Each phase (requirements → design → tasks → 
 
 2. **Load full context** — paste the standard prompt:
    ```
-   Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
+   Learn the agentic-toolkit and bizmates-dev-context, then read projects/asca/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
    ```
 
 3. **Load supplementary context (design phase only)** — if you're about to generate design.md, load architecture docs that inform design decisions:
    ```
    Also read these for design context:
-   - projects/asch/documentation/asch-engineering-standards.md
-   - projects/asch/knowledge-base/01-architecture-patterns-note.md
-   - projects/asch/knowledge-base/02-calc-rule-code-convention.md
+   - projects/asca/documentation/asc-allocation-framework-technical-design.md
+   - projects/ascm/knowledge-base/00-design-context.md
    ```
    > Skip this step for tasks or implementation phases — design.md already encodes these decisions.
 
@@ -217,57 +219,43 @@ Specs span multiple sessions. Each phase (requirements → design → tasks → 
 
 | Spec domain | Files to load |
 |---|---|
-| DB schema / migrations | Engineering standards, architecture patterns, relevant knowledge-base articles |
-| Application foundation | Engineering standards, architecture patterns, relevant knowledge-base articles |
-| Calculation logic | Engineering standards, architecture patterns, pattern case data |
-| Freee/CSV delivery | Engineering standards, ADR-001, REF-ASCH-07, REF-ASCH-08 |
+| DB schema / migrations | Technical design, ASCM design context, relevant research docs |
+| Application foundation | Technical design, ASCM knowledge-base articles |
+| Calculation logic | Technical design, upstream research (REF-CAP-07 for overwrite approach) |
+| CSV / delivery | Technical design, research docs for format decisions |
 
-**ASCH — DB migrations or foundation specs:**
+**ASCA — Foundation or allocation specs:**
 ```
 Also read these for design context:
-- projects/asch/documentation/asch-engineering-standards.md
-- projects/asch/knowledge-base/01-architecture-patterns-note.md
-- projects/asch/knowledge-base/02-calc-rule-code-convention.md
+- projects/asca/documentation/asc-allocation-framework-technical-design.md
+- projects/ascm/knowledge-base/00-design-context.md
 ```
 
-**ASCH — Freee/CSV delivery specs (Spec 04/05):**
+**ASCA — Referencing upstream CAP decisions:**
 ```
 Also read these for design context:
-- projects/asch/documentation/asch-engineering-standards.md
-- projects/asch/documentation/ADR-001-csv-delivery-method.md
-- projects/asch/technical-notes/research/ASCH/REF-ASCH-07-Unified-CSV-Delivery-20260805.md
-- projects/asch/technical-notes/research/ASCH/REF-ASCH-08-Freee-Sending-Approach-Decision.md
+- projects/asca/documentation/asc-allocation-framework-technical-design.md
+- research/CAP/REF-CAP-07-Overwrite-Process-Flow-20260812.md
+- research/CAP/REF-CAP-08-Requirements-Decision-Log-20260810.md
 ```
 
-### Full example (ASCH — design phase for DB migrations spec)
+### Full example (ASCA — design phase for allocation engine spec)
 
 ```
 # Step 1: Open a new Kiro session (new chat)
-#   - If a bad design.md was generated via chat previously, delete it first
 
 # Step 2: Paste context load prompt, wait for Kiro to finish loading
-Learn the agentic-toolkit and bizmates-dev-context, then read projects/asch/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
+Learn the agentic-toolkit and bizmates-dev-context, then read projects/asca/project-context.md, then learn the related repos: accounting_related_system_for_freee, ls-database-migrations, bizmates.jp, MBTI_backend
 
 # Step 3: Paste supplementary design context, wait for Kiro to finish loading
 Also read these for design context:
-- projects/asch/documentation/asch-engineering-standards.md
-- projects/asch/knowledge-base/01-architecture-patterns-note.md
-- projects/asch/knowledge-base/02-calc-rule-code-convention.md
+- projects/asca/documentation/asc-allocation-framework-technical-design.md
+- projects/ascm/knowledge-base/00-design-context.md
 
 # Step 4: Open requirements.md in editor, then use the spec UI
-#   - Open: ls-database-migrations/.kiro/specs/asch-database-migrations/requirements.md
+#   - Open: accounting_related_system_for_freee/.kiro/specs/asca-allocation-engine/requirements.md
 #   - Click "Continue to Design" button in Kiro's spec panel
-#   - Kiro generates design.md in the same spec folder
-#
-#   ⚠️ Do NOT type "generate design.md" in chat — use the spec panel button only
 ```
-
-### Why new sessions for each phase?
-
-- **Context budget** — design generation produces substantial content; a fresh window gives maximum room
-- **No information loss** — all decisions are persisted in files (requirements.md, project-context.md, knowledge-base, REF docs)
-- **Reload is cheap** — one prompt, one turn, full context restored
-- **Clean boundaries** — each phase gets a focused session without accumulated noise from prior discussions
 
 ### Why new sessions for each phase?
 
@@ -359,8 +347,11 @@ On conflict: later folders override earlier ones.
 | File | Path | What it is |
 |---|---|---|
 | Workspace identity | `~/ai-workflow/bizmates-dev-context/.kiro/steering/workspace-identity.md` | Active projects, team assignments, routing |
-| ASCH project context | `~/ai-workflow/bizmates-dev-context/projects/asch/project-context.md` | ASCH-specific context (load at session start) |
+| ASCA project context | `~/ai-workflow/bizmates-dev-context/projects/asca/project-context.md` | ASCA-specific context (load at session start) |
+| ASCI project context | `~/ai-workflow/bizmates-dev-context/projects/asci/project-context.md` | ASCI-specific context |
 | ASCM project context | `~/ai-workflow/bizmates-dev-context/projects/ascm/project-context.md` | Base accounting system context |
+| Technical design | `~/ai-workflow/bizmates-dev-context/projects/asca/documentation/asc-allocation-framework-technical-design.md` | Authoritative design for ASCA/ASCI |
+| Master timeline | `~/ai-workflow/bizmates-dev-context/docs/asc-projects-master-timeline.md` | Cross-project timeline |
 | Toolkit getting started | `~/ai-workflow/agentic-toolkit/knowledge/getting-started.md` | Full lifecycle guide |
-| Workspace README | `~/ai-workflow/bizmates-dev-context/README.md` | Quick start, commands |
+| Workspace README | `~/ai-workflow/bizmates-dev-context/README.md` | Quick start |
 | Toolkit README | `~/ai-workflow/agentic-toolkit/README.md` | Architecture, full setup details |

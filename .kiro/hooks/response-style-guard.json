@@ -1,0 +1,12 @@
+{
+  "name": "Response Style Guard",
+  "version": "1.0.0",
+  "description": "On each prompt, enforces BLUF / scannable / code-first response discipline and pulls the workflow-specific format when the task matches one.",
+  "when": {
+    "type": "promptSubmit"
+  },
+  "then": {
+    "type": "askAgent",
+    "prompt": "STYLE CHECK before responding. Core rules (response-style.md): BLUF - answer in the first sentence; yes/no questions start with 'Yes.'/'No.' then at most one line of context. Why/What/When -> 1-3 lines, no preamble. Code-first: put runnable snippets above prose. Detail only on request. No unsolicited extras. Prefer tables/bullets/inline code over dense paragraphs. If the user says 'too long'/'shorter'/'just answer', reply in one line. If this task matches a workflow format (error debugging, live bug fix, refactor, requirements/code research, feasibility, API spec, PoC, meeting/quick insight), load and apply response-style-workflows.md for that format. Do not answer a yes/no with a multi-section essay."
+  }
+}
