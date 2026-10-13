@@ -6,16 +6,18 @@
 
 ---
 
-## Current State (as of 2026-10-12)
+## Current State (as of 2026-10-13)
+
+> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
 
 - **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**.
 - **ZPR daily-table cleanup + September FINAL:** ✅ all complete. Data cleanup executed 2026-09-30 (Yijun-san). 10/01 PRE verified. September FINAL (10/02) initially crashed — root cause was a Zipan product-type resolution issue in `ZipanUtil.php`; fixed by **DEVOPS-6274** (Harvey-san) + **DEVOPS-6284** (Yijun-san), deployed alongside 6415/6596. DevOps re-ran after deploy — both monthly and send-journal commands completed successfully. Investigation reports: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`.
-- **Foundation (Spec 01):** ✅ **Code complete** — ASCA-16 (ls-db, Cristoff) and ASCA-17 (accounting, Throy) both merged to `feature/ASCA/ASCA-master`. **G3 ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)) In Progress** — one fix outstanding: [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) (Cristoff, `v_alloc_prorations_active` missing `run_type = Final` filter + view test) is **committed but NOT yet merged** to `feature/ASCA/ASCA-master`. **Next action:** verify/merge ASCA-34, then close G3.
+- **Foundation (Spec 01):** ✅ **Code complete.** ASCA-16 (ls-db) + ASCA-17 (accounting) merged to `feature/ASCA/ASCA-master`. The one G3 fix — [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) (`v_alloc_prorations_active` `run_type = Final` filter + view test) — is **✅ merged + Done** (confirmed via JIRA, 2026-10-12). **G3 ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)) is still "In Progress" in JIRA but its blocking fix has landed** — Lead chose to leave the status as-is for now; the SHOULD-FIX-1/2 spot-checks (test adequacy, model/seeder pass) were not formally recorded as cleared. Admin close only — no code work remains.
 - **Steering files (ASCA-10):** ✅ updated to REF-CIP-05 + REF-CAP-11. PR sent to `feature/ASCA/ASCA-master` (branch `feature/ASCA/ASCA-10-steering-files-update`), 2026-10-05.
 - **DEV04 QA test-data prep:** [ASCA-30](https://bizmates.atlassian.net/browse/ASCA-30) → [ASCA-31](https://bizmates.atlassian.net/browse/ASCA-31) → [ASCA-32](https://bizmates.atlassian.net/browse/ASCA-32) → [ASCA-33](https://bizmates.atlassian.net/browse/ASCA-33). Delegated; parallel, not on critical path.
 - **Spec 02 (CAP Integration) — G1 status:**
   - **02a, 02b, 02d:** ✅ **SIGNED OFF by Kuroda-san (2026-10-05)**.
-  - **02c:** approved **pending Kuroda-san's 2nd review** of the latest edits (sent 2026-10-09; **awaiting reply**).
+  - **02c:** Round-2 edits (Kuroda-san's 4 points + his follow-up tidy-ups) sent 2026-10-09. **New feedback received from Kuroda-san 2026-10-13 — NOT yet ingested.** To be processed in a fresh session (this is the next spec-edit task). The revised 02c spec + the `ASCA-PROPOSAL-20261008` are the files to update against that feedback.
   - **02a in the code repo** (`accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/`), valid single-line `.config.kiro` (`specId` + `workflowType: requirements-first` + `specType: feature`).
     - **requirements.md** — committed on branch `feature/ASCA/ASCA-38-spec-2a-requirements` (ASCA-38, pushed to origin). Promoted as-is from the signed-off version, not regenerated.
     - **design.md (G2)** — ✅ **generated + committed (2026-10-12)** on branch `feature/ASCA/ASCA-39-spec-2a-architecture` (ASCA-39, HEAD, not yet pushed). Grounded against the actual batch code + Spec 01 engine; validated against the authoritative technical design (§8/§9) — aligned with the current REF-CAP-12/13 decisions (the §8/§9 *code samples* are the superseded 2026-08 version).
@@ -30,8 +32,9 @@
 
 ### Immediate next actions
 1. ✅ 02a **design.md** generated + committed (2026-10-12, ASCA-39). **Now:** confirm the three 02a→Spec 01 extensions (run status + `finalizeWithErrors()`, `log_alloc_bundle_outcomes` table, reference-price `effective_from` fix) with PM/engineering, then generate 02a **tasks.md** (run manually). Do NOT regenerate requirements.md — signed off.
-2. Verify/merge **ASCA-34** into `feature/ASCA/ASCA-master`, then close Spec 01 **G3 (ASCA-18)**.
-3. Raise the `log_alloc_bundle_outcomes` Spec 01 CR ticket — now needed by **both 02a (design-complete) and 02c**; no longer gated solely on the 02c confirm. Then promote 02c once Kuroda-san confirms.
+2. **Ingest Kuroda-san's 2026-10-13 02c feedback** (fresh session) → update the 02c spec + `ASCA-PROPOSAL-20261008` → send back / confirm.
+3. **ASCA-34 is merged + Done.** Remaining is admin only: optionally close Spec 01 **G3 (ASCA-18)** in JIRA (Lead left it open for now).
+4. Raise the `log_alloc_bundle_outcomes` Spec 01 CR ticket — needed by **both 02a (design-complete) and 02c**. Then promote 02c once the 10-13 feedback is resolved + confirmed.
 
 ### Key source docs (Spec 02)
 - **REF-CAP-12** — G1 round 1 feedback
