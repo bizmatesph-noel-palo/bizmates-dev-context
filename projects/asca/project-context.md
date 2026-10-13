@@ -6,7 +6,7 @@
 
 ---
 
-## Current State (as of 2026-10-13)
+## Current State (as of 2026-10-13, PM — Round-3 02c ingested, Spec 02c/02d epics + Spec 01 CR tickets created)
 
 > **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
 
@@ -17,28 +17,32 @@
 - **DEV04 QA test-data prep:** [ASCA-30](https://bizmates.atlassian.net/browse/ASCA-30) → [ASCA-31](https://bizmates.atlassian.net/browse/ASCA-31) → [ASCA-32](https://bizmates.atlassian.net/browse/ASCA-32) → [ASCA-33](https://bizmates.atlassian.net/browse/ASCA-33). Delegated; parallel, not on critical path.
 - **Spec 02 (CAP Integration) — G1 status:**
   - **02a, 02b, 02d:** ✅ **SIGNED OFF by Kuroda-san (2026-10-05)**.
-  - **02c:** Round-2 edits (Kuroda-san's 4 points + his follow-up tidy-ups) sent 2026-10-09. **New feedback received from Kuroda-san 2026-10-13 — NOT yet ingested.** To be processed in a fresh session (this is the next spec-edit task). The revised 02c spec + the `ASCA-PROPOSAL-20261008` are the files to update against that feedback.
+  - **02c:** Round-2 edits sent 2026-10-09. **Round-3 feedback (REF-CAP-14, 2026-10-13) ✅ ingested + folded into the 02c requirements.** Three items resolved: (1) completed-with-errors must be an active Final in `v_alloc_prorations_active`/V-5/supersede (owned by the Spec 01 run-status extension, overlaps ASCA-34); (2) **CIP produces no outcome row and never appears in the CSV** — verified in `BundleDetectionService` (CAP `plan_id` filter runs before bundle formation, so the shared App 10022 can't drag CIP in); 02a Req 2.5 to be corrected; (3) exception-row columns 部署ID/プロダクトID/プロダクトタイプ/契約種類 filled from the daily-rate log row. Minor date fix (10-05→10-08) applied. Kuroda-san: "once 1–3 are in, 02c is good." **Awaiting his final sign-off**, then promote.
   - **02a in the code repo** (`accounting_related_system_for_freee/.kiro/specs/asca-spec-02a-cap-core-injection/`), valid single-line `.config.kiro` (`specId` + `workflowType: requirements-first` + `specType: feature`).
     - **requirements.md** — committed on branch `feature/ASCA/ASCA-38-spec-2a-requirements` (ASCA-38, pushed to origin). Promoted as-is from the signed-off version, not regenerated.
     - **design.md (G2)** — ✅ **generated + committed (2026-10-12)** on branch `feature/ASCA/ASCA-39-spec-2a-architecture` (ASCA-39, HEAD, not yet pushed). Grounded against the actual batch code + Spec 01 engine; validated against the authoritative technical design (§8/§9) — aligned with the current REF-CAP-12/13 decisions (the §8/§9 *code samples* are the superseded 2026-08 version).
-    - ⚠️ **Design surfaced three 02a→Spec 01 dependencies** (02a is larger than the framework's original "thin call at the injection point" framing; all three follow from the per-bundle failure-isolation decision, REF-CAP-13 #2) — **open, need coordination/sign-off before the 02a tasks phase:**
-      1. **`COMPLETED_WITH_ERRORS` run status + `RunLifecycleService::finalizeWithErrors()`** — Spec 01's `RunStatus` is CREATING/COMPLETED/FAILED only (all-or-nothing); the per-bundle model needs a "mostly succeeded, these pairs failed" state.
-      2. **`log_alloc_bundle_outcomes` table + `LogAllocBundleOutcome` model** — one row per skipped (V-3) / failed (V-1) bundle. **This is the same table already tracked below as the 02c-driven Spec 01 CR** (`ASCA-PROPOSAL-20261008`); 02a now **also** depends on it, so the CR covers both 02a and 02c.
-      3. **Reference-price `effective_from` → 2026-12-01** in the Spec 01 / ls-db CAP seeder — the current 2027-01-01 value leaves the first close (`target_ym = 2026-12`) with no resolvable price (silent V-4), so December CAP revenue would stay 100% on Coaching.
-    - **Next action:** confirm the three Spec 01 extensions with PM/engineering, then generate 02a **tasks.md** (the user runs task generation manually). **Design 02a before 02b** (02b builds on 02a's injected path) — unchanged.
+    - ✅ **02a tasks.md is generated + committed** (on disk in the code repo). 02a is now requirements + design + tasks complete — ready for the Coding story (ASCA-40).
+    - ✅ **The three 02a→Spec 01 dependencies are APPROVED by Kuroda-san (2026-10-13) and ticketed:**
+      1. **`COMPLETED_WITH_ERRORS` run status + `RunLifecycleService::finalizeWithErrors()`** — plus (REF-CAP-14 #1) `v_alloc_prorations_active`/V-5/supersede must treat completed-with-errors as an active Final. Accounting-repo change; part of the run-status extension. (Not separately ticketed yet — fold into the 02a Coding work or a follow-up; see note.)
+      2. **`log_alloc_bundle_outcomes` table + model** → **[ASCA-66](https://bizmates.atlassian.net/browse/ASCA-66)** (ls-db migration + structure test). Sub-task under ASCA-18, like ASCA-34.
+      3. **Reference-price `effective_from` → 2026-12-01** → **[ASCA-67](https://bizmates.atlassian.net/browse/ASCA-67)**. ⚠️ **Correction:** the seeder (`ReferencePriceSeeder.php`) is in the **accounting repo**, NOT ls-db (steering says ls-db — doc/code discrepancy flagged in the ticket). Sub-task under ASCA-18.
+    - **Next action:** merge ASCA-66 + ASCA-67 (blockers for 02a/02b), then devs pick up 02a (ASCA-40) → 02b (ASCA-47). The run-status/view change (#1 above) still needs a home — fold into the 02a Coding story or raise a small follow-up ticket (reconcile with ASCA-34, same view).
 - **02d repurposed** from "inject allocation into DataCorrectionLogic" to **DECOMMISSION `DataCorrectionCommand`** (disable + deprecate) — command confirmed unused (Wu-san 08-28, Harvey-san 10-05). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
 - **02c schema change-request (pending):** 02c needs a new ls-db table **`log_alloc_bundle_outcomes`** (Option A, bundle-keyed, approved 2026-10-08) to source skipped/failed CSV rows. The money table (`log_alloc_prorations`) stays money-only. **Now also required by 02a** (surfaced in 02a design, 2026-10-12 — see the Spec 02 02a bullet above): the CR covers both 02a and 02c. Since 02a is signed off and its design is complete, this table is no longer gated solely on the 02c confirm — it can be raised as a small Spec 01 CR ticket (like ASCA-34) as part of confirming the 02a→Spec 01 extensions. Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
 - **CIP-refund split home:** still **open** — extend 02b / new sub-spec / ASCI undecided. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio); the home decision is on hold pending the scope decision.
 
 ### Immediate next actions
-1. ✅ 02a **design.md** generated + committed (2026-10-12, ASCA-39). **Now:** confirm the three 02a→Spec 01 extensions (run status + `finalizeWithErrors()`, `log_alloc_bundle_outcomes` table, reference-price `effective_from` fix) with PM/engineering, then generate 02a **tasks.md** (run manually). Do NOT regenerate requirements.md — signed off.
-2. **Ingest Kuroda-san's 2026-10-13 02c feedback** (fresh session) → update the 02c spec + `ASCA-PROPOSAL-20261008` → send back / confirm.
-3. **ASCA-34 is merged + Done.** Remaining is admin only: optionally close Spec 01 **G3 (ASCA-18)** in JIRA (Lead left it open for now).
-4. Raise the `log_alloc_bundle_outcomes` Spec 01 CR ticket — needed by **both 02a (design-complete) and 02c**. Then promote 02c once the 10-13 feedback is resolved + confirmed.
+1. **Merge the two Spec 01 CR tickets — the current critical-path blocker:** [ASCA-66](https://bizmates.atlassian.net/browse/ASCA-66) (`log_alloc_bundle_outcomes` table, ls-db) + [ASCA-67](https://bizmates.atlassian.net/browse/ASCA-67) (reference-price `effective_from` → 2026-12-01, accounting repo). **Both block 02a and 02b completion.**
+2. **Devs pick up 02a (ASCA-40) and 02b (ASCA-47)** — requirements/design/tasks all done; start sessions per `docs/workspace-setup.md` (ingest context → open `tasks.md` → task execution). 02b depends on 02a — coordinate order. Team Slack announcement + the ASCA-66/67 heads-up already sent (2026-10-13).
+3. **02c:** Round-3 (REF-CAP-14) folded in → send revised 02c back to Kuroda-san for final sign-off → promote to the code repo. Epic + stories created ([ASCA-52](https://bizmates.atlassian.net/browse/ASCA-52), stories ASCA-53–58).
+4. **Find a home for the run-status/view change** (completed-with-errors as active Final in `v_alloc_prorations_active`/V-5/supersede, REF-CAP-14 #1) — fold into the 02a Coding story or a small follow-up ticket; reconcile with ASCA-34 (same view).
+5. **02d:** epic + stories created ([ASCA-59](https://bizmates.atlassian.net/browse/ASCA-59), stories ASCA-60–65), decommission scope, low priority — schedule after 02a/02b/02c.
+6. **ASCA-34 merged + Done.** Admin only: optionally close Spec 01 **G3 (ASCA-18)** (Lead left it open).
 
 ### Key source docs (Spec 02)
 - **REF-CAP-12** — G1 round 1 feedback
 - **REF-CAP-13** — G1 round 2 feedback
+- **REF-CAP-14** — 02c round 3 feedback (2026-10-13): completed-with-errors active in view, CIP no outcome row, exception-row columns; approved the Spec 01 CR
 - **REF-CIP-07** — CIP refund-type detection
 
 ---
@@ -137,14 +141,18 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 ### Spec 02 (CAP Integration) epics + stories
 
-Created in JIRA as **two epics, each with 6 stories** (ASCA-38–50), currently **unassigned**. Flat per-sub-spec gate sets matching the Spec 01 precedent.
+All four Spec 02 epics now created, each with the standard 6-story set, currently **unassigned**. Flat per-sub-spec gate sets matching the Spec 01 precedent.
 
-| Key | Type | Parent | Summary |
+| Key | Type | Stories | Summary |
 |---|---|---|---|
-| [ASCA-37](https://bizmates.atlassian.net/browse/ASCA-37) | Epic | — | [Spec 02a] — CAP Core Injection (6 stories) |
-| [ASCA-44](https://bizmates.atlassian.net/browse/ASCA-44) | Epic | — | [Spec 02b] — Refund Allocation (6 stories) |
+| [ASCA-37](https://bizmates.atlassian.net/browse/ASCA-37) | Epic | ASCA-38–43 | [Spec 02a] — CAP Core Injection |
+| [ASCA-44](https://bizmates.atlassian.net/browse/ASCA-44) | Epic | ASCA-45–50 | [Spec 02b] — Refund Allocation |
+| [ASCA-52](https://bizmates.atlassian.net/browse/ASCA-52) | Epic | ASCA-53–58 | [Spec 02c] — AllocationDetail CSV (created 2026-10-13) |
+| [ASCA-59](https://bizmates.atlassian.net/browse/ASCA-59) | Epic | ASCA-60–65 | [Spec 02d] — DataCorrection Decommission (created 2026-10-13) |
 
-> Stories ASCA-38–50 sit under ASCA-37 / ASCA-44 (Requirements/G1, Architecture/G2, Coding ×N, Code Review/G3, QA, Dev test — the Spec 01 gate shape). 02c and 02d epics are **not yet created** — 02c pends Kuroda-san's 2nd review; 02d (decommission) is low priority.
+> Each epic carries the standard 6 stories (Requirements/G1, Architecture/G2, Coding, Code Review/G3, Dev/Manual Testing, QA). The Coding stories are the dev pick-up points: **ASCA-40** (02a), **ASCA-47** (02b). 02c awaits final G1 sign-off; 02d is decommission scope, low priority.
+>
+> **Spec 01 change-request (sub-tasks under ASCA-18, like ASCA-34):** [ASCA-66](https://bizmates.atlassian.net/browse/ASCA-66) `log_alloc_bundle_outcomes` table (ls-db) · [ASCA-67](https://bizmates.atlassian.net/browse/ASCA-67) reference-price `effective_from` → 2026-12-01 (accounting repo). Both block 02a/02b. Note: ASCA-51 is an unrelated ticket (not ASCA Spec 02).
 
 ---
 
