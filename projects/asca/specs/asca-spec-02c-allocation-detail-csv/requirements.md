@@ -2,9 +2,9 @@
 
 **ASCA Spec 02c — AllocationDetail CSV**
 
-> **Staging note:** Dev-context draft, **submitted for Kuroda-san's 2nd review**. Round-1 (REF-CAP-12 #4 linking columns) and Round-2 (REF-CAP-13 §3 + the 02c schema-decision thread) feedback are folded in. The skipped/failed-row source is the new **`log_alloc_bundle_outcomes`** table (Option A — approved by Kuroda-san 2026-10-05, bundle-keyed; see `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`). On sign-off it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02c-allocation-detail-csv/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks until sign-off.
+> **Staging note:** Dev-context draft, **revised against Kuroda-san's Round-3 review (REF-CAP-14, 2026-10-13)**. Round-1 (REF-CAP-12 #4 linking columns), Round-2 (REF-CAP-13 §3 + the 02c schema-decision thread), and Round-3 (REF-CAP-14) feedback are folded in. Round-3 resolved three items: (1) completed-with-errors must be an **active Final** in the Spec 01 view / V-5 rule / supersede step — stated here (Req 2.2) and owned by the Spec 01 run-status extension; (2) **CIP writes no outcome row and never appears in the CSV** — the engine filters CIP before bundle formation (confirmed in `BundleDetectionService`), so no CIP V-3 skip is produced (see Req 2.2 note); (3) exception-row columns プロダクトタイプ / プロダクトID / 部署ID / 契約種類 are filled from the same daily-rate log row already read for 元金額 (Req 2.12). The skipped/failed-row source is the new **`log_alloc_bundle_outcomes`** table (Option A — approved by Kuroda-san 2026-10-08, bundle-keyed; see `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`). On sign-off it is promoted to `accounting_related_system_for_freee/.kiro/specs/asca-spec-02c-allocation-detail-csv/requirements.md` (with a valid `.config.kiro`), which unlocks the spec UI's "Continue to Design". Do not begin design/tasks until sign-off.
 >
-> **Depends on a pending Spec 01 change-request:** the `log_alloc_bundle_outcomes` table (ls-db) must be created before 02c can be implemented. It is raised as a small additive change-request (like ASCA-34) after Kuroda-san's 2nd review.
+> **Depends on a pending Spec 01 change-request (approved 2026-10-13):** the `log_alloc_bundle_outcomes` table (ls-db) **and** the run-status extension — `COMPLETED_WITH_ERRORS` plus making `v_alloc_prorations_active` / the V-5 active-Final rule / the supersede step treat completed-with-errors as active (REF-CAP-14 #1) — must be in place before 02c can be implemented. Raised as a small additive change-request (like ASCA-34, which touches the same view); covers both 02a and 02c.
 
 ## Introduction
 
@@ -28,7 +28,7 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 - **02a (CAP Core Injection) merged** — the CSV reads the `log_alloc_*` rows a completed allocation run produced; without injection there is nothing to report. 02a also writes the per-bundle skip/fail rows (02a Req 4.8) this CSV reads for exception rows.
 - **Spec 01 Foundation merged** — `log_alloc_prorations` / `log_alloc_calculation_runs` (and the `hasCompletedRun` check), plus `LogAllocProration` reads.
-- **`log_alloc_bundle_outcomes` table (pending Spec 01 change-request)** — the CSV reads skipped/failed exception rows from it. It must be created (ls-db migration + model) before 02c is implemented. Approved (Option A, 2026-10-05); ticket raised after Kuroda-san's 2nd review. See `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
+- **`log_alloc_bundle_outcomes` table (pending Spec 01 change-request)** — the CSV reads skipped/failed exception rows from it. It must be created (ls-db migration + model) before 02c is implemented. Approved (Option A, 2026-10-08); ticket raised after Kuroda-san's 2nd review. See `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
 - **DEVOPS-6415 present in the ASCA base** — the CSV is hooked into `$fileNameList` on the path handled by the extracted `ArchiverService` / `MailerService`. ✅ already merged into `feature/ASCA/ASCA-master` (2026-10-01).
 
 ### Out of scope (explicit)
@@ -70,6 +70,8 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 1. THE system SHALL provide `RevenueAllocationCsvService::createAllocationDetailFile(string $targetYm, bool $preFlg = false): array` returning `[$fileName, $displayName]`, in the `App\Libs\RevenueAllocation` namespace (NOT `CommonUtil`).
 2. THE service SHALL read from **two sources, for the same run** (REF-CAP-13 02c review point 4): (a) **allocated** rows from `log_alloc_prorations` (joined for charge/plan context), or `v_alloc_prorations_active` for the active Final run; and (b) **skipped/failed** rows from `log_alloc_bundle_outcomes` for that same run. Both reads are scoped to the same run so allocated and exception rows are consistent (the active Final run, or the Pre run).
+    - **(Completed-with-errors is active — REF-CAP-14 #1)** Because `v_alloc_prorations_active` and the V-5 active-Final rule select the active Final run, they MUST treat a run that finished **completed-with-errors** (02a Req 4 — the per-pair failure state) as an **active Final**, exactly like a plain Completed run. Otherwise a Final that finishes completed-with-errors drops out of the view and the CSV would show the exception rows but **no allocated rows** (and a re-run finishing completed-with-errors could let the view return an earlier Completed run's rows). This view / V-5 / supersede-step behaviour is **owned by the Spec 01 run-status extension** (the same change-request that adds `COMPLETED_WITH_ERRORS` and `log_alloc_bundle_outcomes`, approved 2026-10-13) and overlaps **ASCA-34** (same view); 02c depends on it (see Dependencies) and does not redefine the view itself.
+    - **(CIP produces no exception rows — REF-CAP-14 #2)** The engine filters CIP (plans 1028–1032) out **before** bundle formation — `BundleDetectionService` restricts candidates to `CoachingAndAppPlanEnum` (CAP 1016–1027) by `plan_id`, so a CIP charge (even one carrying the shared App product 10022) never becomes a candidate, is never grouped, and therefore produces **no V-3 skip and no `log_alloc_bundle_outcomes` row**. Consequently CIP never appears in this CSV — neither as an allocated row nor as an exception row. (CIP is out of the engine by design, REF-CIP-05.) 02a Req 2.5 is corrected to state this explicitly; this CSV lists only CAP outcome rows (see Req 5.1).
 3. THE system SHALL emit **one row per known charge**, for both allocated and exception bundles, against the same 18-column layout:
     - **Allocated:** one row per `log_alloc_prorations` row (i.e. per allocated product — coaching row, app row).
     - **Exception (skipped/failed):** one row **per known charge of the bundle** from the `log_alloc_bundle_outcomes` row — a row for `coaching_charge_id`, a row for `app_charge_id`, and/or a row for `refund_charge_id` where each is present. (Per Kuroda-san 2026-10-08 — this makes チャージID / プロダクトID well-defined for exception rows, matching the one-row-per-charge granularity of allocated rows. バンドルID is left blank for exception rows.)
@@ -83,16 +85,14 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 11. THE system SHALL NOT introduce a new CSV-writing mechanism or a new storage location.
 12. **(Exception-row content — REF-CAP-13 02c review point 4; one-row-per-charge per Kuroda-san 2026-10-08)** Each **exception row** represents **one known charge** of a skipped/failed bundle (coaching, app, or refund — Req 2.3), using the same 18 columns. Column population:
     - **コンテンツ / 対象年月 / プロジェクト** — from the outcome row (`bundle_type` → label).
-    - **生徒ID / 部署ID / 発注番号 / プランID** — from the outcome row's bundle-key columns (`student_id` / `department_id` where available / `order_no` / `plan_id`).
+    - **生徒ID / 発注番号 / プランID** — from the outcome row's bundle-key columns (`student_id` / `order_no` / `plan_id`).
     - **チャージID** — the specific charge this row represents (`coaching_charge_id`, `app_charge_id`, or `refund_charge_id`).
-    - **プロダクトID** — the product for that charge (10005/10015 for coaching, 10022 for app) where known; blank if it cannot be determined.
     - **バンドルID** — **blank** (no `log_alloc_groups` row is created for a skipped/failed bundle).
-    - **プロダクトタイプ** — blank (not resolved; the bundle was not allocated).
     - **参照価格(税抜) / 配分比率** — blank (no allocation was computed).
-    - **元金額(税込)** — read from the **daily-rate log** for that charge (the un-split N still sitting there), so Accounting can see the amount left un-allocated.
     - **配分後金額(税込)** — **blank** (no allocation happened).
     - **行種別** — `通常` / `返金` from the outcome row's `row_kind` / `refund_charge_id`.
     - **ステータス** — `スキップ：<理由>` or `失敗` from the outcome row's `outcome` + `reason_code`.
+    - **元金額(税込) / 部署ID / プロダクトID / プロダクトタイプ / 契約種類 — all five from the same daily-rate log row (REF-CAP-14 #3).** The daily-rate log row read for 元金額 (the un-split N still sitting there, so Accounting can see the amount left un-allocated) also carries `department_id`, `product_id`, `product_type`, and `contract_type`. THE system SHALL populate 部署ID (department_id), プロダクトID (product_id), プロダクトタイプ (product_type), and 契約種類 (contract_type — rendered via the Req 2.8 label map) from that same row, rather than leaving them blank. Only columns with no source on the daily-rate row (バンドルID, 参照価格, 配分比率, 配分後金額) stay blank.
 
 ### Requirement 3: Attach to the existing zip and email (guarded)
 
@@ -126,7 +126,7 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 
 #### Acceptance Criteria
 
-1. THE AllocationDetail CSV SHALL contain only rows produced by the allocation engine for the run — allocated rows from `log_alloc_prorations` and skipped/failed rows from `log_alloc_bundle_outcomes` (CAP) — and SHALL NOT add rows to or alter any existing CSV.
+1. THE AllocationDetail CSV SHALL contain only rows produced by the allocation engine for the run — allocated rows from `log_alloc_prorations` and skipped/failed rows from `log_alloc_bundle_outcomes` (CAP only) — and SHALL NOT add rows to or alter any existing CSV. **CIP (plans 1028–1032) SHALL NOT appear in any form** — the engine filters CIP before bundle formation, so it produces neither allocated nor exception rows (REF-CAP-14 #2; see Req 2.2).
 2. THE system SHALL NOT change ZipanUtil's `addZipanData()` behaviour; allocation contributes nothing to the Zipan path.
 3. WHERE the month produced allocation rows for multiple `bundle_type`s, THE プロジェクト column SHALL distinguish them; in Foundation/CAP scope this is `cap` only.
 
@@ -140,6 +140,9 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 | Source | **Two, same run:** allocated rows from `log_alloc_prorations` / `v_alloc_prorations_active`; skipped/failed rows from `log_alloc_bundle_outcomes` | §10; schema ref; REF-CAP-13 02c review |
 | Format | `{YYYYMM}_10_AllocationDetail({execDate}).csv`, UTF-8 + BOM, `app/public/` | CSV steering |
 | Guard | **Per run type:** emit only if `hasCompletedRun($targetYm, $runType)` for the matching run (Final for the Final email, Pre for the Pre email); **completed-with-errors counts as completed**; else omit, zip/email unaffected | §10; REF-CAP-13 §3 + 02c review |
+| Active = completed-with-errors | `v_alloc_prorations_active` / V-5 active-Final rule / supersede step treat completed-with-errors as an active Final (owned by the Spec 01 run-status extension; overlaps ASCA-34) | REF-CAP-14 #1 |
+| CIP exclusion | Engine filters CIP before bundle formation → no CIP V-3 skip, no outcome row, CIP never in the CSV; 02a Req 2.5 corrected | REF-CAP-14 #2 (confirmed in `BundleDetectionService`) |
+| Exception-row fill | 部署ID / プロダクトID / プロダクトタイプ / 契約種類 filled from the same daily-rate log row read for 元金額 | REF-CAP-14 #3 |
 | Metabase | Separate post-deployment query — not code here | O-6 resolution |
 
 ## Open Items (for the approver)
@@ -149,3 +152,7 @@ Since the ASCM-prep refactor (DEVOPS-6415), zip creation and email dispatch are 
 | ~~O-G1-4~~ ✅ | **RESOLVED (REF-CAP-13 §3).** Column set updated to 18 columns (charge_id, bundle/group id, row_kind). Kuroda-san confirmed the Japanese labels (チャージID / バンドルID / 行種別 (通常 / 返金)) are fine as drafted — no separate check with Accounting needed. Tax-basis labels (参照価格(税抜) / 元金額(税込) / 配分後金額(税込)) and the contract-type label map added per the same feedback. |
 | O-C2 | **Sequence number `10`** in the filename — confirm `10` does not collide with an existing CSV sequence in the monthly set. | Verify against the current file list at design time (non-blocking for sign-off). |
 | ~~O-C3~~ ✅ | **RESOLVED (REF-CAP-13 §3).** Agreed — the Pre file reflects the Pre run, consistent with the other 速報版 CSVs. `$preFlg` selects the preliminary context (Req 3.5). |
+| ~~R3-1~~ ✅ | **RESOLVED (REF-CAP-14 #1).** Completed-with-errors must be an active Final in `v_alloc_prorations_active` / V-5 / supersede. Folded into Req 2.2 + Dependencies; **owned by the Spec 01 run-status change-request** (overlaps ASCA-34, same view). 02c references it, does not redefine the view. |
+| ~~R3-2~~ ✅ | **RESOLVED (REF-CAP-14 #2).** Engine filters CIP before bundle formation (verified in `BundleDetectionService` — CAP `plan_id` filter, shared App 10022 cannot drag CIP in), so CIP produces no outcome row and never appears. Kuroda-san's preferred behaviour already holds; 02a Req 2.5 corrected to say so. Folded into Req 2.2 + 5.1. |
+| ~~R3-3~~ ✅ | **RESOLVED (REF-CAP-14 #3).** Exception-row 部署ID / プロダクトID / プロダクトタイプ / 契約種類 filled from the same daily-rate log row read for 元金額. Folded into Req 2.12. |
+| ~~R3-minor~~ ✅ | **RESOLVED (REF-CAP-14 minor).** Staging note + Dependencies corrected from "approved 2026-10-05" → **2026-10-08** (the outcomes-table approval date). |
