@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | JIRA Ticket Draft |
-| **Date** | 2026-09-28 (Created) · 2026-10-13 (Updated — Round-3 02c feedback, real JIRA keys, 02d repurposed to decommission) |
+| **Date** | 2026-09-28 (Created) · 2026-10-13 (Updated — Round-3 02c feedback, real JIRA keys, 02d repurposed to decommission) · 2026-10-13 (02c signed off + promoted (REF-CAP-15); Spec 01 CR raised as ASCA-66/67/68) |
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
 | **Status** | Partially created — **02a/02b epics + stories exist in JIRA (ASCA-37–50); 02c/02d epics NOT yet created** (drafted below) |
@@ -19,7 +19,7 @@
 
 Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-specs. Per the dev workflow (**1 Epic = 1 Spec**), each sub-spec gets **its own epic** with the standard 6-story set.
 
-**All four Spec 02 epics + their stories now exist in JIRA.** 02a (ASCA-37) and 02b (ASCA-44) were created earlier; **02c (ASCA-52) and 02d (ASCA-59) were created on 2026-10-13** from this doc. The **Spec 01 change-request** (`log_alloc_bundle_outcomes` + run-status + `effective_from`) is the only remaining Spec-02-adjacent ticket not yet raised.
+**All four Spec 02 epics + their stories now exist in JIRA.** 02a (ASCA-37) and 02b (ASCA-44) were created earlier; **02c (ASCA-52) and 02d (ASCA-59) were created on 2026-10-13** from this doc. The **Spec 01 change-request** has also been raised — **ASCA-66 / ASCA-67 / ASCA-68** under ASCA-18 (`log_alloc_bundle_outcomes` + `effective_from` + run-status/view). **02c is signed off (REF-CAP-15, 2026-10-13) and promoted to the code repo.**
 
 ## Current status (as of 2026-10-13)
 
@@ -27,7 +27,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 |---|---|---|---|---|
 | **02a** CAP Core Injection | **ASCA-37** ✅ created | ASCA-38–43 ✅ created | ✅ **signed off** (2026-10-05) | Requirements promoted to code repo (ASCA-38 branch). **design.md generated + committed 2026-10-12** (ASCA-39, not yet pushed). Design surfaced 3 Spec 01 extensions — **Kuroda-san approved the change-request 2026-10-13**; tasks.md next (run manually). |
 | **02b** Refund Allocation | **ASCA-44** ✅ created | ASCA-45–50 ✅ created | ✅ **signed off** (2026-10-05) | Awaiting its design slot (W8). CIP-refund home still open (REF-CIP-07 identification resolved; home TBD). |
-| **02c** AllocationDetail CSV | **ASCA-52** ✅ created 2026-10-13 | ASCA-53–58 ✅ created | ⏳ **Round-3 feedback 2026-10-13** (REF-CAP-14) folded into requirements — awaiting Kuroda-san sign-off | Epic + stories created. Requirements revised against Round-3. G1 pending. |
+| **02c** AllocationDetail CSV | **ASCA-52** ✅ created 2026-10-13 | ASCA-53–58 ✅ created | ✅ **signed off 2026-10-13** (REF-CAP-15) | Epic + stories created. Requirements signed off + **promoted to code repo**. Next: G2 (design/tasks). |
 | **02d** DataCorrection **Decommission** | **ASCA-59** ✅ created 2026-10-13 | ASCA-60–65 ✅ created | ✅ **confirmed repurposed** (Kuroda-san 2026-10-05) | **Repurposed from injection → decommission `DataCorrectionCommand`.** Low priority. Epic + stories created. |
 
 > **All Spec 02 stories (ASCA-37–65) are currently "To Do" / Unassigned** in JIRA (02a/02b confirmed 2026-10-13; 02c/02d created 2026-10-13). Assignees in the tables below are the intended owners, not yet set in JIRA.
@@ -88,7 +88,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 
 ## Epic 3 — [Spec 02c] — AllocationDetail CSV — ✅ ASCA-52 (created 2026-10-13)
 
-> **Created 2026-10-13.** Epic + 6 stories created in dependency order. Still awaiting G1 sign-off (Round-3 feedback REF-CAP-14 folded into the requirements). All stories "To Do" / Unassigned (assignees below are intended owners, not yet set in JIRA).
+> **Created 2026-10-13.** Epic + 6 stories created in dependency order. ✅ **G1 signed off 2026-10-13 (REF-CAP-15) + requirements promoted to the code repo.** Next phase: G2 (design + tasks) via the spec UI. All stories "To Do" / Unassigned (assignees below are intended owners, not yet set in JIRA).
 
 **Epic:** [ASCA-52](https://bizmates.atlassian.net/browse/ASCA-52) · **Requirements draft:** `projects/asca/specs/asca-spec-02c-allocation-detail-csv/requirements.md`
 **Scope:** `allocationDetailFile` config in `config/const.php` + `RevenueAllocationCsvService::createAllocationDetailFile($targetYm, $preFlg)`; add one file to `$fileNameList` via the extracted `ArchiverService`/`MailerService`, guarded per-run-type by `hasCompletedRun()`. 18-column breakdown reading **two sources, same run** — allocated rows from `log_alloc_prorations`/`v_alloc_prorations_active`, skipped/failed rows from `log_alloc_bundle_outcomes`. No new email/mail template/command. Reporting only.
@@ -134,25 +134,25 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 
 ---
 
-## Spec 01 change-request — `log_alloc_bundle_outcomes` + run-status extension + `effective_from` (✅ approved 2026-10-13)
+## Spec 01 change-request — `log_alloc_bundle_outcomes` + run-status extension + `effective_from` (✅ approved + ticketed 2026-10-13)
 
-**Not a Spec 02 epic** — a small additive change-request against the **merged** Spec 01 Foundation (same motion as ASCA-34). Needed by **both 02a and 02c**. **Approved by Kuroda-san 2026-10-13.**
+**Not a Spec 02 epic** — a small additive change-request against the **merged** Spec 01 Foundation (same motion as ASCA-34). Needed by **both 02a and 02c**. **Approved by Kuroda-san 2026-10-13; raised as ASCA-66 / ASCA-67 / ASCA-68 under ASCA-18.**
 
-Three parts:
-1. **`log_alloc_bundle_outcomes` table** (ls-db) — new migration + model + structure test, `bizmates_mysql`, bundle-keyed (Option A). Records one row per skipped (V-3) / failed (pair-level) bundle with its reason. Money table `log_alloc_prorations` stays money-only. Schema: `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md` §7.
-2. **Run-status extension** (accounting) — add `COMPLETED_WITH_ERRORS` to `RunStatus` + `RunLifecycleService::finalizeWithErrors()`. **Plus (REF-CAP-14 #1):** `v_alloc_prorations_active`, the V-5 active-Final rule, and the supersede step must treat completed-with-errors as an active Final. The view change overlaps **ASCA-34** (same view) — handle together.
-3. **Reference-price `effective_from` → 2026-12-01** (ls-db seeder + Spec 01 refs) — so the first close (`target_ym = 2026-12`) resolves a price instead of leaving December CAP revenue 100% on Coaching.
+Three parts, raised as **three sub-tasks under ASCA-18** (same motion as ASCA-34), all created 2026-10-13:
+1. **[ASCA-66](https://bizmates.atlassian.net/browse/ASCA-66) — `log_alloc_bundle_outcomes` table** (ls-db) — new migration + structure test, `bizmates_mysql`, bundle-keyed (Option A). One row per skipped (V-3) / failed (pair-level) bundle with its reason. Money table `log_alloc_prorations` stays money-only. Schema: `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md` §7.
+2. **[ASCA-68](https://bizmates.atlassian.net/browse/ASCA-68) — Run-status extension** — add `COMPLETED_WITH_ERRORS` to `RunStatus` + `RunLifecycleService::finalizeWithErrors()` (accounting), **plus (REF-CAP-14 #1)** `v_alloc_prorations_active` / V-5 active-Final rule / supersede step treating completed-with-errors as an active Final (ls-db view). Overlaps **ASCA-34** (same view) — handle together.
+3. **[ASCA-67](https://bizmates.atlassian.net/browse/ASCA-67) — Reference-price `effective_from` → 2026-12-01** — ⚠️ in the **accounting repo** `ReferencePriceSeeder.php` (NOT ls-db — steering says ls-db; doc/code discrepancy flagged in the ticket), so the first close (`target_ym = 2026-12`) resolves a price instead of leaving December CAP revenue 100% on Coaching.
 
-> **Ticketing:** likely 1–2 tickets (ls-db migration/seeder + accounting enum/view/service), modelled on ASCA-34 (a sub-task under the Spec 01 Code Review story ASCA-18, or a fresh small story). Decide shape at creation. Raise after the 02c revision is sent back and the view-overlap with ASCA-34 is reconciled.
+> **All three created 2026-10-13 as sub-tasks under ASCA-18.** All three block 02a/02b completion.
 
 ---
 
 ## Creation checklist
 
-- [x] **02c:** epic + 6 stories created 2026-10-13 — ASCA-52 (epic), ASCA-53–58 (stories). Round-3 (REF-CAP-14) items folded into the requirements; G1 sign-off still pending.
+- [x] **02c:** epic + 6 stories created 2026-10-13 — ASCA-52 (epic), ASCA-53–58 (stories). ✅ **G1 signed off 2026-10-13 (REF-CAP-15) + promoted to the code repo.**
 - [x] **02d:** epic + 6 stories created 2026-10-13 — ASCA-59 (epic), ASCA-60–65 (stories). Scope = decommission.
 - [x] Each epic linked to its stories via the `parent` field (matches the ASCA-37/44 pattern).
-- [ ] **Spec 01 CR:** raise the `log_alloc_bundle_outcomes` + run-status (incl. completed-with-errors-is-active in the view) + `effective_from` ticket(s) (ls-db + accounting), reconciling the view change with ASCA-34. **Still outstanding.**
+- [x] **Spec 01 CR:** raised as ASCA-66 (`log_alloc_bundle_outcomes`, ls-db) + ASCA-67 (`effective_from`, accounting) + ASCA-68 (run-status + view-active, accounting + ls-db view) under ASCA-18. All three block 02a/02b.
 - [ ] Set assignees on the created stories (currently all Unassigned).
 - [ ] Record the created keys into the master timeline (`docs/asc-projects-master-timeline.md`).
 - [ ] Consider whether 02d's 6-story set should be trimmed for such a small change (close unused stories rather than leave them open).
