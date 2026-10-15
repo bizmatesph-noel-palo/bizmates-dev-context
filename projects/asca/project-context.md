@@ -112,6 +112,27 @@ Preparatory maintenance work billed under DEVOPS, linked to ASCA via ASCA-7.
 
 ---
 
+## ZPR — Zipan Price Revision (DEVOPS-6596)
+
+Zipan accounting change, billed under DEVOPS (like the ASCM refactor — no ASC project). Shipped **together with DEVOPS-6415** (stacked + co-tested on DEV04, released to prod 2026-09-28).
+
+- **Epic:** [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596)
+- **Developer:** Cristoff (Lead: Noel)
+- **Hard deadline (met):** released before **Oct 1, 2026** — the Oct 1 PRE batch would otherwise mishandle the new plan's charges.
+
+### Scope (accounting system only)
+
+| Task | Why |
+|---|---|
+| Add the new Zipan 20-lesson plan (`product_id = 38`) to `ZipanMonthlyPlanEnum` (+ unit test) | Route the new plan through the existing monthly-rate pipeline, not the daily table |
+
+- **No computation change** (Wu-san via Harvey-san) — Zipan-only, a one-line enum add. Upstream ZPR is already in production.
+- **Post-release cleanup:** 8 stale `product_id=38` daily rows removed by Yijun-san (2026-09-30) before the 10/01 PRE; 10/01 PRE verified (Noel) that product 38 now lands in the monthly-rate table, not daily. Runbook: `projects/asca/technical-notes/investigation/20260928-zpr-daily-table-cleanup/REPORT-00-zpr-daily-table-cleanup.md`.
+
+> **Relationship to ASCA:** independent of allocation — ZPR only adds a Zipan monthly-plan enum entry. It shares the DEV04 environment and the combined 6415+6596 release, which is why it is tracked here alongside the ASCM refactor.
+
+---
+
 ## What ASCA Builds
 
 1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract ArchiverService + MailerService
