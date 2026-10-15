@@ -7,7 +7,7 @@ This directory holds **dev-context spec drafts** for ASCA — authored here whil
 | Spec | Phase | Location (source of truth) |
 |---|---|---|
 | **Spec 01 — Foundation** | Promoted, in execution | Code repos, NOT here: `accounting_related_system_for_freee/.kiro/specs/asca-spec-01-foundation/` (engine) + `ls-database-migrations/.kiro/specs/asca-spec-01-database-migration/` (schema) |
-| **Spec 02 — CAP Integration** | 4 sub-specs (02a–02d). 02a/02b Round-3 submitted for sign-off; 02c pending a schema decision; **02d repurposed to decommission `DataCorrectionCommand`** (confirmed by Kuroda-san 2026-10-05, low priority) | Here (dev-context), pending G1 sign-off + promotion — see below |
+| **Spec 02 — CAP Integration** | 4 sub-specs (02a–02d), **all G1 signed off + promoted to the code repo**. 02a coding ✅ MERGED (ASCA-40); 02b coding in progress (ASCA-47, Cristoff); 02c coding in progress (ASCA-54, Throy); 02d promoted (decommission scope, design/tasks next). Spec 01 CR ASCA-66/67/68 all merged. | Promoted — source of truth now in `accounting_related_system_for_freee/.kiro/specs/` |
 
 > Spec 01 is past its gates and coded from the code-repo copies; it is intentionally **not** duplicated here (its source of truth travels with the code).
 

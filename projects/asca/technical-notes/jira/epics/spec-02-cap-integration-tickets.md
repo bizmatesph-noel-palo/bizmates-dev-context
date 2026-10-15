@@ -26,7 +26,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 | Sub-spec | Epic | Stories | G1 (Kuroda-san) | Where it stands |
 |---|---|---|---|---|
 | **02a** CAP Core Injection | **ASCA-37** ✅ created | ASCA-38–43 ✅ created | ✅ **signed off** (2026-10-05) | Requirements promoted to code repo (ASCA-38 branch). **design.md generated + committed 2026-10-12** (ASCA-39, not yet pushed). Design surfaced 3 Spec 01 extensions — **Kuroda-san approved the change-request 2026-10-13**; tasks.md next (run manually). |
-| **02b** Refund Allocation | **ASCA-44** ✅ created | ASCA-45–50 ✅ created | ✅ **signed off** (2026-10-05) | Awaiting its design slot (W8). CIP-refund home still open (REF-CIP-07 identification resolved; home TBD). |
+| **02b** Refund Allocation | **ASCA-44** ✅ created | ASCA-45–50 ✅ created | ✅ **signed off** (2026-10-05) | req+design+tasks complete; **coding in progress (ASCA-47, Cristoff)**. CIP-refund home still open (REF-CIP-07 identification resolved; home TBD). |
 | **02c** AllocationDetail CSV | **ASCA-52** ✅ created 2026-10-13 | ASCA-53–58 ✅ created | ✅ **signed off 2026-10-13** (REF-CAP-15) | Epic + stories created. Requirements signed off + **promoted to code repo**. Next: G2 (design/tasks). |
 | **02d** DataCorrection **Decommission** | **ASCA-59** ✅ created 2026-10-13 | ASCA-60–65 ✅ created | ✅ **confirmed repurposed** (Kuroda-san 2026-10-05) | **Repurposed from injection → decommission `DataCorrectionCommand`.** Low priority. Epic + stories created. |
 

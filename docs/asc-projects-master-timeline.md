@@ -36,14 +36,14 @@
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
-### Snapshot — 2026-10-15 (critical path + blockers) [git-verified]
+### Snapshot — 2026-10-15 PM (critical path + blockers) [git-verified]
 
 - **Spec 01 Foundation:** ✅ code-complete + merged. ASCA-34 (G3 fix) merged + Done. Spec 01 G3 (ASCA-18) admin-close only.
 - **Spec 02 G1:** 02a/02b/02d signed off (2026-10-05); **02c ✅ signed off 2026-10-13 (REF-CAP-15) + promoted to the code repo** — next is G2 (design/tasks).
-- **02a:** ✅ **coding MERGED** (ASCA-40, PR #307). **02b:** req+design+tasks complete, coding in progress (ASCA-47, unblocked). **02c:** req (signed off, promoted) + design + tasks complete — ready for coding, gated on ASCA-68 view half. **02d:** promoted (G1 approved); design/tasks next.
+- **02a:** ✅ **coding MERGED** (ASCA-40, PR #307). **02b:** req+design+tasks complete, **coding in progress (ASCA-47, Cristoff)**. **02c:** req+design+tasks complete, **coding in progress (ASCA-54, Throy)** — ASCA-68 blocker cleared. **02d:** promoted (G1 approved); design/tasks next.
 - **Epics:** all four Spec 02 epics exist — 02a ASCA-37, 02b ASCA-44, **02c ASCA-52, 02d ASCA-59** (02c/02d created 2026-10-13). 02d = decommission, low priority.
-- **🔴 Remaining blocker (for 02c coding):** **[ASCA-68](https://bizmates.atlassian.net/browse/ASCA-68)** ls-db view half — `v_alloc_prorations_active` still filters `status = 1` only (git-verified `view-table-migration.sql` lines 475/486); must widen to include COMPLETED_WITH_ERRORS. The accounting half (`scopeActiveFinal`) already shipped with 02a. **ASCA-66 / ASCA-67 are MERGED** (git-verified PR #976 / #302).
-- **Sequence:** ASCA-66/67 ✅ → **02a (ASCA-40) ✅ MERGED (PR #307)** → 02b (ASCA-47, unblocked) + ASCA-68 ls-db view → 02c coding → 02d. 02a code (`AllocationInjector`, `RunStatus::COMPLETED_WITH_ERRORS`) confirmed in ASCA-master.
+- **✅ No open blockers.** All three Spec 01 CR tickets MERGED (git-verified): ASCA-66 (ls-db outcomes table, PR #976), ASCA-67 (effective_from, PR #302), ASCA-68 (ls-db view `status IN (2,4)` + accounting `scopeActiveFinal`, PR #985). 02a Coding MERGED (PR #307).
+- **Sequence:** ASCA-66/67/68 ✅ + 02a (ASCA-40) ✅ MERGED → **02b coding (ASCA-47, Cristoff) + 02c coding (ASCA-54, Throy) in flight** → 02d (promoted; design/tasks next). No blockers remain.
 - **Open:** CIP-refund home undecided (REF-CIP-07); 02a CIP wording fix (doc-only, Req 2.2/2.5 + design.md) to ride the ASCA-40 Coding PR; 02c G2 (design/tasks) generation.
 - **⚠️ Lead leave 2026-11-11 → 11-23** — target was 02a–02d dev-complete + through G3 before Nov 11; near-term sequencing is tight against it. Name a G2/G3 delegate for anything landing during the leave.
 
@@ -57,7 +57,7 @@
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
-| ASCA Spec 02 shape | ✅ **Split confirmed (2026-09-23)** into 4 flat sub-specs (02a–02d). At G1 (2026-09-28, REF-CAP-12 §0) Kuroda-san **dropped 02d** (DataCorrection fix batch outdated); **Lead decision 2026-10-01 to RETAIN 02d** (DEVOPS-6415-style drift risk), **pending re-confirmation with Kuroda-san** → Spec 02 back to **4 sub-specs (02a–02d)**. Requirements for all four drafted in `projects/asca/specs/`. ⏳ **G1 returned with 4 items to resolve before sign-off:** 02b CAP refund→bundle pairing (**blocker**), 02a mid-run failure-state (#2) + re-run vs V-7 (#3), 02c linking columns / `charge_id` + bundle-id + row-kind (#4). **CIP-refund split (REF-CIP-06)** is real but its home (extend 02b / new sub-spec / ASCI) is **on hold** pending Kuroda-san's CIP refund-type-identification answer. JIRA: **4 separate epics** planned (02d epic only after Kuroda-san re-confirms the retain), **not yet created**. ✅ Design/tasks unblocked — DEVOPS 6415/6596 merged `main` → `ASCA-master` 2026-10-01. |
+| ASCA Spec 02 shape | ✅ **4 sub-specs (02a–02d), all G1 signed off + promoted.** 02a/02b/02d signed off 2026-10-05; 02c signed off 2026-10-13 (REF-CAP-15). **02d repurposed to decommission `DataCorrectionCommand`** (Kuroda-san 2026-10-05). All 4 JIRA epics created (02a ASCA-37, 02b ASCA-44, 02c ASCA-52, 02d ASCA-59) + Spec 01 CR ASCA-66/67/68. **Status 2026-10-15 (git-verified):** ASCA-66/67/68 + 02a coding MERGED; 02b (ASCA-47, Cristoff) + 02c (ASCA-54, Throy) coding in flight; 02d design/tasks next. **CIP-refund split home** still on hold (REF-CIP-07 identification resolved; extend 02b / new sub-spec / ASCI TBD). |
 
 **Net:** Foundation coding is now **in flight in both repos** (Throy-san accounting, Cristoff-san ls-db), G1+G2 cleared — critical-path next action is **G3 code review** once PRs land ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)). Still ~1.5–2 weeks behind the original Foundation-coding baseline, but the Dec 17 deadline stays achievable on the W12–W15 buffer, and ASCI scope is reduced by REF-CIP-05. Spec 02 planning is settled ahead of Foundation completion (**4 sub-specs 02a–02d**; 02d was dropped at G1 then retained by Lead decision 2026-10-01, re-confirm with Kuroda-san — REF-CAP-12 §0) so requirements authoring can start as soon as the team is ready.
 
