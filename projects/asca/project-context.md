@@ -6,7 +6,7 @@
 
 ---
 
-## Current State (as of 2026-10-14 — ASCA-66/67 merged to ASCA-master; 02a/02b in coding; ASCA-68 a dev task; 02c promoted, G2 (design+tasks) next; then 02d)
+## Current State (as of 2026-10-15 — git-verified: 02a (ASCA-40)/66/67 MERGED to ASCA-master; 02c G2 complete (promoted); 02d promoted (G1 approved); 02b coding + ASCA-68 ls-db view half still open)
 
 > **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
 
@@ -34,15 +34,18 @@
 
 ### Immediate next actions
 
-> **Task flow (agreed):** ASCA-66 + ASCA-67 (✅ merged) → **02a Coding (ASCA-40, in progress)** → **ASCA-68 + 02b Coding (ASCA-47, in progress)** → **02c** (design/tasks today, then dev hand-off) → **02d**. ASCA-68 is a dev task running in parallel with 02a/02b coding.
+> **Task flow (agreed):** ASCA-66 + ASCA-67 (✅ merged) → **02a Coding (ASCA-40, ✅ MERGED to ASCA-master — git-verified 2026-10-15, PR #307)** → **02b Coding (ASCA-47, in progress; now unblocked) + ASCA-68** → **02c coding** → **02d**. ⚠️ **ASCA-68 is only half done:** the accounting-side `scopeActiveFinal` already accepts COMPLETED_WITH_ERRORS (landed with 02a), but the **ls-db `v_alloc_prorations_active` view SQL still filters `status = 1` only** — the view half is NOT merged and must land before 02c coding.
 
-**Today's plan (2026-10-14, Lead):**
-1. **Generate 02c G2 (design + tasks)** via the spec UI's "Continue to Design" (switch to a Spec session, drive through the UI — not chat, per `projects/asca/specs/README.md` step 4). Then review design.md + tasks.md against the signed-off 02c requirements before dev hand-off. Epic + stories created ([ASCA-52](https://bizmates.atlassian.net/browse/ASCA-52), stories ASCA-53–58). Inputs the design leans on: `ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md` (outcomes-table shape), the DEVOPS-6415 `ArchiverService`/`MailerService` surface (already in ASCA-master), the 18-column CSV layout + refund-charge-only exception rule (02c Req 2.3/2.12).
-   - ⚠️ **02c implementation precondition:** ASCA-68 (view treats completed-with-errors as active) must land before 02c coding, or a completed-with-errors Final shows exception rows but no allocated rows. 02c tasks.md must sequence after ASCA-68 or flag it as a precondition.
-2. **Then 02d** — epic + stories created ([ASCA-59](https://bizmates.atlassian.net/browse/ASCA-59), stories ASCA-60–65), decommission scope (disable + deprecate `DataCorrectionCommand`), low priority. Promote + generate design/tasks after 02c.
+**Status (2026-10-15, Lead — git-verified):**
+- ✅ **02a (ASCA-40) MERGED** to ASCA-master (PR #307): `AllocationInjector` + `RunStatus::COMPLETED_WITH_ERRORS` present. ✅ **ASCA-66** (ls-db outcomes table, PR #976) + **ASCA-67** (effective_from, PR #302) MERGED.
+- ✅ **02c G2 complete** — `requirements.md` (signed off, promoted) + `design.md` + `tasks.md` all in the code repo. Ready for dev hand-off (ASCA-54 coding), gated on ASCA-68 view half.
+- ✅ **02d promoted** — `requirements.md` + `.config.kiro` in the code repo, G1 approved (Kuroda-san 2026-10-05). JIRA epic/stories (ASCA-59–65) descriptions aligned. Next: generate 02d design/tasks via the spec UI.
+- 🔴 **ASCA-68 half-open (critical for 02c):** accounting `scopeActiveFinal` accepts COMPLETED_WITH_ERRORS ✅, but the **ls-db `v_alloc_prorations_active` view SQL still filters `status = 1` only** (git-verified: `view-table-migration.sql` lines 475/486). The view half must be merged before 02c coding, else a completed-with-errors Final shows exception rows but no allocated rows. 02c tasks.md flags this precondition.
 
-**In flight (devs):**
-3. **02a (ASCA-40) + 02b (ASCA-47) coding** — in progress (unblocked by ASCA-66/67 merge). 02b depends on 02a — coordinate order. Sessions per `docs/workspace-setup.md` (ingest context → open `tasks.md` → task execution).
+**In flight (devs — they own the JIRA statuses):**
+- **02b (ASCA-47) coding** — unblocked now that 02a is merged.
+- **ASCA-68 ls-db view half** — still needed (the accounting half shipped with 02a).
+Sessions per `docs/workspace-setup.md` (ingest context → open `tasks.md` → task execution).
 4. **ASCA-68** (`COMPLETED_WITH_ERRORS` + `v_alloc_prorations_active`/V-5/supersede active-on-completed-with-errors; overlaps ASCA-34) — dev task, in progress, parallel with 02a/02b.
 
 **Doc/admin (low effort):**

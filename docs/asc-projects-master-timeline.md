@@ -36,14 +36,14 @@
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
-### Snapshot — 2026-10-13 (critical path + blockers)
+### Snapshot — 2026-10-15 (critical path + blockers) [git-verified]
 
 - **Spec 01 Foundation:** ✅ code-complete + merged. ASCA-34 (G3 fix) merged + Done. Spec 01 G3 (ASCA-18) admin-close only.
 - **Spec 02 G1:** 02a/02b/02d signed off (2026-10-05); **02c ✅ signed off 2026-10-13 (REF-CAP-15) + promoted to the code repo** — next is G2 (design/tasks).
-- **02a:** requirements + design + tasks complete (G2 done). **02b:** requirements + design + tasks complete. Both **ready for Coding** (ASCA-40 / ASCA-47).
+- **02a:** ✅ **coding MERGED** (ASCA-40, PR #307). **02b:** req+design+tasks complete, coding in progress (ASCA-47, unblocked). **02c:** req (signed off, promoted) + design + tasks complete — ready for coding, gated on ASCA-68 view half. **02d:** promoted (G1 approved); design/tasks next.
 - **Epics:** all four Spec 02 epics exist — 02a ASCA-37, 02b ASCA-44, **02c ASCA-52, 02d ASCA-59** (02c/02d created 2026-10-13). 02d = decommission, low priority.
-- **🔴 Critical-path blocker:** Spec 01 change-request — **three** sub-tasks under ASCA-18 (approved by Kuroda-san 2026-10-13): **[ASCA-66](https://bizmates.atlassian.net/browse/ASCA-66)** (`log_alloc_bundle_outcomes` table, ls-db) + **[ASCA-67](https://bizmates.atlassian.net/browse/ASCA-67)** (reference-price `effective_from` → 2026-12-01, accounting repo) + **[ASCA-68](https://bizmates.atlassian.net/browse/ASCA-68)** (`COMPLETED_WITH_ERRORS` + `v_alloc_prorations_active` active-on-completed-with-errors; overlaps ASCA-34). **All three must merge before 02a/02b can complete.**
-- **Sequence:** ASCA-66 + ASCA-67 + ASCA-68 → 02a (ASCA-40) → 02b (ASCA-47). Devs cleared to start sessions now (early 02a tasks don't need the CR); the CR must land before the dependent tasks finish.
+- **🔴 Remaining blocker (for 02c coding):** **[ASCA-68](https://bizmates.atlassian.net/browse/ASCA-68)** ls-db view half — `v_alloc_prorations_active` still filters `status = 1` only (git-verified `view-table-migration.sql` lines 475/486); must widen to include COMPLETED_WITH_ERRORS. The accounting half (`scopeActiveFinal`) already shipped with 02a. **ASCA-66 / ASCA-67 are MERGED** (git-verified PR #976 / #302).
+- **Sequence:** ASCA-66/67 ✅ → **02a (ASCA-40) ✅ MERGED (PR #307)** → 02b (ASCA-47, unblocked) + ASCA-68 ls-db view → 02c coding → 02d. 02a code (`AllocationInjector`, `RunStatus::COMPLETED_WITH_ERRORS`) confirmed in ASCA-master.
 - **Open:** CIP-refund home undecided (REF-CIP-07); 02a CIP wording fix (doc-only, Req 2.2/2.5 + design.md) to ride the ASCA-40 Coding PR; 02c G2 (design/tasks) generation.
 - **⚠️ Lead leave 2026-11-11 → 11-23** — target was 02a–02d dev-complete + through G3 before Nov 11; near-term sequencing is tight against it. Name a G2/G3 delegate for anything landing during the leave.
 
