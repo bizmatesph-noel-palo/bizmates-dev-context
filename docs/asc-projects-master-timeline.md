@@ -39,12 +39,12 @@
 ### Snapshot — 2026-10-15 PM (critical path + blockers) [git-verified]
 
 - **Spec 01 Foundation:** ✅ code-complete + merged. ASCA-34 (G3 fix) merged + Done. Spec 01 G3 (ASCA-18) admin-close only.
-- **Spec 02 G1:** 02a/02b/02d signed off (2026-10-05); **02c ✅ signed off 2026-10-13 (REF-CAP-15) + promoted to the code repo** — next is G2 (design/tasks).
-- **02a:** ✅ **coding MERGED** (ASCA-40, PR #307). **02b:** req+design+tasks complete, **coding in progress (ASCA-47, Cristoff)**. **02c:** req+design+tasks complete, **coding in progress (ASCA-54, Throy)** — ASCA-68 blocker cleared. **02d:** promoted (G1 approved); design/tasks next.
+- **Spec 02 G1:** 02a/02b/02d signed off (2026-10-05); **02c ✅ signed off 2026-10-13 (REF-CAP-15) + promoted** — **G2 now complete** (requirements+design+tasks merged to ASCA-master).
+- **02a:** ✅ **coding merged** (ASCA-40, PR #307). **02b:** req+design+tasks complete, **in task execution (Cristoff)** (ASCA-47). **02c:** **design/tasks merged to ASCA-master; awaiting task execution (ASCA-55), not started** — ASCA-68 view precondition cleared, coding unblocked (ASCA-54 Architecture done). **02d:** requirements promoted (ASCA-60, PR open); design/tasks generation in progress (ASCA-61).
 - **Epics:** all four Spec 02 epics exist — 02a ASCA-37, 02b ASCA-44, **02c ASCA-52, 02d ASCA-59** (02c/02d created 2026-10-13). 02d = decommission, low priority.
 - **✅ No open blockers.** All three Spec 01 CR tickets MERGED (git-verified): ASCA-66 (ls-db outcomes table, PR #976), ASCA-67 (effective_from, PR #302), ASCA-68 (ls-db view `status IN (2,4)` + accounting `scopeActiveFinal`, PR #985). 02a Coding MERGED (PR #307).
-- **Sequence:** ASCA-66/67/68 ✅ + 02a (ASCA-40) ✅ MERGED → **02b coding (ASCA-47, Cristoff) + 02c coding (ASCA-54, Throy) in flight** → 02d (promoted; design/tasks next). No blockers remain.
-- **Open:** CIP-refund home undecided (REF-CIP-07); 02a CIP wording fix (doc-only, Req 2.2/2.5 + design.md) to ride the ASCA-40 Coding PR; 02c G2 (design/tasks) generation.
+- **Sequence:** ASCA-66/67/68 ✅ + 02a (ASCA-40) ✅ MERGED → **02b in task execution (ASCA-47, Cristoff) + 02c design/tasks merged, awaiting task execution (ASCA-55, not started)** → 02d (requirements promoted ASCA-60; design/tasks generation in progress ASCA-61). No blockers remain.
+- **Open:** CIP-refund home undecided (REF-CIP-07); 02a CIP wording fix (doc-only, Req 2.2/2.5 + design.md) to ride the ASCA-40 Coding PR; 02d design/tasks generation in progress (ASCA-61).
 - **⚠️ Lead leave 2026-11-11 → 11-23** — target was 02a–02d dev-complete + through G3 before Nov 11; near-term sequencing is tight against it. Name a G2/G3 delegate for anything landing during the leave.
 
 ### Where we actually are
@@ -57,7 +57,7 @@
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
-| ASCA Spec 02 shape | ✅ **4 sub-specs (02a–02d), all G1 signed off + promoted.** 02a/02b/02d signed off 2026-10-05; 02c signed off 2026-10-13 (REF-CAP-15). **02d repurposed to decommission `DataCorrectionCommand`** (Kuroda-san 2026-10-05). All 4 JIRA epics created (02a ASCA-37, 02b ASCA-44, 02c ASCA-52, 02d ASCA-59) + Spec 01 CR ASCA-66/67/68. **Status 2026-10-15 (git-verified):** ASCA-66/67/68 + 02a coding MERGED; 02b (ASCA-47, Cristoff) + 02c (ASCA-54, Throy) coding in flight; 02d design/tasks next. **CIP-refund split home** still on hold (REF-CIP-07 identification resolved; extend 02b / new sub-spec / ASCI TBD). |
+| ASCA Spec 02 shape | ✅ **4 sub-specs (02a–02d), all G1 signed off + promoted.** 02a/02b/02d signed off 2026-10-05; 02c signed off 2026-10-13 (REF-CAP-15). **02d repurposed to decommission `DataCorrectionCommand`** (Kuroda-san 2026-10-05). All 4 JIRA epics created (02a ASCA-37, 02b ASCA-44, 02c ASCA-52, 02d ASCA-59) + Spec 01 CR ASCA-66/67/68. **Status 2026-10-15 18:03 (git-verified):** ASCA-66/67/68 + 02a coding MERGED; 02b in task execution (ASCA-47, Cristoff); 02c design/tasks merged, awaiting task execution (ASCA-55, not started); 02d requirements promoted (ASCA-60), design/tasks generation in progress (ASCA-61). **CIP-refund split home** still on hold (REF-CIP-07 identification resolved; extend 02b / new sub-spec / ASCI TBD). |
 
 **Net:** Foundation coding is now **in flight in both repos** (Throy-san accounting, Cristoff-san ls-db), G1+G2 cleared — critical-path next action is **G3 code review** once PRs land ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)). Still ~1.5–2 weeks behind the original Foundation-coding baseline, but the Dec 17 deadline stays achievable on the W12–W15 buffer, and ASCI scope is reduced by REF-CIP-05. Spec 02 planning is settled ahead of Foundation completion (**4 sub-specs 02a–02d**; 02d was dropped at G1 then retained by Lead decision 2026-10-01, re-confirm with Kuroda-san — REF-CAP-12 §0) so requirements authoring can start as soon as the team is ready.
 

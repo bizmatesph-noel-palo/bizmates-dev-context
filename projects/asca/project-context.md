@@ -6,7 +6,7 @@
 
 ---
 
-## Current State (as of 2026-10-15 PM — git-verified: ALL Spec 01 CR (ASCA-66/67/68) + 02a (ASCA-40) MERGED; no open blockers. In flight: 02b coding (Cristoff), 02c coding (Throy). 02d promoted, design/tasks next.)
+## Current State (as of 2026-10-15 18:03 — git-verified: ALL Spec 01 CR (ASCA-66/67/68) + 02a (ASCA-40) coding MERGED to `feature/ASCA/ASCA-master`; no open blockers. 02b (ASCA-47) in task execution (Cristoff). 02c (ASCA-52) requirements+design+tasks MERGED — awaiting task execution on ASCA-55 (Coding, not started); ASCA-54 Architecture done; ASCA-68 view precondition cleared. 02d (ASCA-59) requirements promoted + committed to ASCA-60 (PR open); Lead generating design.md → tasks.md now for ASCA-61 (PR to open). G1 approved 2026-10-05.)
 
 > **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
 
@@ -23,34 +23,35 @@
     - **design.md (G2)** — ✅ **generated + committed (2026-10-12)** on branch `feature/ASCA/ASCA-39-spec-2a-architecture` (ASCA-39, HEAD, not yet pushed). Grounded against the actual batch code + Spec 01 engine; validated against the authoritative technical design (§8/§9) — aligned with the current REF-CAP-12/13 decisions (the §8/§9 *code samples* are the superseded 2026-08 version).
     - ✅ **02a is requirements + design + tasks complete, and the Coding story (ASCA-40) is MERGED to ASCA-master** (git-verified 2026-10-15, PR #307: `AllocationInjector` + `RunStatus::COMPLETED_WITH_ERRORS` present).
     - ✅ **The three 02a→Spec 01 dependencies are APPROVED by Kuroda-san (2026-10-13), ticketed, and partially landed:**
-      1. **`COMPLETED_WITH_ERRORS` run status + `RunLifecycleService::finalizeWithErrors()`** — plus (REF-CAP-14 #1) `v_alloc_prorations_active`/V-5/supersede must treat completed-with-errors as an active Final → **[ASCA-68](https://bizmates.atlassian.net/browse/ASCA-68)** (accounting enum/service + ls-db view; overlaps ASCA-34, same view). **Status (2026-10-14): a dev task, being handled by the devs** alongside 02a/02b coding — not yet merged. This is the implementation precondition for 02c (the view must treat completed-with-errors as active, or the CSV shows exception rows but no allocated rows for a completed-with-errors Final). Sub-task under ASCA-18.
+      1. **`COMPLETED_WITH_ERRORS` run status + `RunLifecycleService::finalizeWithErrors()`** — plus (REF-CAP-14 #1) `v_alloc_prorations_active`/V-5/supersede must treat completed-with-errors as an active Final → **[ASCA-68](https://bizmates.atlassian.net/browse/ASCA-68)** (accounting enum/service + ls-db view `status IN (2,4)`; overlaps ASCA-34, same view). **✅ Status (2026-10-15): MERGED to `feature/ASCA/ASCA-master`.** This was 02c's view precondition — the view must treat completed-with-errors as active, or the CSV would show exception rows but no allocated rows for a completed-with-errors Final. **Now cleared → 02c coding (ASCA-55) is unblocked.** Sub-task under ASCA-18.
       2. **`log_alloc_bundle_outcomes` table + model** → **[ASCA-66](https://bizmates.atlassian.net/browse/ASCA-66)** (ls-db migration + structure test). **✅ Status (2026-10-14): MERGED to `feature/ASCA/ASCA-master`.** Sub-task under ASCA-18, like ASCA-34.
       3. **Reference-price `effective_from` → 2026-12-01** → **[ASCA-67](https://bizmates.atlassian.net/browse/ASCA-67)**. **✅ Status (2026-10-14): MERGED to `feature/ASCA/ASCA-master`.** ⚠️ **Correction:** the seeder (`ReferencePriceSeeder.php`) is in the **accounting repo**, NOT ls-db (steering says ls-db — doc/code discrepancy flagged in the ticket). Sub-task under ASCA-18.
-    - **Next action:** 02a (ASCA-40) + 02b (ASCA-47) are **in coding** (ASCA-66/67 merged unblocked them); ASCA-68 proceeds in parallel as a dev task. Lead generates 02c G2 (design + tasks) today.
-- **02d repurposed** from "inject allocation into DataCorrectionLogic" to **DECOMMISSION `DataCorrectionCommand`** (disable + deprecate) — command confirmed unused (Wu-san 08-28, Harvey-san 10-05). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
-- **02c: ✅ SIGNED OFF (Kuroda-san 2026-10-13, REF-CAP-15) + PROMOTED** to the code repo (`accounting_related_system_for_freee/.kiro/specs/asca-spec-02c-allocation-detail-csv/` with a valid `.config.kiro`). Next phase is G2 (design + tasks) via the spec UI's "Continue to Design". His two follow-ups: (1) run-status/view ticket → already raised as **ASCA-68**; (2) 02a Req 2.5 CIP wording → fixed in both the dev-context and code-repo 02a copies (doc-only, no code/tasks impact; the design.md CIP clause also cleaned). Design-phase note folded in: a refund skip/fail emits an exception row for the **refund charge only** (Req 2.3/2.12).
+    - **Next action:** 02a (ASCA-40) coding **MERGED**; 02b (ASCA-47) **in task execution** (Cristoff); 02c (ASCA-55 Coding) **ready for pickup** (requirements+design+tasks merged, ASCA-68 precondition cleared, not yet started); Lead **generating 02d design.md → tasks.md** now (for ASCA-61).
+- **02d (epic ASCA-59): repurposed** from "inject allocation into DataCorrectionLogic" to **DECOMMISSION `DataCorrectionCommand`** (disable + deprecate) — command confirmed unused (Wu-san 08-28, Harvey-san 10-05). G1 approved 2026-10-05. **requirements.md promoted + committed to [ASCA-60](https://bizmates.atlassian.net/browse/ASCA-60) (PR open).** Lead is **generating design.md → tasks.md now**, to commit to [ASCA-61](https://bizmates.atlassian.net/browse/ASCA-61) (PR to open). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
+- **02c (epic ASCA-52): ✅ G2 COMPLETE.** Signed off (Kuroda-san 2026-10-13, REF-CAP-15) + promoted; **requirements.md + design.md + tasks.md all generated and MERGED to `feature/ASCA/ASCA-master`** (`accounting_related_system_for_freee/.kiro/specs/asca-spec-02c-allocation-detail-csv/`, valid `.config.kiro`). ASCA-54 (Architecture) is **done**. **Awaiting task execution on [ASCA-55](https://bizmates.atlassian.net/browse/ASCA-55) (Coding) — NOT started;** the ASCA-68 view precondition is MERGED, so coding is unblocked. Follow-up notes retained: (1) run-status/view ticket → **ASCA-68** (✅ merged); (2) 02a Req 2.5 CIP wording → fixed in both the dev-context and code-repo 02a copies (doc-only, no code/tasks impact; the design.md CIP clause also cleaned); (3) design-phase note: a refund skip/fail emits an exception row for the **refund charge only** (Req 2.3/2.12).
 - **Spec 01 change-request (`log_alloc_bundle_outcomes` + run-status/view + `effective_from`):** the money table (`log_alloc_prorations`) stays money-only. Required by **both 02a and 02c**. Approved by Kuroda-san 2026-10-13; three sub-tasks under ASCA-18 (like ASCA-34), **all ✅ MERGED (git-verified 2026-10-15):** **ASCA-66** (table, ls-db, PR #976), **ASCA-67** (`effective_from`, accounting, PR #302), **ASCA-68** (run-status + ls-db view `status IN (2,4)`, PR #985). Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
 - **CIP-refund split home:** still **open** — extend 02b / new sub-spec / ASCI undecided. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio); the home decision is on hold pending the scope decision.
 
 ### Immediate next actions
 
-> **Task flow (agreed):** ASCA-66 + ASCA-67 + ASCA-68 (✅ all merged) → **02a Coding (ASCA-40, ✅ MERGED, PR #307)** → **02b Coding (ASCA-47, in progress — Cristoff) + 02c Coding (ASCA-54, in progress — Throy)** → **02d**. ✅ **ASCA-68 fully merged** (ls-db view PR #985): `v_alloc_prorations_active` now filters `status IN (2,4)` (Completed OR Completed-with-errors) + `run_type = 2`. **No open blockers remain** for 02b/02c coding.
+> **Task flow (agreed):** ASCA-66 + ASCA-67 + ASCA-68 (✅ all merged) → **02a Coding (ASCA-40, ✅ MERGED, PR #307)** → **02b Coding (ASCA-47, in task execution — Cristoff) + 02c Coding (ASCA-55, ready for pickup — not started)** → **02d**. ✅ **ASCA-68 fully merged** (ls-db view PR #985): `v_alloc_prorations_active` now filters `status IN (2,4)` (Completed OR Completed-with-errors) + `run_type = 2`. **No open blockers remain** for 02b/02c coding.
 
-**Status (2026-10-15, Lead — git-verified):**
-- ✅ **02a (ASCA-40) MERGED** to ASCA-master (PR #307): `AllocationInjector` + `RunStatus::COMPLETED_WITH_ERRORS` present. ✅ **ASCA-66** (ls-db outcomes table, PR #976) + **ASCA-67** (effective_from, PR #302) MERGED.
-- ✅ **02c G2 complete** — `requirements.md` (signed off, promoted) + `design.md` + `tasks.md` all in the code repo. Ready for dev hand-off (ASCA-54 coding), gated on ASCA-68 view half.
-- ✅ **02d promoted** — `requirements.md` + `.config.kiro` in the code repo, G1 approved (Kuroda-san 2026-10-05). JIRA epic/stories (ASCA-59–65) descriptions aligned. Next: generate 02d design/tasks via the spec UI.
-- ✅ **ASCA-68 fully merged (git-verified PR #985):** `v_alloc_prorations_active` now filters `status IN (2,4)` (Completed OR Completed-with-errors) + `run_type = 2`, and the accounting `scopeActiveFinal` accepts COMPLETED_WITH_ERRORS. The 02c view precondition is cleared — 02c coding is unblocked.
+**Status (2026-10-15 18:03, Lead — git-verified):**
+- ✅ **02a (ASCA-40) coding MERGED** to ASCA-master (PR #307): `AllocationInjector` + `RunStatus::COMPLETED_WITH_ERRORS` present. (JIRA story may still read "In Progress" — code is merged.) ✅ **ASCA-66** (ls-db outcomes table, PR #976) + **ASCA-67** (effective_from, PR #302) + **ASCA-68** (run-status + ls-db view, PR #985) all MERGED.
+- 🔧 **02b (ASCA-47) in task execution** — Cristoff-san; unblocked now that 02a + ASCA-66/67/68 are merged.
+- 📋 **02c (ASCA-52) G2 complete** — `requirements.md` + `design.md` + `tasks.md` all generated and MERGED to ASCA-master. ASCA-54 (Architecture) done. **Awaiting task execution on ASCA-55 (Coding) — NOT started;** ASCA-68 view precondition cleared, so coding is unblocked.
+- ✍️ **02d (ASCA-59) requirements promoted + committed to ASCA-60 (PR open);** G1 approved (Kuroda-san 2026-10-05). Lead **generating design.md → tasks.md now**, to commit to ASCA-61 (PR to open).
 
-**In flight (devs — they own the JIRA statuses):**
-- **02b (ASCA-47) coding** — unblocked now that 02a is merged.
-- **ASCA-68 ls-db view half** — still needed (the accounting half shipped with 02a).
-Sessions per `docs/workspace-setup.md` (ingest context → open `tasks.md` → task execution).
-4. **ASCA-68** (`COMPLETED_WITH_ERRORS` + `v_alloc_prorations_active`/V-5/supersede active-on-completed-with-errors; overlaps ASCA-34) — dev task, in progress, parallel with 02a/02b.
+**Next actions:**
+1. **02b (ASCA-47)** — continue task execution (Cristoff). Sessions per `docs/workspace-setup.md` (ingest context → open `tasks.md` → task execution).
+2. **02c (ASCA-55)** — ready for dev pickup; start task execution from the merged `tasks.md`.
+3. **02d (ASCA-61)** — Lead finishing design/tasks generation; commit + open PR.
 
 **Doc/admin (low effort):**
-5. **02a CIP wording fix (doc-only)** — Req 2.2/2.5 + design.md CIP clause already corrected in the code-repo 02a. Fold into the ASCA-40 Coding PR (no code/tasks impact).
-6. **ASCA-34 merged + Done.** Admin only: optionally close Spec 01 **G3 (ASCA-18)** (Lead left it open).
+- **02a CIP wording fix (doc-only)** — Req 2.2/2.5 + design.md CIP clause already corrected in the code-repo 02a. Fold into the ASCA-40 Coding PR (no code/tasks impact).
+- **ASCA-34 merged + Done.** Admin only: optionally close Spec 01 **G3 (ASCA-18)** (Lead left it open).
+
+> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. Name a G2/G3 delegate for anything landing during the leave.
 
 ### Key source docs (Spec 02)
 - **REF-CAP-12** — G1 round 1 feedback
