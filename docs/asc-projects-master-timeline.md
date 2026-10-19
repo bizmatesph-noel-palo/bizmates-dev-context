@@ -36,14 +36,14 @@
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
-### Snapshot — 2026-10-16 (critical path + blockers) [git-verified]
+### Snapshot — 2026-10-19 (critical path + blockers) [git-verified]
 
 - **Spec 01 Foundation:** ✅ code-complete + merged. ASCA-34 (G3 fix) merged + Done. Spec 01 G3 (ASCA-18) admin-close only.
 - **Spec 02 G1:** all four sub-specs signed off (02a/02b/02d 2026-10-05; 02c 2026-10-13, REF-CAP-15). G2 complete for 02a/02b/02c; 02d design/tasks on ASCA-61.
-- **02a:** ✅ **coding MERGED** (ASCA-40, PR #307, Throy). **02b:** ✅ **coding MERGED** (ASCA-47, PR #311, Cristoff — incl. DTO rename + PR review). **02c:** **coding IN PROGRESS (ASCA-55, Throy)** — req+design+tasks merged, ASCA-68 precondition cleared, ASCA-54 Architecture done. **02d:** **coding just picked up (Cristoff)** — requirements on ASCA-60, design/tasks on ASCA-61; decommission scope, low priority.
+- **ALL Spec 02 coding MERGED to ASCA-master (2026-10-19):** 02a (ASCA-40, PR #307), 02b (ASCA-47, PR #311), 02c AllocationDetail CSV (ASCA-48, PR #312 — `RevenueAllocationCsvService` + config present), 02d DataCorrection decommission (ASCA-61, PR #313 — `DataCorrectionCommand` now a guarded `@deprecated` no-op). ASCA-master is **feature-complete for CAP integration**.
 - **Epics:** all four Spec 02 epics exist — 02a ASCA-37, 02b ASCA-44, **02c ASCA-52, 02d ASCA-59** (02c/02d created 2026-10-13). 02d = decommission, low priority.
 - **✅ No open blockers.** All three Spec 01 CR tickets MERGED (git-verified): ASCA-66 (ls-db outcomes table, PR #976), ASCA-67 (effective_from, PR #302), ASCA-68 (ls-db view `status IN (2,4)` + accounting `scopeActiveFinal`, PR #985). 02a Coding MERGED (PR #307).
-- **Sequence:** ASCA-66/67/68 ✅ + 02a (ASCA-40) ✅ + 02b (ASCA-47) ✅ MERGED → **02c coding in progress (ASCA-55, Throy) + 02d coding picked up (Cristoff)**. No blockers remain.
+- **Sequence:** ASCA-66/67/68 ✅ + 02a/02b/02c/02d all MERGED → **next milestone: deploy ASCA-master (accounting + ls-db) to DEV04** (new dev ticket under ASCA-9) → G3/QA + controlled Pre test-run. No blockers remain.
 - **Open:** CIP-refund home undecided (REF-CIP-07); 02a CIP wording fix (doc-only, Req 2.2/2.5 + design.md) to ride the ASCA-40 Coding PR; 02d design/tasks generation in progress (ASCA-61).
 - **⚠️ Lead leave 2026-11-11 → 11-23** — target was 02a–02d dev-complete + through G3 before Nov 11; near-term sequencing is tight against it. Name a G2/G3 delegate for anything landing during the leave.
 
@@ -57,7 +57,7 @@
 | Steering files done | ✅ Done (promoted to accounting repo) + aligned to REF-CAP-11 (tax-excl prices, product_type=100, 11 tables, Round-3 pairing key) |
 | Investigations (G1 open items) | ✅ Done (product/plan data from CAP+CIP verified) |
 | JIRA + MCP tooling | ✅ Live (ASCA-9 Scaffolding, ASCA-10 steering) |
-| ASCA Spec 02 shape | ✅ **4 sub-specs (02a–02d), all G1 signed off + promoted.** 02a/02b/02d signed off 2026-10-05; 02c signed off 2026-10-13 (REF-CAP-15). **02d repurposed to decommission `DataCorrectionCommand`** (Kuroda-san 2026-10-05). All 4 JIRA epics created (02a ASCA-37, 02b ASCA-44, 02c ASCA-52, 02d ASCA-59) + Spec 01 CR ASCA-66/67/68. **Status 2026-10-16 (git-verified):** ASCA-66/67/68 + 02a (ASCA-40, PR #307) + 02b (ASCA-47, PR #311) coding MERGED; 02c coding in progress (ASCA-55, Throy); 02d coding picked up (Cristoff; requirements ASCA-60, design/tasks ASCA-61). **CIP-refund split home** still on hold (REF-CIP-07 identification resolved; extend 02b / new sub-spec / ASCI TBD). |
+| ASCA Spec 02 shape | ✅ **4 sub-specs (02a–02d), all G1 signed off + promoted.** 02a/02b/02d signed off 2026-10-05; 02c signed off 2026-10-13 (REF-CAP-15). **02d repurposed to decommission `DataCorrectionCommand`** (Kuroda-san 2026-10-05). All 4 JIRA epics created (02a ASCA-37, 02b ASCA-44, 02c ASCA-52, 02d ASCA-59) + Spec 01 CR ASCA-66/67/68. **Status 2026-10-19 (git-verified):** ASCA-66/67/68 + ALL Spec 02 coding MERGED — 02a (PR #307), 02b (PR #311), 02c (ASCA-48, PR #312), 02d (ASCA-61, PR #313). ASCA-master feature-complete; next milestone is DEV04 deployment (both repos) + G3/QA. **CIP-refund split home** still on hold (REF-CIP-07 identification resolved; extend 02b / new sub-spec / ASCI TBD). |
 
 **Net:** Foundation coding is now **in flight in both repos** (Throy-san accounting, Cristoff-san ls-db), G1+G2 cleared — critical-path next action is **G3 code review** once PRs land ([ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18)). Still ~1.5–2 weeks behind the original Foundation-coding baseline, but the Dec 17 deadline stays achievable on the W12–W15 buffer, and ASCI scope is reduced by REF-CIP-05. Spec 02 planning is settled ahead of Foundation completion (**4 sub-specs 02a–02d**; 02d was dropped at G1 then retained by Lead decision 2026-10-01, re-confirm with Kuroda-san — REF-CAP-12 §0) so requirements authoring can start as soon as the team is ready.
 
