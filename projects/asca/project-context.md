@@ -138,7 +138,7 @@ Zipan accounting change, billed under DEVOPS (like the ASCM refactor — no ASC 
 
 1. **ASCM Prep:** Fix DataCorrectionLogic drift, extract ArchiverService + MailerService
 2. **Shared Foundation:** DB migrations (`log_alloc_*` for batch tables, `mst_alloc_*` for reference prices — O-3 resolved), models, enums, run lifecycle, allocation engine
-3. **CAP-specific:** Detection for plans 1016–1027, reference prices (App ¥3,980, Coaching ¥19,800/¥39,600), AllocationDetail CSV
+3. **CAP-specific:** Detection for plans 1016–1027, reference prices tax-excl (App ¥3,618, Coaching ¥18,000/¥36,000), AllocationDetail CSV
 4. **Injection:** Allocation call in `CommonUtil::createDailyRateCalculation()` + `DataCorrectionLogic`
 
 ---

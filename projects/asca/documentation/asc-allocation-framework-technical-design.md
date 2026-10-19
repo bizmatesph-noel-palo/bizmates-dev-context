@@ -32,7 +32,7 @@ This is the single technical reference for the ASC Allocation Framework. It cons
 
 | # | Decision | Effect on this design |
 |---|---|---|
-| **Formula interface** | Split arity is a pluggable `AllocationFormulaInterface`. Foundation implements **2-way only** (`TwoWayAllocationFormula`: Coaching + App). **3-way** (`ThreeWayAllocationFormula`: Lesson : Coaching : App, R-16) is implemented in **ASCI**. A plan with no registered formula is skipped (never mis-split). | Supersedes any "single allocation path / no strategy" wording (§9, §14). The `computeAllocations()` sample below is the 2-way formula behind the interface. |
+| **Formula interface** | Split arity is a pluggable `AllocationFormulaInterface`. The engine implements **2-way only** (`TwoWayAllocationFormula`: Coaching + App) for **CAP**. **CIP uses no engine at all (REF-CIP-05, 2026-09-17)** — the previously-planned `ThreeWayAllocationFormula` is **withdrawn**; CIP books separate already-priced charges through existing pro-ration. A plan with no registered formula is skipped (never mis-split). | Supersedes any "single allocation path / no strategy" wording (§9, §14) **and all earlier "3-way / ASCI" notes**. The `computeAllocations()` sample below is the 2-way CAP formula. |
 | **Foundation = CAP only** | Foundation detection is **CAP plans (1016–1027) only**. All CIP (1028 + 1029–1032) → **ASCI**. Any CIP plan seen in a Foundation run is skipped with a warning (V-3), never fails the run. | Supersedes "covering CAP + CIP 1028" phrasing. Detection `whereIn product_id` = {10005, 10015, 10022} for Foundation (no 10025). |
 | **V-5 anchor row (empty-set race)** | "One active Final per month" is enforced via an always-present **`log_alloc_run_anchors`** row per (`bundle_type`, `target_ym`), `SELECT … FOR UPDATE`-locked before switching the active pointer — so the guarantee holds even with no prior active Final. | Adds an 11th table. Supersedes the "lock the prior active run" mechanism in §9 (that failed the empty case). |
 | **Reference-price resolution date** | Resolution date = **last calendar day of `target_ym`** (single deterministic definition). Ref-price table gets UNIQUE (`bundle_type`,`product_id`,`effective_from`), an app-level overlap check, and initial `effective_from = 2026-12-01` (CAP beta release; **updated from 2027-01-01** per REF-CAP-13 §3 — the first close after release is target_ym 2026-12). | Pins the previously-undefined "target date". |
@@ -175,9 +175,9 @@ Given:
   N         = Σ(paid_price) across the bundle (coaching row + app row)
               This is the GROUP TOTAL, not the coaching row alone.
               Makes the formula idempotent — ΣN is invariant across re-runs.
-  L_app     = ¥3,980 (App standalone price, tax-inclusive)
-  L_coaching = ¥19,800 (Coaching 15min) or ¥39,600 (Coaching 30min)
-               or ¥88,000 (Coaching Intensive), tax-inclusive
+  L_app     = ¥3,618 (App standalone list price, tax-EXCLUSIVE, mst_new_price_listing price_flag 2)
+  L_coaching = ¥18,000 (Coaching 15min) or ¥36,000 (Coaching 30min), tax-EXCLUSIVE
+               (CIP Coaching Intensive is NOT engine-allocated — REF-CIP-05)
 
 Calculate:
   P_app      = floor(N × L_app / (L_coaching + L_app))
@@ -196,13 +196,13 @@ Idempotency proof (why ΣN works):
 
 ```
 N = ¥22,550 (Σ paid_price across the bundle: coaching ¥22,550 + app ¥0)
-L_app = ¥3,980
-L_coaching = ¥19,800
+L_app = ¥3,618 (tax-excl)
+L_coaching = ¥18,000 (tax-excl)
 
-P_app      = floor(22,550 × 3,980 / (19,800 + 3,980))
-           = floor(22,550 × 3,980 / 23,780)
-           = floor(22,550 × 0.16737...)
-           = floor(3,774.3...)
+P_app      = floor(22,550 × 3,618 / (18,000 + 3,618))
+           = floor(22,550 × 3,618 / 21,618)
+           = floor(81,585,900 / 21,618)
+           = floor(3,774.4...)
            = 3,774
 
 P_coaching = 22,550 − 3,774
@@ -238,7 +238,7 @@ The formula works identically regardless of month or proration — it just split
 | **P_coaching** | Allocated coaching amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten) | N minus App's share. What Freee should book as Coaching revenue. |
 | **P_app** | Allocated app amount | Allocation engine | `log_daily_rate_calculation.paid_price` (overwritten from 0) | App's proportional share. What Freee should book as App revenue. |
 | **L_app** | App reference price | `mst_alloc_reference_prices` | Config / DB | ¥3,980 tax-inclusive. Standalone selling price of App. |
-| **L_coaching** | Coaching reference price | `mst_alloc_reference_prices` | Config / DB | ¥19,800 (15min) or ¥39,600 (30min) tax-inclusive. |
+| **L_coaching** | Coaching reference price | `mst_alloc_reference_prices` | Config / DB | ¥18,000 (15min) or ¥36,000 (30min), tax-EXCLUSIVE (= `mst_new_price_listing.price`). |
 
 ### Data Flow: Source → Calculation → Output
 
@@ -321,32 +321,29 @@ AUDIT TABLES (new — allocation detail)
 | Project | Product | product_id (NEW) | L (reference price, tax-incl) | Source |
 |---|---|---|---|---|
 | CAP | App Premium | **10022** (was 10021) | ¥3,980 | REF-CAP-05 · id change REF-CIP-04 |
-| CAP | Coaching 15min | 10005 | ¥19,800 | mst_new_price_listing flag 3 × 1.1 |
-| CAP | Coaching 30min | 10015 | ¥39,600 | mst_new_price_listing flag 3 × 1.1 |
+| CAP | Coaching 15min | 10005 | ¥18,000 | mst_new_price_listing.price (tax-excl) |
+| CAP | Coaching 30min | 10015 | ¥36,000 | mst_new_price_listing.price (tax-excl) |
 | CIP | App Premium | **10022** (was 10021) | ¥3,980 | Same product as CAP |
-| CIP | Coaching Intensive | **10025** (was 10022) | ⚠️ ¥84,020 STALE — pending O-5 re-confirm | Was `plan ¥88,000 − ¥3,980`; plan now ¥75,900. Awaiting Accounting. |
+| CIP | Coaching Intensive | **10025** | N/A — not engine-allocated (REF-CIP-05) | CIP dropped from the engine; books a real ¥71,920 tax-incl charge (price_flag 3), not a weight. Out of CAP Foundation scope. |
 
 ### How Reference Prices Are Stored
 
 Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change without code changes):
 
 ```php
-// Seeder data
+// Seeder data (CAP only — matches the actual ReferencePriceSeeder)
+// bundle_type is an int TINYINT: CAP = 1 (was 'project_code' VARCHAR — O-9, renamed+retyped).
+// reference_price is tax-EXCLUSIVE, = mst_new_price_listing.price (App price_flag 2).
+// effective_from = 2026-12-01 (CAP beta; from config revenue_allocation.launch.cap_first_target_month).
 [
-    // CAP  (App product_id = 10022, changed from 10021 on 2026-08-19)
-    ['project_code' => 'cap', 'product_id' => 10022, 'reference_price' => 3980,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cap', 'product_id' => 10005, 'reference_price' => 19800,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    ['project_code' => 'cap', 'product_id' => 10015, 'reference_price' => 39600,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    // CIP  (App = 10022; Coaching Intensive = 10025, both changed 2026-08-19)
-    ['project_code' => 'cip', 'product_id' => 10022, 'reference_price' => 3980,
-     'effective_from' => '2026-01-01', 'effective_to' => null],
-    // ⚠️ CIP Coaching Intensive reference_price PENDING (O-5 reopened) — plan now ¥75,900, not ¥88,000.
-    //    Value below (84020) is STALE. Likely ¥71,920 (= 75,900 − 3,980) but awaiting Accounting.
-    ['project_code' => 'cip', 'product_id' => 10025, 'reference_price' => 84020, // 🔴 STALE — confirm via O-5
-     'effective_from' => '2026-01-01', 'effective_to' => null],
+    ['bundle_type' => 1 /* CAP */, 'product_id' => 10022, 'reference_price' => 3618,  // App, tax-excl (price_flag 2)
+     'effective_from' => '2026-12-01', 'effective_to' => null],
+    ['bundle_type' => 1 /* CAP */, 'product_id' => 10005, 'reference_price' => 18000,  // Coaching 15min, tax-excl
+     'effective_from' => '2026-12-01', 'effective_to' => null],
+    ['bundle_type' => 1 /* CAP */, 'product_id' => 10015, 'reference_price' => 36000,  // Coaching 30min, tax-excl
+     'effective_from' => '2026-12-01', 'effective_to' => null],
+    // NO CIP rows. CIP (10025) is NOT engine-allocated (REF-CIP-05) — it books a real
+    // ¥71,920 tax-incl charge (mst_new_price_listing price_flag 3), not an allocation weight.
 ]
 ```
 
@@ -385,7 +382,7 @@ Stored in `mst_alloc_reference_prices` (effective-dated, so prices can change wi
 
 > **product_id 10025** (was 10022) per 2026-08-19 change. Plans 1029–1032 also bundle Online Lesson (1L–4L) + FVP.
 >
-> **⚠️ O-8 superseded by R-16 (2026-09-08, REF-CAP-09):** CIP 1029–1032 are **3-way (Lesson : Coaching : App)** with tax-exclusive weights **13,500 : 66,500 : 3,618** — NOT 2-way. Only **1028 (Solo)** stays 2-way (Coaching + App). This means ASCI is **no longer config-only** — it needs 3-way split logic. See O-8 row in §15.
+> **⚠️ O-8 → R-16 → both SUPERSEDED by REF-CIP-05 (2026-09-17):** the 2026-09-08 R-16 decision (CIP 1029–1032 = 3-way, weights 13,500 : 66,500 : 3,618) was itself **withdrawn**. CIP now uses **no allocation engine at all** — it books separate, already-priced charges (Lesson at its own price, App ¥3,980, Coaching Intensive ¥71,920) through existing pro-ration. No 2-way and no 3-way split for CIP. ASCI shrinks to a master-price-record addition. (Historical chain retained for traceability; see O-8 row in §15.)
 
 **Detection:** `CoachingIntensivePlanEnum::exists($trnCharge->plan_id)` — no date filter needed (these plans are brand new, same as CAP).
 
@@ -704,7 +701,7 @@ Validation V-1 (ΣP = ΣN) still holds at the bundle level regardless of the exa
 >
 > **Split arity (O-8 superseded by R-16, 2026-09-08, REF-CAP-09):**
 > - **CAP (all plans) and CIP 1028 (Solo):** **2-way** (Coaching + App). Lesson and FVP are handled by the existing daily-rate logic and are excluded from the allocation; N sums only the Coaching + App pair.
-> - **CIP 1029–1032:** **3-way (Lesson : Coaching : App)** with tax-exclusive weights **13,500 : 66,500 : 3,618**. Lesson IS part of the split for these plans. N sums the Lesson + Coaching + App rows.
+> - **CIP 1029–1032:** **NOT engine-allocated (REF-CIP-05, 2026-09-17).** The earlier "3-way" plan is **withdrawn** — CIP books separate, already-priced charges (Lesson at its own price, App ¥3,980, Coaching Intensive ¥71,920) through the existing daily pro-ration. No engine split of any kind for CIP.
 >
 > The code below still reflects the OLD 2-way-only model and is **stale for CIP 1029–1032** — it must be extended to 3-way for those plans (ASCI engine work; no longer config-only). Kept here pending the ASCI re-baseline.
 
@@ -1016,7 +1013,7 @@ foreach ($sumLists as $sumList) {
 - `freeeProductType` flows through `getContractTypeInfo()` to get segment mapping
 - `MstRuleForJournals` resolves the journal rules
 
-> ⚠️ **UPDATE (2026-09-08):** This section was written for the **existing** App product_type `100` (product `10012`, unchanged in the DB). CAP/CIP add **new** products (`10022` App, `10025` CIP coaching) whose product_type is **UNRESOLVED (O-10)** — CAP proposal says `10022=618 / 10025=469`; CIP's actual local DB (Jefferson-san) says `10022=100 / 10025=9`. Same product_id can't hold two types; the **final CAP/CIP migration** decides. Allocation reads `product_type` from `mst_product` at runtime, so it adapts. The Freee-mapping checks below must be re-verified against the reconciled values once the final migration lands — do not assume `100`.
+> ✅ **UPDATE (O-10 RESOLVED 2026-10-15, confirmed against the actual dev04 seeders):** CAP/CIP add **new** products with these confirmed product_type values — App `10022` = **100** (clone of existing App 10012; `coaching-app-plans-db` Req 8.2), CIP coaching `10025` = **9** (`coaching-intensive-plan-seeder` Req 1.1). The earlier CAP `618`/`469` proposal was never what shipped. Allocation reads `product_type` from `mst_product` at runtime and the V-6 guard validates against these exact values. Freee mapping for App product_type 100 is the remaining DATA check (O-A).
 
 #### Potential Issue: Does product_type 100 Have Freee Mappings?
 
@@ -1267,7 +1264,7 @@ ls-database-migrations/
 | 9 | Pre/Final | Single service with preFlg parameter | Separate classes | Avoids duplication (KB #14 lesson). |
 | 10 | CAP first | CAP builds foundation, CIP reuses | CIP first | CAP requirements more concrete. Same total effort either way. |
 | 11 | Bundle grouping key | student_id + order_no + plan_id | student_id + order_no; or student_id alone | order_no alone is nullable/non-unique and shared across products (G1 2026-09-04) — plan_id disambiguates, skip ambiguous groups. Final key pending CAP-team confirmation (multi-plan order_no / B2C keying). (Kuroda-san 2026-08-17; revised per G1 2026-09-04) |
-| 12 | CIP L_coaching | ¥84,020 (plan − L_app) | ¥88,000 (plan price directly) | CIP has no standalone coaching price. Coaching = residual. ΣL = plan price. Full month → App gets exactly ¥3,980. (Kuroda-san + Accounting, 2026-08-17) |
+| 12 | CIP L_coaching | N/A — CIP is NOT engine-allocated (REF-CIP-05) | N/A | **Superseded (REF-CIP-05, 2026-09-17):** CIP no longer uses the allocation engine, so there is no CIP L_coaching weight. CIP books a separate real Coaching Intensive charge of ¥71,920 tax-incl (price_flag 3), not an allocation residual. |
 
 ---
 
@@ -1282,7 +1279,7 @@ ls-database-migrations/
 | # | Item | Owner | Status | Blocks |
 |---|---|---|---|---|
 | O-3 | Table prefix | Engineering team | ✅ **Resolved (2026-08-17)** — `log_alloc_*` for batch-generated, `mst_alloc_*` for reference prices. Approved by Kuroda-san. | — |
-| O-5 | CIP coaching reference price | Business + Accounting | 🔴 **REOPENED (2026-08-28)** — was ¥84,020 (from plan ¥88,000). Plan is now ¥75,900 (REF-CIP-04). New L_coaching likely ¥71,920 (= 75,900 − 3,980) but UNCONFIRMED. Awaiting Kuroda-san/Accounting. | ASCI reference price seeder |
+| O-5 | CIP coaching reference price | Business + Accounting | ✅ **CLOSED (REF-CIP-05, 2026-09-17)** — moot: CIP dropped the allocation engine, so no L_coaching weight is needed. CIP books Coaching Intensive at a real ¥71,920 tax-incl charge (price_flag 3 = ¥65,382 tax-excl). | ASCI (master price record, not a weight) |
 | O-7 | Product ID changes (2026-08-19) | Business (Go-san, done) | ✅ **Confirmed FINAL** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. Detection whereIn + reference-price product_id + Freee mapping must use new ids. | Detection + seeder + Freee mapping |
 | O-8 | CIP split arity (2-way vs 3-way) | Accounting (Kuroda-san) | ⚠️ **O-8 superseded by R-16 (2026-09-08):** CIP 1029–1032 are 3-way; only 1028 is 2-way. Tax-exclusive weights Lesson : Coaching : App = **13,500 : 66,500 : 3,618** (REF-CAP-09). **ASCI is no longer config-only** — it needs 3-way split logic. ~~Resolved (2026-08-28) — 2-way (Coaching + App only), even for 1029–1032; ASCI stays a config addition.~~ (superseded — kept for history) [Kuroda-san Slack](https://bizmatesinc.slack.com/archives/C0BF8ABV74N/p1788340743121289?thread_ts=1788340577.655519&cid=C0BF8ABV74N) | ASCI scope + engine |
 | O-9 | `project_code` → `bundle_type` rename + retype | Kuroda-san (DB design owner) | ✅ **Confirmed (2026-09-02)** — (a) renamed the CAP/CIP discriminator column (6 tables) to reflect data category not project ownership (same reasoning as the table-prefix ADR); (b) retyped VARCHAR → TINYINT for enum-column consistency (`BundleType`: 1=CAP, 2=CIP, `label()`→'cap'/'cip'). | Migrations (Spec 01a) |

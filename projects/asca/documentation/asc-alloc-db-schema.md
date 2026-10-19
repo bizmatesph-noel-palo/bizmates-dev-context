@@ -211,7 +211,7 @@ Effective-dated allocation weights (L). Configurable without code changes.
 | 1 (cap) | 10005 (Coaching 15min) | 18000 | tax-excl; confirm exact `mst_new_price_listing` row before seeding (G1 2-1) |
 | 1 (cap) | 10015 (Coaching 30min) | 36000 | tax-excl; confirm exact `mst_new_price_listing` row before seeding (G1 2-1) |
 | 2 (cip) | 10022 (App) | 3980 | |
-| 2 (cip) | 10025 (Coaching Intensive) | 🔴 PENDING (O-5) | was 84020; plan repriced ¥88,000→¥75,900 |
+| 2 (cip) | 10025 (Coaching Intensive) | N/A — not engine-allocated (REF-CIP-05) | CIP dropped from the engine; books real ¥71,920 tax-incl charge (price_flag 3), no weight |
 
 > **✅ CAP weights are TAX-EXCLUSIVE (resolved — REF-CAP-11 Round-3, 2026-09-10; REF-CAP-09).** CAP: App 3,618, Coaching 15min 18,000, Coaching 30min 36,000 — each equal to `mst_new_price_listing.price` so the ASCA-8 breakdown recomputes an identical floored P (no ¥1 divergence). The earlier tax-inclusive figures (¥3,980 / ¥19,800 / ¥39,600) are superseded. CIP tax-excl weights (Lesson 13,500 : Coaching 66,500 : App 3,618) are ASCI scope; the CIP coaching value is still pending final confirmation (O-5).
 >
@@ -345,8 +345,8 @@ v_alloc_prorations_active   (view over prorations + runs; active = Completed run
 | Item | Impact | Status |
 |---|---|---|
 | ~~R-16: CIP 3-way~~ **SUPERSEDED** | ~~CIP 1029–1032 are 3-way (Lesson : Coaching : App)~~ — **withdrawn by REF-CIP-05 (2026-09-17).** CIP no longer uses the allocation engine at all (residual-value pricing: separate charges + existing pro-ration). No Lesson `product_role`, no CIP Lesson seed row, no 3-way prorations are needed. `product_role`/columns stay as-is (CAP-only, harmless); no migration change. | ✅ Superseded (REF-CIP-05, 2026-09-17) — no schema change; CAP unaffected |
-| Tax-incl vs tax-excl weights | Resolved for CAP: seed table now uses tax-**exclusive** (App 3,618, Coaching 18,000 / 36,000) = `mst_new_price_listing.price`. CIP weights (Coaching 66,500, Lesson 13,500) are ASCI scope. | ✅ CAP resolved (REF-CAP-11 Round-3, 2026-09-10); CIP coaching pending (O-5) |
-| O-5 | `mst_alloc_reference_prices` CIP coaching seed value (¥84,020 stale) | 🔴 Pending Kuroda-san/Accounting (REF-CAP-09 gives tax-excl L_coaching = 66,500 — reconcile) |
+| Tax-incl vs tax-excl weights | Resolved for CAP: seed table uses tax-**exclusive** (App 3,618, Coaching 18,000 / 36,000) = `mst_new_price_listing.price`. **CIP has no engine weights** — CIP dropped from the allocation engine (REF-CIP-05); the old CIP 66,500 / 13,500 weights are withdrawn. | ✅ CAP resolved (REF-CAP-11 Round-3, 2026-09-10); CIP no longer applicable (REF-CIP-05, 2026-09-17) |
+| O-5 | CIP coaching reference price | ✅ CLOSED (REF-CIP-05, 2026-09-17) — CIP dropped from the allocation engine, so no `mst_alloc_reference_prices` CIP weight is seeded. CIP books Coaching Intensive at a real ¥71,920 tax-incl charge (price_flag 3). ASCI scope. |
 | O-7 | product_ids in seeds + `product_id` columns (App 10022, CIP coaching 10025) | ✅ Confirmed |
 | O-9: `bundle_type` rename + retype | Column across 6 tables: `project_code` VARCHAR → `bundle_type` TINYINT (1=CAP, 2=CIP) | ✅ Confirmed by Kuroda-san 2026-09-02 |
 | O-10: new-product `product_type` | `product_type` read from `mst_product` at runtime, validated exactly per product (V-6) | ✅ Resolved (REF-CAP-11 Round-3, 2026-09-10): 10005 = 9, 10015 = 9, App 10022 = 100, CIP 10025 = 9 (ASCI) |
