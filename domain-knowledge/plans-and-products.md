@@ -1,8 +1,17 @@
 # Plans & Products — System Reference
 
-**Last updated:** 2026-08-14  
-**Source:** Database queries (dev04), confirmed against ls-database-migrations schema  
-**Scope:** All plan and product data relevant to the accounting system (ASC)
+## Document Info
+
+| | |
+|---|---|
+| **Document type** | Domain Knowledge (system reference) |
+| **Date** | 2026-08-14 (Created) · 2026-08-28 (product_id changes) · 2026-10-15 (synced to actual dev04 CAP/CIP seeders: product_type O-10 resolved, reference prices corrected to tax-excl, CIP no-engine per REF-CIP-05) |
+| **Author** | Noel Palo |
+| **Assisted by** | Kiro |
+| **Status** | Active |
+| **Audience** | Dev team (all ASC projects), PM, SDM |
+| **Source** | `ls-database-migrations` @ `deployment/dev04` CAP/CIP master-data seeders (`coaching-app-plans-db`, `coaching-intensive-plan-seeder`, `coaching-intensive-banner-seeder`, `coaching-intensive-honki-banner`) + `research/CAP/`, `research/CIP/` (REF-CIP-04, REF-CIP-05). Reconciliation trail: `projects/asca/technical-notes/investigation/20261015-plans-products-cap-cip-sync/REPORT-00-plans-products-cap-cip-sync.md` |
+| **Scope** | All plan and product data relevant to the accounting system (ASC) |
 
 ---
 
@@ -22,13 +31,17 @@ trn_charge (all charges)
 │    → SKIP daily proration (NotDailyCalculationProductType)
 │    → Writes full amount at start_date
 │
-├─── product_id = 10021 (App) with plan_id IN CAP/CIP plans
+├─── product_id = 10022 (App — new id, was 10021) with plan_id IN CAP/CIP plans
 │    → Daily rate (writes ¥0)
 │    → ★ ASC Allocation overwrites 0 → P_app
 │
-├─── product_id IN (10005, 10015, 10022) with plan_id IN CAP/CIP plans
+├─── product_id IN (10005, 10015) with plan_id IN CAP plans (1016–1027)
 │    → Daily rate (writes N = full coaching amount)
-│    → ★ ASC Allocation overwrites N → P_coaching
+│    → ★ ASC Allocation overwrites N → P_coaching  (CAP engine, 2-way)
+│
+│    NOTE: CIP coaching 10025 does NOT go through the engine (REF-CIP-05).
+│    CIP books separate, already-priced charges (Coaching Intensive ¥71,920,
+│    App ¥3,980, Lesson at its own price) through the EXISTING daily pro-ration.
 │
 └─── Everything else
      → CommonUtil::createDailyRateCalculation()
@@ -45,8 +58,19 @@ trn_charge (all charges)
 | 1 | Online Lesson | 1, 2, 3, 4, 16–23, 27–29 | Daily (1–4) or Monthly (16–29) |
 | 5 | Full Video Package (FVP) | 10011 | Daily (always ¥0 companion) |
 | 8 | Bizmates Test | (various) | Excluded from daily proration |
-| 9 | Coaching | 10005, 10015, 10022 | Daily rate |
-| 100 | App | 10012, 10021 | Daily rate (¥0 for CAP/CIP, allocated) |
+| 9 | Coaching (existing) | 10005, 10015 | Daily rate. Unchanged existing products |
+| 100 | App (existing) | 10012 | Existing standalone App. Unchanged |
+
+> **Existing vs new:** product_type **9** (Coaching) and **100** (App 10012) are the **existing** products, unchanged in the DB.
+>
+> ✅ **New CAP/CIP products — product_type RESOLVED (O-10, 2026-10-15).** The actual dev04 seeders settle it (the earlier CAP "618"/"469" proposal was never what shipped):
+>
+> | product | product_type (actual, dev04) | Source |
+> |---|---|---|
+> | 10022 (new App) | **100** (clone of legacy App 10012) | `coaching-app-plans-db` Req 8.2 |
+> | 10025 (CIP coaching intensive) | **9** (same as existing coaching 10005/10015) | `coaching-intensive-plan-seeder` Req 1.1 |
+>
+> ASC still reads `product_type` from `mst_product` at runtime (V-6 validates against the expected value), so these are the confirmed values the engine validates against for CAP.
 
 ---
 
@@ -71,10 +95,10 @@ trn_charge (all charges)
 | 29 | 月15回プラン | 1 | Monthly (15L/month, 1/day) | `BizmatesMonthlyPlanEnum` — FLP |
 | 10005 | Bizmates Coaching 15分 | 9 | Coaching | 15-minute sessions |
 | 10011 | Full Video Package | 5 | FVP | Always ¥0 companion |
-| 10012 | Bizmates App 標準コース | 100 | App (Legacy) | Standalone App — retained untouched |
+| 10012 | Bizmates App 標準コース | 100 | App (existing) | Existing standalone App — unchanged. product_type 100 = existing App |
 | 10015 | Bizmates Coaching 30分 | 9 | Coaching | 30-minute sessions |
-| 10021 | Bizmates Appプレミアム | 100 | App (CAP/CIP) | New — ¥0 companion in bundles |
-| 10022 | Bizmates Coaching 30分 短期集中プラン | 9 | Coaching Intensive | New — CIP product, ¥88,000 |
+| 10022 | Bizmates Appプレミアム （自動付帯） | **100** | App (new, CAP/CIP) | New product (clone of 10012) — ¥0 companion in bundles. **id changed 10021→10022 (2026-08-19)**. product_type **100 RESOLVED (O-10)** — `coaching-app-plans-db` Req 8.2. |
+| 10025 | コーチング短期集中 | **9** | Coaching Intensive (new, CIP) | New CIP product. **id changed 10022→10025 (2026-08-19)**. product_type **9 RESOLVED (O-10)** — `coaching-intensive-plan-seeder` Req 1.1. Solo plan ¥75,900 tax-incl. **Not engine-allocated (REF-CIP-05).** |
 
 ---
 
@@ -144,18 +168,20 @@ New plans bundling Coaching + App. App charges at ¥0 (companion). **ASC allocat
 
 | plan_id | Name | package_price | Products | Coaching | App |
 |---|---|---|---|---|---|
-| 1016 | Solo C15 + App | ¥22,550 | 10005 + 10021 | 15min | ¥0 |
-| 1017 | Solo C30 + App | ¥42,350 | 10015 + 10021 | 30min | ¥0 |
-| 1018 | L25 + FVP + C15 + App | ¥37,400 | 1 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1019 | L50 + FVP + C15 + App | ¥44,000 | 2 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1020 | L75 + FVP + C15 + App | ¥53,900 | 3 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1021 | L100 + FVP + C15 + App | ¥63,800 | 4 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1022 | L25 + FVP + C30 + App | ¥57,200 | 1 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1023 | L50 + FVP + C30 + App | ¥63,800 | 2 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1024 | L75 + FVP + C30 + App | ¥73,700 | 3 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1025 | L100 + FVP + C30 + App | ¥83,600 | 4 + 10011 + 10015 + 10021 | 30min | ¥0 |
-| 1026 | L15mo + FVP + C15 + App | ¥37,400 | 29 + 10011 + 10005 + 10021 | 15min | ¥0 |
-| 1027 | L15mo + FVP + C30 + App | ¥57,200 | 29 + 10011 + 10015 + 10021 | 30min | ¥0 |
+| 1016 | Solo C15 + App | ¥22,550 | 10005 + 10022 | 15min | ¥0 |
+| 1017 | Solo C30 + App | ¥42,350 | 10015 + 10022 | 30min | ¥0 |
+| 1018 | L25 + FVP + C15 + App | ¥37,400 | 1 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1019 | L50 + FVP + C15 + App | ¥44,000 | 2 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1020 | L75 + FVP + C15 + App | ¥53,900 | 3 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1021 | L100 + FVP + C15 + App | ¥63,800 | 4 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1022 | L25 + FVP + C30 + App | ¥57,200 | 1 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1023 | L50 + FVP + C30 + App | ¥63,800 | 2 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1024 | L75 + FVP + C30 + App | ¥73,700 | 3 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1025 | L100 + FVP + C30 + App | ¥83,600 | 4 + 10011 + 10015 + 10022 | 30min | ¥0 |
+| 1026 | L15mo + FVP + C15 + App | ¥37,400 | 29 + 10011 + 10005 + 10022 | 15min | ¥0 |
+| 1027 | L15mo + FVP + C30 + App | ¥57,200 | 29 + 10011 + 10015 + 10022 | 30min | ¥0 |
+
+> **App product_id = 10022** (changed from 10021 on 2026-08-19). Package prices above are tax-inclusive and match the `coaching-app-plans-db` seeder catalog (PO-confirmed). The App is a ¥0 companion in every bundle; its ¥3,618 tax-excl standalone value lives only at `mst_new_price_listing` price_flag 2 for accounting (see reference-price table below).
 
 **Upstream project:** CAP (Coaching and App Plan)  
 **ASC project:** ASC-CAP  
@@ -164,20 +190,27 @@ New plans bundling Coaching + App. App charges at ¥0 (companion). **ASC allocat
 
 ### CIP Plans (plan_id 1028–1032) — Coaching Intensive + App Bundles
 
-New premium coaching product. **ASC allocation required.**
+New premium coaching product. **NOT engine-allocated (REF-CIP-05, 2026-09-17).** CIP revenue is split by issuing separate, already-priced charges that flow through the existing daily pro-ration — no allocation formula, no reference-price lookup, no run/anchor tracking. (This is ASCI scope; ASCA Foundation is unaffected.)
 
-| plan_id | Name | package_price (tax-excl) | Products | Coaching | App |
+> package_price below is **tax-inclusive** (consistent with the `coaching-intensive-plan-seeder` `mst_plan` catalog and REF-CIP-04), not tax-exclusive as an earlier revision stated.
+
+| plan_id | Name | package_price (tax-incl) | Products | Coaching | App |
 |---|---|---|---|---|---|
-| 1028 | Coaching Intensive Solo | ¥88,000 | 10022 + 10021 | Intensive | ¥0 |
-| 1029 | L25 + FVP + Coaching Intensive + App | ¥102,850 | 1 + 10011 + 10022 + 10021 | Intensive | ¥0 |
-| 1030 | L50 + FVP + Coaching Intensive + App | ¥109,450 | 2 + 10011 + 10022 + 10021 | Intensive | ¥0 |
-| 1031 | L75 + FVP + Coaching Intensive + App | ¥119,350 | 3 + 10011 + 10022 + 10021 | Intensive | ¥0 |
-| 1032 | L100 + FVP + Coaching Intensive + App | ¥129,250 | 4 + 10011 + 10022 + 10021 | Intensive | ¥0 |
+| 1028 | Coaching Intensive (Solo) | ¥75,900 | 10025 + 10022 | Intensive | ¥0 |
+| 1029 | 1L + FVP + Coaching Intensive | ¥90,750 | 1 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+| 1030 | 2L + FVP + Coaching Intensive | ¥97,350 | 2 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+| 1031 | 3L + FVP + Coaching Intensive | ¥107,250 | 3 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+| 1032 | 4L + FVP + Coaching Intensive | ¥117,150 | 4 + 10011 + 10025 + 10022 | Intensive | ¥0 |
+
+> **Updated 2026-08-24 (REF-CIP-04):** Coaching Intensive product_id = **10025** (was 10022). App = **10022** (was 10021). Solo (1028) ¥75,900 tax-incl.
+> **⚠️ SUPERSEDED — CIP no longer uses the allocation engine (REF-CIP-05, 2026-09-17).** The earlier "O-8 → 2-way split" and its "R-16 → 3-way" reversal are both withdrawn. CIP now books separate, already-priced charges: App ¥3,980 (tax-incl, its real list price), Coaching Intensive ¥71,920 (tax-incl, from a new `mst_new_price_listing` price_flag 3 record = ¥65,382 tax-excl), and Online Lesson at its own standalone price — each pro-rated independently by the existing daily-rate logic. No allocation formula is applied to CIP.
 
 **Upstream project:** CIP (Coaching Intensive Plan)  
-**ASC project:** ASC-CIP  
-**package_price:** Tax-exclusive  
-**Source:** REF-CIP-03 (Jefferson's project spec)
+**ASC project:** ASCI (no allocation engine — REF-CIP-05)  
+**package_price:** Tax-inclusive  
+**Source:** `coaching-intensive-plan-seeder` (dev04) + REF-CIP-04, REF-CIP-05
+
+> **CIP payment-complete banners (dev04):** `InsertCoachingIntensiveSoloPlanBannerSeeder` seeds the tier1 (regular) + tier2 (discounted) banners (`coaching-intensive-banner-seeder`), plus a `coaching-solo-honki` group banner (`coaching-intensive-honki-banner`). UI data only — no allocation impact.
 
 ---
 
@@ -214,17 +247,27 @@ Zipan is a Japanese-language training service. All products are lesson-based (pr
 
 ## ASC Allocation Reference Prices
 
-For charges that go through ASC allocation (CAP/CIP plans only):
+Only **CAP (ASCA)** charges go through the allocation engine. **CIP (ASCI) does not** — it books separate already-priced charges (REF-CIP-05), so it has no reference-price weights.
 
-| Project | Product | product_id | L (reference price, tax-incl) | Used as |
-|---|---|---|---|---|
-| ASC-CAP | App Premium | 10021 | ¥3,980 | Numerator weight |
-| ASC-CAP | Coaching 15min | 10005 | ¥19,800 | Denominator component |
-| ASC-CAP | Coaching 30min | 10015 | ¥39,600 | Denominator component |
-| ASC-CIP | App Premium | 10021 | ¥3,980 | Numerator weight |
-| ASC-CIP | Coaching Intensive | 10022 | ¥84,020 | Denominator component |
+Reference prices (L) are **tax-exclusive**, from `mst_new_price_listing`, seeded into `mst_alloc_reference_prices` (accounting repo `ReferencePriceSeeder`, `effective_from = 2026-12-01`):
 
-Formula: `P_app = floor(N × L_app / (L_coaching + L_app))`
+| Project | Product | product_id | L (tax-excl) | price_flag source | Used as |
+|---|---|---|---|---|---|
+| ASCA (CAP) | App Premium | **10022** | **¥3,618** | price_flag 2 | Numerator weight |
+| ASCA (CAP) | Coaching 15min | 10005 | **¥18,000** | price_flag 4 basis | Denominator component |
+| ASCA (CAP) | Coaching 30min | 10015 | **¥36,000** | price_flag 4 basis | Denominator component |
+
+Formula (CAP only): `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`.
+
+> **CIP has no allocation weights.** For reference, the CIP residual booking price is Coaching Intensive 10025 = ¥65,382 tax-excl / ¥71,920 tax-incl (`mst_new_price_listing` price_flag 3) — a real charge amount, not a weight. The old "¥84,020 / O-5" row is removed: it belonged to the withdrawn engine-split design.
+
+### price_flag reference (CAP/CIP master pricing)
+
+| price_flag | Meaning | Example |
+|---|---|---|
+| 2 | Standalone list price (ex-tax) — accounting reference, NOT billed inside a bundle | App 10022 = ¥3,618 |
+| 3 | Post-VPP / bundled companion (or CIP residual booking price) | App 10022 = ¥0; CIP 10025 = ¥65,382 ex-tax |
+| 4 | CAP bundle price (App fee folded into coaching) | 10005 ¥20,500/¥10,250; 10015 ¥38,500/¥19,250 |
 
 ---
 
@@ -234,15 +277,15 @@ Formula: `P_app = floor(N × L_app / (L_coaching + L_app))`
 |---|---|---|
 | Monthly plans | `BizmatesMonthlyPlanEnum::exists($productId)` | CommonUtil line 401 (skip in daily rate) |
 | Zipan monthly | `ZipanMonthlyPlanEnum::exists($productId)` | ZipanUtil (skip in daily rate) |
-| CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` or `product_id = 10021` | AscAllocationService (new) |
-| CIP bundles | `CoachingIntensivePlanEnum::exists($planId)` or `product_id = 10021` | AscAllocationService (new) |
+| CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` (plans 1016–1027) + App anchor `product_id = 10022` | RevenueAllocationService (CAP only) |
+| CIP bundles | **Not engine-detected (REF-CIP-05)** — CIP books separate already-priced charges; no allocation detection | n/a (ASCI; existing daily-rate pro-ration) |
 | Excluded from proration | `NotDailyCalculationProductType` config (product_type 8) | CommonUtil (full amount at start_date) |
 
 ---
 
 ## Key Rules
 
-1. **product_id determines the ASC pipeline** — not plan_id. Monthly plan enum checks product_id. Allocation detects by product_id 10021.
+1. **product_id determines the ASC pipeline** — not plan_id. Monthly plan enum checks product_id. Allocation detects by App product_id 10022 (changed from 10021 on 2026-08-19).
 2. **plan_id determines bundle membership** — for distinguishing CAP vs CIP vs existing coaching.
 3. **Zipan never has coaching or App** — CAP/CIP allocation is Bizmates-only.
 4. **¥0 companions (FVP, App) still create log rows** — they're not filtered out by any price check in getTrnChargeList() or getContractDateInfoList().

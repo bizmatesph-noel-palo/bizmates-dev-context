@@ -356,7 +356,7 @@ The campaign runs quarterly. Known periods:
 - Apr 2026 (second round — no proration applied; Freee manually adjusted by accounting)
 - 2026/7/1 10:00 – 2026/7/27 23:59 (current round — proration system being built)
 
-Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324, July = 334.
+Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324. A July round (referenced as id 334) is noted in earlier docs, but `config/utm_sources.php` currently lists only `324` (`honki_set_campaign_id => 324`, `honki_set_campaign_ids => [324]`) — ⚠️ **verify 334 against `mst_first_month_enrollment_discount_schedule` before relying on it.**
 
 ### Benefit Period
 
@@ -392,8 +392,8 @@ How ASCH will identify Honki Set members per batch run depends on CDB readiness 
 ### Creation
 
 Campaign definition lives in three places:
-1. `config/utm_sources.php` — `honki_set_campaign_ids` + bundle plan_ids (1010/1011)
-2. `mst_first_month_enrollment_discount_schedule` — campaign period records (April = id 324, July = id 334)
+1. `config/utm_sources.php` — `honki_set_campaign_id` (324) + `honki_set_campaign_ids` ([324]) + bundle plan_ids (1010/1011)
+2. `mst_first_month_enrollment_discount_schedule` — campaign period records (April = id 324; July id 334 referenced in earlier docs — ⚠️ not present in config, verify in DB)
 3. `mst_product_price` — half-price tier (tier=2)
 
 Campaign period checking uses `CoachingPage::isHonkiSetCampaignPeriod()` and `AuthService::addHonkiSetCampaignIfActive()`.
@@ -461,4 +461,4 @@ Where:
 | B2B2C | `mst_campaign` | N/A |
 | Focus Course | `mst_focus_course_campaign` | `trn_student_free_product_credits` |
 | Lesson Ticket | `mst_lesson_ticket_campaign` | N/A |
-| Honki Set | TBD | `trn_campaign_discount_eligibility` (CDB) |
+| Honki Set | `mst_first_month_enrollment_discount_schedule` (period; runtime eligibility) | `trn_campaign_discount_eligibility` (CDB — planned) |

@@ -73,8 +73,8 @@
 
 | Document | Location |
 |---|---|
-| Technical design (authoritative) | `docs/asc-allocation-framework-technical-design.md` |
-| Master timeline | `docs/asc-projects-master-timeline.md` |
+| Technical design (authoritative) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
+| Master timeline (all ASC projects) | `docs/asc-projects-master-timeline.md` |
 | Upstream CIP research | `research/CIP/` |
 | ASCA project context | `projects/asca/project-context.md` |
 | Plans & products reference | `domain-knowledge/plans-and-products.md` |
