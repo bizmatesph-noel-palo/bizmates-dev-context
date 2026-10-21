@@ -32,9 +32,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-13)
+## ⚠️ Status / Actuals (as of 2026-10-21)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-21 (DEV04 verified; CR unblocked)
+
+- **Spec 01 + Spec 02 code:** ✅ all coding MERGED to ASCA-master (unchanged from 2026-10-19; PR #313 HEAD).
+- **DEV04:** ✅ **deployed (both repos) + command execution done (ASCA-24) + QA allocation verification done/PASS (ASCA-71, Glenn-san 2026-10-21).** CAP App allocation confirmed correct in the DailyRateCalculation CSV (¥2,921 / ¥2,994 worked examples balance to N). Earlier "App ¥0" defect resolved.
+- **freee-400 on real-send:** DEV ENVIRONMENT issue (DEV04 mailer not configured) — **not a code bug, no project impact.** Stripe-related errors are out of ASCA scope (responsible team's).
+- **02c removal CR:** **UNBLOCKED** — the REF-CAP-17 DEV04-verification gate is satisfied. **No dependency on ASCA-8/Metabase** (the system never reads from Metabase). Next action: create the CR under ASCA-55; scope = AllocationDetail CSV removal only; hard deadline **2026-12-01** (CAP beta). QA scope note to Miko: DailyRateCalculation CSV in, AllocationDetail CSV out (being removed).
+- **ASCI-01:** requirements draft near-ready; polish → publish to Confluence for Kuroda-san G1 (runs parallel to the ASCA CR).
+- **⚠️ Lead leave 2026-11-11 → 11-23** — unchanged risk; name a G2/G3 delegate for anything landing during the leave.
 
 ### Snapshot — 2026-10-19 (critical path + blockers) [git-verified]
 
