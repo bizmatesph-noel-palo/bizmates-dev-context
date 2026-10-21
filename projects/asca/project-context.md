@@ -6,7 +6,19 @@
 
 ---
 
-## Current State (as of 2026-10-19 — git-verified on `feature/ASCA/ASCA-master` @ PR #313: **ALL of Spec 01 + Spec 02 (02a/02b/02c/02d) coding MERGED.** Spec 01 CR (ASCA-66/67/68) ✅; **02a (ASCA-40, PR #307)** ✅; **02b (ASCA-47, PR #311)** ✅; **02c AllocationDetail CSV (ASCA-48, PR #312)** ✅ — `RevenueAllocationCsvService` + `allocationDetailFile` config present; **02d DataCorrection decommission (ASCA-61, PR #313)** ✅ — `DataCorrectionCommand` is now a guarded `@deprecated` no-op. **No open blockers. ASCA-master is feature-complete for CAP integration.** Next milestone: deploy ASCA-master (accounting + ls-db) to DEV04 for G3/QA + a controlled Pre test-run. Kuroda-san feedback (2026-10-19) to be folded into a task list separately.)
+## Current State (as of 2026-10-21 — DEV04 deployed + verified)
+
+**ASCA-master is feature-complete AND DEV04-verified for CAP integration.** Code state unchanged from 2026-10-19 (all Spec 01 + Spec 02 coding merged, PR #313 HEAD); what advanced is **DEV04 deployment + command execution + QA allocation verification**:
+
+- ✅ **ASCA-master deployed to DEV04** (both repos: `accounting_related_system_for_freee` + `ls-database-migrations`).
+- ✅ **ASCA-24 (DEV04 Command Execution 20261020) — Done.** October (202610) + November (202611) batch commands executed on DEV04.
+- ✅ **ASCA-71 ([QA] App price verification) — Done / PASS.** Glenn-san's retest (2026-10-21) confirms the CAP App allocation is correct in the DailyRateCalculation CSV: e.g. student 568/567/1032 App = ¥2,921 (15-min), 1014 App = ¥2,994 (30-min), all balancing to N. The earlier "all App rows ¥0" defect is **resolved**. Remaining 15 zero-App rows are valid V-3 skips / refund pairs / out-of-scope / missing-mapping — not failures.
+- **freee-400 on real-send = DEV ENVIRONMENT issue, NOT a code bug.** Root cause: DEV04 had no mailer configured, so the send/email step couldn't complete. Does not affect the project; the allocation path itself is verified. (The ASCA-24 comment's Stripe-master-ID theory was a red herring.)
+- **Stripe errors are out of ASCA scope.** Any Stripe-related failure (STRP-4 journal lines, Stripe master IDs) belongs to the responsible team — ignore for ASCA.
+
+**The DEV04-verification gate from REF-CAP-17 is SATISFIED.** → The 02c removal CR is **unblocked** (no dependency on ASCA-8/Metabase — the system never reads from Metabase). Hard deadline for the removal: before the CAP beta release **2026-12-01**.
+
+> Code baseline (unchanged, git-verified on `feature/ASCA/ASCA-master` @ PR #313): Spec 01 CR (ASCA-66/67/68) ✅; 02a (ASCA-40, PR #307) ✅; 02b (ASCA-47, PR #311) ✅; 02c AllocationDetail CSV (ASCA-48, PR #312) ✅; 02d DataCorrection decommission (ASCA-61, PR #313) ✅.
 
 > **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
 
@@ -30,20 +42,22 @@
 - **02d (epic ASCA-59): ✅ CODING MERGED (ASCA-61, PR #313).** DECOMMISSION of `DataCorrectionCommand` — `handle()` is now a guarded no-op that logs a deprecation warning, prints a decommissioned notice pointing to the DevOps direct-SQL process (DEVOPS-6706), and returns success without invoking `DataCorrectionLogic`; both classes carry `@deprecated` docblocks + unit tests. G1 approved (Kuroda-san 2026-10-05). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
 - **02c (epic ASCA-52): ✅ CODING MERGED (ASCA-48, PR #312).** `RevenueAllocationCsvService` + `allocationDetailFile` entry in `config/const.php` present on ASCA-master. G2 (requirements+design+tasks) merged; ASCA-54 Architecture done. (Coding story is **ASCA-48**, not ASCA-55 as earlier notes assumed.) Follow-up notes retained: run-status/view (ASCA-68 ✅ merged); 02a Req 2.5 CIP wording fixed (doc-only); refund skip/fail emits an exception row for the refund charge only (Req 2.3/2.12).
 - **Spec 01 change-request (`log_alloc_bundle_outcomes` + run-status/view + `effective_from`):** the money table (`log_alloc_prorations`) stays money-only. Required by **both 02a and 02c**. Approved by Kuroda-san 2026-10-13; three sub-tasks under ASCA-18 (like ASCA-34), **all ✅ MERGED (git-verified 2026-10-15):** **ASCA-66** (table, ls-db, PR #976), **ASCA-67** (`effective_from`, accounting, PR #302), **ASCA-68** (run-status + ls-db view `status IN (2,4)`, PR #985). Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
-- **CIP-refund split home:** still **open** — extend 02b / new sub-spec / ASCI undecided. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio); the home decision is on hold pending the scope decision.
+- **CIP-refund split home:** ✅ **decided — inside ASCI-01** (not extending ASCA 02b, not a new ASCA sub-spec). Lead decision; to be ratified by Kuroda-san at ASCI-01 G1. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio). CIP refund is therefore an ASCI concern, not an ASCA one.
 
 ### Immediate next actions
 
 > **Task flow (agreed):** ASCA-66 + ASCA-67 + ASCA-68 (✅ all merged) → **02a Coding (ASCA-40, ✅ MERGED, PR #307)** → **02b Coding (ASCA-47, ✅ MERGED, PR #311)** → **02c Coding (ASCA-55, in progress — Throy) + 02d Coding (ASCA-59/61, picked up — Cristoff)**. ✅ **ASCA-68 fully merged** (ls-db view PR #985): `v_alloc_prorations_active` now filters `status IN (2,4)` (Completed OR Completed-with-errors) + `run_type = 2`. **No open blockers remain.**
 
-**Status (2026-10-19, Lead — git-verified on ASCA-master @ PR #313):**
-- ✅ **ALL Spec 01 + Spec 02 coding MERGED.** 02a (ASCA-40, PR #307), 02b (ASCA-47, PR #311), 02c (ASCA-48, PR #312), 02d (ASCA-61, PR #313); Spec 01 CR ASCA-66/67/68. ASCA-master is feature-complete for CAP integration.
-- ✅ Test state (2026-10-16 run): `tests/Unit/RevenueAllocation` 125/125, `tests/Feature/RevenueAllocation` 34/34 green. (Re-run after 02c/02d merge recommended before the DEV04 run.)
+**Status (2026-10-21, Lead):**
+- ✅ **ALL Spec 01 + Spec 02 coding MERGED** (unchanged): 02a (ASCA-40, PR #307), 02b (ASCA-47, PR #311), 02c (ASCA-48, PR #312), 02d (ASCA-61, PR #313); Spec 01 CR ASCA-66/67/68.
+- ✅ **DEV04 deploy + command execution (ASCA-24) + QA allocation verification (ASCA-71) all Done.** CAP allocation verified correct in the DailyRateCalculation CSV (Glenn-san, 2026-10-21).
+- ✅ Test state (2026-10-16 run): `tests/Unit/RevenueAllocation` 125/125, `tests/Feature/RevenueAllocation` 34/34 green.
+- freee-400 = dev-env mailer config (not a code bug); Stripe errors out of ASCA scope.
 
 **Next actions:**
-1. **Deploy ASCA-master to DEV04 — BOTH repos** (`accounting_related_system_for_freee` + `ls-database-migrations`). New dev ticket under ASCA-9 (see `technical-notes/jira/` draft). Precondition for G3 + a controlled Pre test-run.
-2. **DEV04 Pre test-run** per the readiness review (`technical-notes/investigation/20261016-asca-master-readiness-review/`): seed CAP master data + reference prices + DEV04 test charges, align `exeDate` to the seeded target month, grep `REVENUE_ALLOCATION`, inspect `log_alloc_calculation_runs`.
-3. **Fold in Kuroda-san's 2026-10-19 feedback** into a task list (pending — to be provided).
+1. **02c removal CR — now UNBLOCKED** (DEV04 verification gate met; no ASCA-8/Metabase dependency). Create the ticket under ASCA-55 (draft ready: `technical-notes/.../ASCA-XXX-remove-02c-allocationdetail-csv.md`). Scope = AllocationDetail CSV removal only (generation + zip/email); hard deadline **2026-12-01** (CAP beta). Explicitly NOT the freee/Stripe/mailer dev-env issues.
+2. **QA scope note** (ASCA, Miko): verify CAP allocated amounts in the existing DailyRateCalculation CSV (Option 1 overwrite). AllocationDetail CSV is a temporary DEV04 aid, **OUT of final QA scope** — it is being removed (REF-CAP-16/17).
+3. **ASCI-01 requirements polish → publish to Confluence for Kuroda-san G1** (parallel; different project).
 4. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
 
 **Doc/admin (low effort):**
