@@ -1,10 +1,13 @@
-# ASCA-XXX — [CR] Remove Spec 02c AllocationDetail CSV
+# ASCA-78 — [CR] Remove Spec 02c AllocationDetail CSV
+
+> **Created in JIRA 2026-10-22 as [ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)** — Sub-task under ASCA-55, Priority High, status To Do. This file is the full-Markdown source of record; the JIRA ticket carries the same content in Jira markup.
 
 **Type:** Sub-task
 **Parent:** ASCA-55 ([Spec 02c] — Coding)
 **Epic:** ASCA-52 ([Spec 02c] — AllocationDetail CSV)
-**Priority:** Medium
+**Priority:** High
 **Assignee:** Dev
+**Hard deadline:** Remove before the CAP beta release **2026-12-01** (REF-CAP-17 / Kuroda-san)
 **Source:** `research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md`
 **Decision:** `projects/asca/documentation/ASCA-ADR-20261020-drop-02c-allocationdetail-csv.md`
 
@@ -38,6 +41,18 @@ This is a change-request REMOVAL of already-merged code — not a new spec (mirr
 - CAP allocation engine (02a), refund (02b), CIP, Foundation.
 - The Metabase table + allocation-basis-amount column — owned by ASCA-8, not this repo.
 
+## QA scope note (Glenn)
+
+Per REF-CAP-16/17 (Kuroda-san): the **AllocationDetail CSV is OUT of QA scope** — it is being removed by this CR, so QA should NOT test or sign it off as a deliverable. What QA verifies instead:
+
+- CAP allocated amounts appear correctly in the **existing DailyRateCalculation CSV** (Option 1 overwrite N→P) — already verified on ASCA-71.
+- On DEV04, the AllocationDetail CSV may remain as a **temporary verification aid** until this removal lands; it is not a QA pass/fail item.
+
+## Shared-code check before deletion (do this first)
+
+- [ ] `LogAllocCalculationRun::hasCompletedRun()` was added for 02c but **may be referenced by ASCA-68's view/run-status logic.** Grep for `hasCompletedRun` across `app/` before deleting its test or method. If ASCA-68 uses it → KEEP the method, delete only the AllocationDetail-specific test (`LogAllocCalculationRunHasCompletedRunTest` if it is purely about the CSV path).
+- [ ] For each mixed-name test in `tests/Unit/Libs/` (e.g. `DailyRateCalculationPreLogicCreateSendMailAttacheFileTest`), confirm it is wholly about the AllocationDetail CSV → delete; if it also asserts surviving zip/email behavior → edit to drop only the AllocationDetail assertions.
+
 ## Acceptance Criteria (Definition of Done)
 
 - [ ] `RevenueAllocationCsvService` and the `allocationDetailFile` config entry no longer exist.
@@ -53,8 +68,10 @@ This is a change-request REMOVAL of already-merged code — not a new spec (mirr
 
 ## Dependencies / timing
 
-- Execute AFTER the DEV04 command verification (ASCA-24), batched with other changes from that verification + Kuroda-san's requirement changes (one consolidated pass).
-- No dependency on ASCA-66 / ASCA-68 (those stay).
+- **DEV04 command verification is DONE** (ASCA-24 Done; CAP allocation verified in the DailyRateCalculation CSV by Glenn-san on ASCA-71, 2026-10-21). The earlier "execute after DEV04" gate is **satisfied** — this CR is unblocked.
+- **No dependency on ASCA-8 / Metabase.** The system does not read from Metabase; removal does not wait for the Metabase table to be ready.
+- **No dependency on ASCA-66 / ASCA-68** (those stay).
+- **Hard deadline: 2026-12-01** (CAP beta). Batch with any other post-DEV04 changes if convenient, but do not slip past Dec 1.
 
 ## JIRA housekeeping (separate from this sub-task)
 
