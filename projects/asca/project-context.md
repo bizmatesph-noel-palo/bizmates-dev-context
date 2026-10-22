@@ -20,7 +20,7 @@
 
 > Code baseline (unchanged, git-verified on `feature/ASCA/ASCA-master` @ PR #313): Spec 01 CR (ASCA-66/67/68) ✅; 02a (ASCA-40, PR #307) ✅; 02b (ASCA-47, PR #311) ✅; 02c AllocationDetail CSV (ASCA-48, PR #312) ✅; 02d DataCorrection decommission (ASCA-61, PR #313) ✅.
 
-> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
+> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence. Team is Noel/Throy/Cristoff/Glenn only — no sub-lead — so a Lead delegate for any G2/G3 landing Nov 11–23 (Patrick-san backstop, or a named dev) must be agreed before leave.
 
 - **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**.
 - **ZPR daily-table cleanup + September FINAL:** ✅ all complete. Data cleanup executed 2026-09-30 (Yijun-san). 10/01 PRE verified. September FINAL (10/02) initially crashed — root cause was a Zipan product-type resolution issue in `ZipanUtil.php`; fixed by **DEVOPS-6274** (Harvey-san) + **DEVOPS-6284** (Yijun-san), deployed alongside 6415/6596. DevOps re-ran after deploy — both monthly and send-journal commands completed successfully. Investigation reports: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`.
@@ -56,7 +56,7 @@
 
 **Next actions:**
 1. **02c removal CR — now UNBLOCKED** (DEV04 verification gate met; no ASCA-8/Metabase dependency). Create the ticket under ASCA-55 (draft ready: `technical-notes/.../ASCA-XXX-remove-02c-allocationdetail-csv.md`). Scope = AllocationDetail CSV removal only (generation + zip/email); hard deadline **2026-12-01** (CAP beta). Explicitly NOT the freee/Stripe/mailer dev-env issues.
-2. **QA scope note** (ASCA, Miko): verify CAP allocated amounts in the existing DailyRateCalculation CSV (Option 1 overwrite). AllocationDetail CSV is a temporary DEV04 aid, **OUT of final QA scope** — it is being removed (REF-CAP-16/17).
+2. **QA scope note** (ASCA, Glenn): verify CAP allocated amounts in the existing DailyRateCalculation CSV (Option 1 overwrite). AllocationDetail CSV is a temporary DEV04 aid, **OUT of final QA scope** — it is being removed (REF-CAP-16/17).
 3. **ASCI-01 requirements polish → publish to Confluence for Kuroda-san G1** (parallel; different project).
 4. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
 
@@ -93,7 +93,8 @@
 | Upstream project | CAP (Keith's team) |
 | Code repo | `accounting_related_system_for_freee`, `ls-database-migrations` |
 | Lead | Noel Palo |
-| Developer | Throy Embudo |
+| Developer | Throy Embudo, Cristoff Danganan |
+| QA | Glenn Flamiano |
 | SDM | Patrick-san |
 | PM | Kuroda-san |
 | Deadline | 2026/12/17 |
@@ -171,7 +172,7 @@ Zipan accounting change, billed under DEVOPS (like the ASCM refactor — no ASC 
 | [ASCA-17](https://bizmates.atlassian.net/browse/ASCA-17) | Story | ASCA-13 | [Spec 01] — Coding (accounting application) | Dev (Throy) |
 | [ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18) | Story | ASCA-13 | [Spec 01] — Code Review | Lead · G3 |
 | [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) | Sub-task | ASCA-18 | [G3 Fix] v_alloc_prorations_active — add run_type = Final filter + view test | Cristoff · **committed, NOT yet merged** to `feature/ASCA/ASCA-master` — verify/merge to close G3 |
-| [ASCA-19](https://bizmates.atlassian.net/browse/ASCA-19) | Story | ASCA-13 | [Spec 01] — QA Testing | QA (Miko) |
+| [ASCA-19](https://bizmates.atlassian.net/browse/ASCA-19) | Story | ASCA-13 | [Spec 01] — QA Testing | QA (Glenn) |
 | [ASCA-20](https://bizmates.atlassian.net/browse/ASCA-20) | Story | ASCA-13 | [Spec 01] — Dev/Manual Testing | Lead |
 
 ### DEV04 environment (under ASCA-9 Scaffolding)

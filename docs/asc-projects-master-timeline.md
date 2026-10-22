@@ -9,7 +9,7 @@
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
-| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM), QA Team |
+| **Audience** | Dev team (Noel, Throy, Cristoff), Glenn (QA), Patrick-san (SDM), Kuroda-san (PM) |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) · [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) · [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) |
 | **Supersedes** | `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` (timeline content; archived 2026-09-23), `archive/docs/asc-cap-cip-combined-estimate-20260808.md` (Scenario C estimate; archived 2026-09-23) |
 
@@ -41,7 +41,7 @@
 - **Spec 01 + Spec 02 code:** ✅ all coding MERGED to ASCA-master (unchanged from 2026-10-19; PR #313 HEAD).
 - **DEV04:** ✅ **deployed (both repos) + command execution done (ASCA-24) + QA allocation verification done/PASS (ASCA-71, Glenn-san 2026-10-21).** CAP App allocation confirmed correct in the DailyRateCalculation CSV (¥2,921 / ¥2,994 worked examples balance to N). Earlier "App ¥0" defect resolved.
 - **freee-400 on real-send:** DEV ENVIRONMENT issue (DEV04 mailer not configured) — **not a code bug, no project impact.** Stripe-related errors are out of ASCA scope (responsible team's).
-- **02c removal CR:** **UNBLOCKED** — the REF-CAP-17 DEV04-verification gate is satisfied. **No dependency on ASCA-8/Metabase** (the system never reads from Metabase). Next action: create the CR under ASCA-55; scope = AllocationDetail CSV removal only; hard deadline **2026-12-01** (CAP beta). QA scope note to Miko: DailyRateCalculation CSV in, AllocationDetail CSV out (being removed).
+- **02c removal CR:** **UNBLOCKED** — the REF-CAP-17 DEV04-verification gate is satisfied. **No dependency on ASCA-8/Metabase** (the system never reads from Metabase). Next action: create the CR under ASCA-55; scope = AllocationDetail CSV removal only; hard deadline **2026-12-01** (CAP beta). QA scope note to Glenn (ASCA QA): DailyRateCalculation CSV in, AllocationDetail CSV out (being removed).
 - **ASCI-01:** requirements draft near-ready; polish → publish to Confluence for Kuroda-san G1 (runs parallel to the ASCA CR).
 - **⚠️ Lead leave 2026-11-11 → 11-23** — unchanged risk; name a G2/G3 delegate for anything landing during the leave.
 
@@ -186,8 +186,8 @@ First real batch:                    Jan 1, 2027
 |---|---|---|---|---|
 | **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia | Jasser-san |
 | **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Jasser-san |
-| **ASCA** (first) | Noel Palo | — | Throy Embudo | Patrick-san |
-| **ASCI** (second) | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
+| **ASCA** (first) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Patrick-san |
+| **ASCI** (second) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Patrick-san |
 | **CDB** (upstream) | Paolo Sandoval | — | Efren Petarte | Patrick-san |
 | **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
 | **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |
@@ -197,9 +197,9 @@ First real batch:                    Jan 1, 2027
 | Phase | QA Owner | Scope |
 |---|---|---|
 | ASCM Refactor verification | QA Team | Manual report comparison |
-| ASCA CAP scenarios (10 cases) | Miko | CAP allocation testing |
-| ASCI CIP scenarios (11 cases) | Glenn | CIP allocation testing |
-| Integration + Regression | QA Team (both) | Cross-project, failure isolation |
+| ASCA CAP scenarios | Glenn | CAP allocation testing (ASCA QA — corrected 2026-10-21; Miko was never deployed to ASCA) |
+| ASCI CIP scenarios | Glenn | CIP allocation testing |
+| Integration + Regression | Glenn | Cross-project, failure isolation |
 
 ---
 
@@ -395,8 +395,8 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 | 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP residual-value requirements (REF-CIP-05) — add Coaching Intensive `price_flag=3` master record (¥71,920 tax-incl) for `product_id 10025`; CIP books separate already-priced charges (Lesson / App ¥3,980 / Coaching Intensive) through existing pro-ration. **No allocation engine, no split formula for CIP.** Written during W9. |
 | 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves the CIP residual-value approach (already confirmed in REF-CIP-05): Coaching Intensive booking price ¥71,920, App ¥3,980, Lesson at its own price — separate charges, no split. |
 | 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — add the `product_id 10025` `price_flag=3` master price record; verify existing daily pro-ration + first-month-discount logic produce the expected independent CIP charges. **No CIP detection, no allocation formula, no `mst_alloc_reference_prices` CIP rows.** |
-| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm the master-price-record + pro-ration-verification scope (no allocation engine for CIP, per REF-CIP-05). |
-| 5 | **Execute** | Dev 2 | Add Coaching Intensive `price_flag=3` master price record + verify pro-ration/discount produces the expected separate CIP charges (residual-value, REF-CIP-05) | ~1–2 days |
+| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev (Cristoff) — confirm the master-price-record + pro-ration-verification scope (no allocation engine for CIP, per REF-CIP-05). |
+| 5 | **Execute** | Dev (Cristoff) | Add Coaching Intensive `price_flag=3` master price record + verify pro-ration/discount produces the expected separate CIP charges (residual-value, REF-CIP-05) | ~1–2 days |
 | 6 | **Gate 3** | Lead | Code review — CIP Integration PRs | PR approved before merge. |
 | 7 | **Verify** | Lead | ASCI dev testing on DEV04 | ~1–2 days |
 

@@ -32,9 +32,9 @@ An earlier version of this file described ASCI as "a configuration exercise — 
 | Full name | ASC for CIP (Coaching Intensive Plan) |
 | Upstream project | CIP (Jefferson's team) |
 | Code repo | `accounting_related_system_for_freee`, `ls-database-migrations` |
-| Lead | Noel Palo (overall) |
-| Sub-Lead | Orlino Monares |
-| Developer | Cristoff Danganan |
+| Lead | Noel Palo |
+| Developer | Throy Embudo, Cristoff Danganan |
+| QA | Glenn Flamiano |
 | SDM | Patrick-san |
 | PM | Kuroda-san |
 | Deadline | 2026/12/17 |

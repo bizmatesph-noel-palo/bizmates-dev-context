@@ -9,7 +9,7 @@
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (code analysis, data flow tracing, document generation) |
 | **Status** | Active |
-| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM) |
+| **Audience** | Dev team (Noel, Throy, Cristoff), Glenn (QA), Patrick-san (SDM), Kuroda-san (PM) |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
 
 ---

@@ -31,8 +31,8 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | Project | Lead | Sub-Lead | Developer(s) | Status |
 |---|---|---|---|---|
 | ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ❌ Cancelled (2026-08-07) |
-| ASCA (ASC for CAP) | Noel Palo | — | Throy Embudo | ✅ Active (builds foundation) |
-| ASCI (ASC for CIP) | Noel Palo (overall) | Orlino Monares | Cristoff Danganan | Active (reuses ASCA foundation) |
+| ASCA (ASC for CAP) | Noel Palo | — | Throy Embudo, Cristoff Danganan | ✅ Active (builds foundation) |
+| ASCI (ASC for CIP) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Active (reuses ASCA foundation) |
 | CDB (upstream) | Paolo | — | Efren | ✅ Active |
 | CAP (upstream) | Keith Manuntag | — | Terry Balahadia | Active (Jasser-san's team) |
 | CIP (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Active (Jasser-san's team) |

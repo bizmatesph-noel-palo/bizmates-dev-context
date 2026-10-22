@@ -9,7 +9,7 @@
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
 | **Status** | Active |
-| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM) |
+| **Audience** | Dev team (Noel, Throy, Cristoff), Glenn (QA), Patrick-san (SDM) |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
 | **Related** | `docs/asc-projects-master-timeline.md` (schedule + gate timing) |
 
@@ -111,7 +111,7 @@ Epic: ASCA-13 — [Spec 01] — Foundation (8 stories — Coding spans 2 repos)
 ├── Story: ASCA-17 — [Spec 01] — Coding (accounting application)     → Dev (Throy)
 ├── Story: ASCA-18 — [Spec 01] — Code Review                         → Lead (Noel)
 ├── Story: ASCA-20 — [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
-└── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Miko)
+└── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Glenn)
 
 # Spec 02 = 4 separate epics (one per sub-spec) — confirmed 2026-09-28. NOT YET CREATED.
 # 02d was dropped at G1 (REF-CAP-12 §0) then retained by Lead decision (2026-10-01) — re-confirm with Kuroda-san before creating its epic.
@@ -122,7 +122,7 @@ Epic: [Spec 02a] — CAP Core Injection (6 stories — accounting repo)
 ├── Story: [Spec 02a] — Coding                             → Dev (Throy)
 ├── Story: [Spec 02a] — Code Review                        → Lead (Noel)
 ├── Story: [Spec 02a] — Dev/Manual Testing                 → Lead (Noel)
-└── Story: [Spec 02a] — QA Testing                         → QA (Miko)
+└── Story: [Spec 02a] — QA Testing                         → QA (Glenn)
 
 Epic: [Spec 02b] — Refund Allocation (6 stories — accounting repo)
 └── (same 6-story set; Requirements story flags REF-CAP-09 open items: shareholder cap, tax-exemption path)
@@ -137,7 +137,7 @@ Epic: [Spec 02d] — DataCorrection Integration (6 stories — accounting repo)
 Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREATED
 ├── Story: [Spec 01] — Requirements + Sign-off             → PM (Kuroda-san)
 ├── Story: [Spec 01] — Architecture (Design + Tasks)       → Lead (Noel)
-├── Story: [Spec 01] — Coding                              → Dev (Orlino or Cristoff)
+├── Story: [Spec 01] — Coding                              → Dev (Cristoff)
 ├── Story: [Spec 01] — Code Review                         → Lead (Noel)
 ├── Story: [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
 └── Story: [Spec 01] — QA Testing                          → QA (Glenn)
@@ -236,10 +236,9 @@ ls-database-migrations                    accounting_related_system_for_freee
 | **PM** | Kuroda-san | Reviews requirements at G1, approves scope, resolves open business items |
 | **SDM** | Patrick-san | Manages JIRA epics/stories, tracks progress, presents to business |
 | **Lead** | Noel | Steering files, requirements, design, tasks, PR review, deployment |
-| **Dev 1** | Throy | Executes ASCA tasks with AI agent, creates PRs |
-| **Dev 2** | Orlino/Cristoff | Executes ASCI tasks with AI agent, creates PRs |
-| **QA (CAP)** | Miko | Tests ASCA CAP scenarios (10 cases) |
-| **QA (CIP)** | Glenn | Tests ASCI CIP scenarios (11 cases) |
+| **Dev** | Throy | Executes ASCA tasks with AI agent, creates PRs |
+| **Dev** | Cristoff | Executes ASCA/ASCI tasks with AI agent, creates PRs |
+| **QA** | Glenn | Tests ASCA CAP + ASCI CIP scenarios |
 
 ---
 
