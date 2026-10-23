@@ -32,9 +32,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-21)
+## ⚠️ Status / Actuals (as of 2026-10-23)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-23 (02c removal handed off; ASCI-01 at G1)
+
+- **Spec 01 + Spec 02 code:** ✅ all coding MERGED to ASCA-master (PR #313 HEAD). DEV04 deployed + verified (ASCA-24, ASCA-71).
+- **02c AllocationDetail CSV removal → handed to devs.** **[ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)** created (sub-task under ASCA-55, Priority High, Dec-1 deadline), with a grounded line-level footprint trace + paste-ready dev-Kiro prompt + QA-scope note. **Handover announced on Slack 2026-10-23; assigned to Throy-san.** Status check planned Monday 2026-10-27 (no micromanaging).
+- **CEIL steering note → [ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)** (Task under ASCA-9): one-file edit to `batch-execution-flow.md`; Lead to merge + log time.
+- **ASCI-01 requirements → submitted to Kuroda-san for G1 (2026-10-23).** Polished + cross-checked (no blockers; refund logic verified against REF-CIP-07/08 + REF-CAP-17 and against live ASCA code — CIP cannot enter the allocation engine). **Awaiting G1 sign-off; Lead to follow up Monday 2026-10-27.**
+- **Leave coverage (Nov 11–23):** **Throy-san to oversee ASCI** during the Lead's leave (confirm formally as the last pre-leave item). ASCA itself is dev-complete + verified, so it carries minimal leave risk.
+- **Methodology upkeep (non-billable, GitHub-only):** CR-to-completed-spec workflow + CR template added to the toolkit; knowledge-bucket taxonomy codified + ASCA `knowledge/`→`knowledge-base/` aligned in dev-context. Committed.
 
 ### Snapshot — 2026-10-21 (DEV04 verified; CR unblocked)
 
