@@ -17,7 +17,10 @@
 
 ## Summary
 
-Remove the AllocationDetail CSV delivered by Spec 02c (merged under ASCA-55, PR #312). Per REF-CAP-16 (Kuroda-san, 2026-10-19), the new plans' revenue is already shown in the existing DailyRateCalculation CSV, and the CAP allocation breakdown moves to a Metabase table on ASCA-8. The dedicated CSV is no longer wanted.
+Two goals:
+
+1. **Remove** the AllocationDetail CSV delivered by Spec 02c (merged under ASCA-55, PR #312). Per REF-CAP-16 (Kuroda-san, 2026-10-19), the new plans' revenue is already shown in the existing DailyRateCalculation CSV, and the CAP allocation breakdown moves to a Metabase table on ASCA-8. The dedicated CSV is no longer wanted.
+2. **Make sure the allocated value lands in the daily-rate table.** With the report gone, the allocated amount (P) must be the `paid_price` stored in `log_daily_rate_calculation(_pre)` so it flows into the existing DailyRateCalculation CSV. **This already works** — 02a's `AllocationInjector::overwriteDailyRateRows()` overwrites `paid_price` with the allocated value in place (Option 1 overwrite N→P), and Glenn-san's ASCA-71 verification (2026-10-21) confirmed the allocated App amounts appear in the DailyRateCalculation CSV. So this goal is a **verification/assertion**, not new code: confirm the overwrite still holds after the report removal. Do NOT add a second write path — that would duplicate 02a.
 
 This is a change-request REMOVAL of already-merged code — not a new spec (mirrors the Spec 01 CR pattern and the 02d decommission).
 
@@ -59,6 +62,7 @@ Per REF-CAP-16/17 (Kuroda-san): the **AllocationDetail CSV is OUT of QA scope** 
 
 - [ ] `RevenueAllocationCsvService` and the `allocationDetailFile` config entry no longer exist.
 - [ ] Neither `DailyRateCalculationPreLogic` nor `SendJournalsDataLogic` references the AllocationDetail CSV; both batches still build their existing CSVs and ship their zip/email unchanged.
+- [ ] **The allocated value (P) is the `paid_price` in `log_daily_rate_calculation(_pre)`** after a run — confirmed still true after the report removal (02a's `overwriteDailyRateRows()` overwrite is untouched; the existing DailyRateCalculation CSV shows the allocated amounts, as on ASCA-71). No second/duplicate write path added.
 - [ ] `grep -r "AllocationDetail\|RevenueAllocationCsv\|allocationDetailFile" app/ config/ tests/` returns zero matches.
 - [ ] `php vendor/bin/phpunit tests/Unit/RevenueAllocation` and `tests/Feature/RevenueAllocation` pass (no regression; 02a/02b/outcomes/run-status untouched).
 - [ ] The 02c spec folder carries a superseded note; ASCA-66 and ASCA-68 code is unchanged.
