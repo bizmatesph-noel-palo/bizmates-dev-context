@@ -94,6 +94,24 @@ Every project directory follows this structure:
 
 **The rule:** If you're writing about someone ELSE's project, it goes in `research/`. If you're writing about YOUR project's decisions, it goes in `projects/{code}/`. If it's a general concept everyone needs, it goes in `domain-knowledge/`.
 
+### The three "knowledge" buckets — do not confuse them
+
+"Knowledge" is used in three places for three *different* genres. They have distinct names, homes, and contents. Match the genre, use the canonical name — never improvise a variant (e.g. a project `knowledge/` singular).
+
+| Genre | What it is | Canonical home | Format |
+|---|---|---|---|
+| **Domain facts** | What the business/system *is* — entities, products, integrations. Cross-project, permanent. | `domain-knowledge/` (repo root) | Reference entry (what it is, where it lives, which repo owns it) |
+| **Project lessons** | Failure patterns learned on a project — a concrete problem and how to avoid it. Project-scoped. | `projects/{code}/knowledge-base/` | Problem → Root Cause → Fix → Prevention (KB-article template) |
+| **Methodology / agent-behavior lessons** | How to *work* — process discipline, tooling, agent-behavior retrospectives. Project-agnostic. | `agentic-toolkit/knowledge/` (toolkit repo only) | Portable lesson (failure → root cause → guardrail → one-line test) |
+
+Disambiguation rules:
+
+- **`knowledge-base/` (plural, "-base") is the project-level folder** for failure-pattern lessons. It lives under `projects/{code}/`. ASCM's `projects/ascm/knowledge-base/` is the canonical example. **Never name a project folder just `knowledge/`** — that collides with the toolkit's meaning.
+- **`knowledge/` (singular) is the toolkit folder** for methodology and agent-behavior lessons. It never appears inside a project.
+- **`domain-knowledge/` is domain facts only** — not lessons, not decisions. If it's "here's a mistake and how to avoid it," it's a lesson (`knowledge-base/`), not a domain fact.
+- **A decision explainer / design rationale is NOT a `knowledge-base/` lesson.** "Why we chose X" (narrative, no Problem→Prevention shape) goes in `projects/{code}/documentation/`, alongside ADRs and design docs. `knowledge-base/` is reserved for the failure-pattern genre.
+- **Promotion path:** a project lesson that proves useful across 2+ projects can be generalized and promoted to the toolkit's `knowledge/` (methodology) or, if it's a domain fact, to `domain-knowledge/` — with human approval (see `knowledge-resolution.md` feedback loop).
+
 ## Naming Conventions
 
 - All files: kebab-case, lowercase
