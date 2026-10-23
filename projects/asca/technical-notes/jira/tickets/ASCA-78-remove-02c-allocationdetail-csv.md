@@ -1,6 +1,8 @@
 # ASCA-78 — [CR] Remove Spec 02c AllocationDetail CSV
 
-> **Created in JIRA 2026-10-22 as [ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)** — Sub-task under ASCA-55, Priority High, status To Do. This file is the full-Markdown source of record; the JIRA ticket carries the same content in Jira markup.
+> **Created in JIRA 2026-10-22 as [ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)** — Sub-task under ASCA-55, Priority High, status To Do. This file is the source of record; the JIRA ticket carries the same content (this Jira renders Markdown).
+>
+> **Handover to the dev:** the grounded footprint trace and paste-ready dev-Kiro prompt are below (see "Handover — how the dev executes this"). The dev follows that prompt so their Kiro's POV matches the authoring POV.
 
 **Type:** Sub-task
 **Parent:** ASCA-55 ([Spec 02c] — Coding)
@@ -83,3 +85,26 @@ Per REF-CAP-16/17 (Kuroda-san): the **AllocationDetail CSV is OUT of QA scope** 
 - REF-CAP-16 (source): `research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md`
 - ADR (decision): `projects/asca/documentation/ASCA-ADR-20261020-drop-02c-allocationdetail-csv.md`
 - Decommission precedent: `projects/asca/documentation/ASCA-ADR-20261005-datacorrection-decommission.md`
+
+---
+
+## Handover — how the dev executes this
+
+This is a **Change Request to a completed spec** — supersede, don't edit (toolkit: `workflows/spec-driven-development.md` → "Change Requests to an Already-Completed Spec"). It is a **lightweight CR** (surgical removal; no design cycle).
+
+**Grounding (read-only trace, line-level):**
+`projects/asca/technical-notes/investigation/20261023-02c-removal-footprint/REPORT-00-02c-removal-footprint.md` — exact files, lines, imports, the two open-question verdicts, and the hidden-consumer check, captured against live code on a branch equal to `feature/ASCA/ASCA-master`.
+
+**Paste-ready dev-Kiro prompt:**
+`projects/asca/technical-notes/jira/tickets/ASCA-78-dev-handover-prompt.md` — the context-load + task instructions for the assigned dev's Kiro, with the branch step and the "verify against live code first" discipline.
+
+**The one trap that makes this non-trivial (do NOT miss):**
+Do **not** `git revert` the 02c commit (`4c133642`). That commit also introduced KEEP code — the `RowKind` / `OutcomeType` enums now consumed by the ASCA-66 `LogAllocBundleOutcome` model and the 02a/02b `AllocationInjector`. A revert would delete surviving engine code. This is a **surgical** removal, not a revert.
+
+**Resolved open questions (from the trace):**
+- `LogAllocCalculationRun::hasCompletedRun()` → **DELETE the method** (only the two CSV sites call it; ASCA-68 uses `scopeActiveFinal()`).
+- All three mixed-name `tests/Unit/Libs/` files → **DELETE whole** (no editing; the base behavior tests are clean and must pass unchanged as the regression proof).
+
+**Supersede the spec:** stamp `.kiro/specs/asca-spec-02c-allocation-detail-csv/` SUPERSEDED (pointer to REF-CAP-16 / ADR-20261020). Do NOT regenerate or re-run its spec flow.
+
+**Tracking:** original 02c stories stay **Done**; log removal effort against ASCA-78.
