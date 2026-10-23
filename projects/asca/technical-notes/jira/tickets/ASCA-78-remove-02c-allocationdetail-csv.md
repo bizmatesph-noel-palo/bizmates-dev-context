@@ -9,7 +9,7 @@
 **Epic:** ASCA-52 ([Spec 02c] — AllocationDetail CSV)
 **Priority:** High
 **Assignee:** Dev
-**Hard deadline:** Remove before the CAP beta release **2026-12-01** (REF-CAP-17 / Kuroda-san)
+**Hard deadline:** Remove before the CAP beta release **2026-12-01** (REF-CAP-16, the 3:01 PM confirmation / Kuroda-san)
 **Source:** `research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md`
 **Decision:** `projects/asca/documentation/ASCA-ADR-20261020-drop-02c-allocationdetail-csv.md`
 

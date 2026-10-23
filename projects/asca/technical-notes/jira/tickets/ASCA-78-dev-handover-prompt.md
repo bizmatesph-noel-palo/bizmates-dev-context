@@ -27,7 +27,7 @@ Learn the agentic-toolkit and bizmates-dev-context, then read projects/asca/proj
 Task: ASCA-78 — remove the Spec 02c AllocationDetail CSV from the accounting repo. This is a Change Request to an already-completed/merged spec. Follow the toolkit's "Change Requests to an Already-Completed Spec" rule: supersede the 2c spec, do NOT edit it; the original spec/stories stay as the record of what was built.
 
 Authoritative sources to read first (do not act from memory):
-- Decision: research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md and research/CAP/REF-CAP-17-ASCA-Spec02c-Removal-Confirmation... (REF-CAP-16 carries the 3:01 PM confirmation: Dec-1 deadline + QA-exclude)
+- Decision + confirmation: research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md (this is the merged 02c thread: the 11:23 AM drop decision AND the 3:01 PM confirmation carrying the Dec-1 deadline + QA-exclude)
 - ADR: projects/asca/documentation/ASCA-ADR-20261020-drop-02c-allocationdetail-csv.md
 - The CR ticket: projects/asca/technical-notes/jira/tickets/ASCA-78-remove-02c-allocationdetail-csv.md
 - The grounded footprint trace (exact files/lines, line-number ground truth): projects/asca/technical-notes/investigation/20261023-02c-removal-footprint/REPORT-00-02c-removal-footprint.md
@@ -69,5 +69,5 @@ Then open a PR referencing ASCA-78. Do NOT merge without Lead (Noel) review. Log
 ## Notes for the Lead (not for the dev prompt)
 
 - This is a **lightweight CR** per the toolkit's proportionality rule — a surgical removal, no `design.md` cycle.
-- Tracking: original 02c stories (ASCA-53/54/55/56/58) stay **Done**; removal effort logs against **ASCA-78**.
+- Tracking: the completed 02c stories (ASCA-53/54/56/57/58) stay **Done**; ASCA-55 (Coding) stays open as the parent of this CR; removal effort logs against **ASCA-78**.
 - The `git revert` trap (RowKind/OutcomeType enums bundled into the 02c commit) is the single most important thing the dev must not miss — it's called out twice in the prompt deliberately.
