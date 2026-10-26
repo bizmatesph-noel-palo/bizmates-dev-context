@@ -8,7 +8,7 @@
 
 ## Current State (as of 2026-10-23 — DEV04 verified; 02c removal handed off; ASCI-01 at G1)
 
-**ASCA CAP integration is dev-complete + DEV04-verified.** The only remaining ASCA code work is the 02c AllocationDetail CSV removal ([ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78), handed to Throy-san 2026-10-23, Dec-1 deadline). ASCI-01 requirements are submitted to Kuroda-san for G1. Code state unchanged from 2026-10-19 (all Spec 01 + Spec 02 coding merged, PR #313 HEAD); what advanced since is **DEV04 deployment + command execution + QA allocation verification**:
+**ASCA CAP integration is dev-complete + DEV04-verified; the 02c removal is now merged too.** As of 2026-10-26: **ASCA-78 (02c AllocationDetail CSV removal) is DONE** (Throy, weekend — full allocation unit suite green, 126 tests / 43,662 assertions). **ASCA-79 (CEIL steering note) merged.** A fresh **DEV04 Oct–Nov command run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) is in progress** (Throy) to re-verify batch output on the post-removal code. ASCI-01 requirements **G1 feedback has been received from Kuroda-san** (shared at DSM) — now being ingested. What advanced earlier was **DEV04 deployment + command execution + QA allocation verification**:
 
 - ✅ **ASCA-master deployed to DEV04** (both repos: `accounting_related_system_for_freee` + `ls-database-migrations`).
 - ✅ **ASCA-24 (DEV04 Command Execution 20261020) — Done.** October (202610) + November (202611) batch commands executed on DEV04.
@@ -51,23 +51,26 @@
 **Status (2026-10-23, Lead):**
 - ✅ **ALL Spec 01 + Spec 02 coding MERGED** (unchanged): 02a (ASCA-40, PR #307), 02b (ASCA-47, PR #311), 02c (ASCA-48, PR #312), 02d (ASCA-61, PR #313); Spec 01 CR ASCA-66/67/68.
 - ✅ **DEV04 deploy + command execution (ASCA-24) + QA allocation verification (ASCA-71) all Done.** CAP allocation verified correct in the DailyRateCalculation CSV (Glenn-san, 2026-10-21).
-- ✅ Test state (2026-10-16 run): `tests/Unit/RevenueAllocation` 125/125, `tests/Feature/RevenueAllocation` 34/34 green.
+- ✅ Test state (post-ASCA-78 weekend run, 2026-10-25/26): `tests/Unit/RevenueAllocation` **126/126 green (43,662 assertions)** — the AllocationDetail tests are gone with the CSV; no regressions.
 - freee-400 = dev-env mailer config (not a code bug); Stripe errors out of ASCA scope.
-- ✅ **02c removal CR created + handed off (2026-10-23):** **[ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)** (sub-task under ASCA-55, Priority High, Dec-1 deadline). Grounded footprint trace + paste-ready dev-Kiro prompt attached; QA-scope note (Glenn) folded in. **Handover announced on Slack 2026-10-23.** Assigned to **Throy-san**.
-- ✅ **CEIL steering note ticketed:** **[ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)** (Task under ASCA-9) — one-file edit to `batch-execution-flow.md`; Lead to merge + log time.
-- ✅ **ASCI-01 requirements submitted to Kuroda-san for G1 (2026-10-23)** — see ASCI project-context.
+- ✅ **02c removal (ASCA-78) — DONE** (Throy, weekend of 2026-10-25/26). Surgical removal per the grounded trace; full `tests/Unit/RevenueAllocation` suite green (126 tests / 43,662 assertions). The allocated value remains the `paid_price` in the daily-rate table (02a overwrite untouched), so the existing DailyRateCalculation CSV still carries it.
+- ✅ **CEIL steering note (ASCA-79) — merged** (Lead).
+- ✅ **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — done** (Throy, reported at the 2026-10-26 DSM): redeployed to DEV04 + re-ran the batch commands to **regenerate the reports for QA after the 02c-removal changes**. Month wording reconciled — the batch processes the *previous* month, so "September and October **data**" produces the "October–November **report**"; same run, data-month vs report-month wording. (Tidy the JIRA status to Done if not already.)
+- ✅ **ASCI-01 G1 feedback received from Kuroda-san** (shared at DSM) — now ours to ingest/process. (Was "submitted 2026-10-23"; feedback has since come back.)
+- 🔵 **DB-safety fix (ASCA-70 follow-on):** two sub-tickets drafted + grounded + dev-Kiro prompts ready (accounting under ASCA-17, ls-db under ASCA-16) — **awaiting Lead review → create in JIRA.** Drafts: `technical-notes/jira/tickets/ASCA-17-SUB-TBA-...` and `ASCA-16-SUB-TBA-...`.
 
-**Next actions (as of 2026-10-23):**
-1. **02c removal (ASCA-78)** — Throy-san executing. **Check back Monday (2026-10-27)**; do not rush/micromanage. Hard deadline 2026-12-01.
-2. **CEIL note (ASCA-79)** — Lead to merge the one-file change + log JIRA time (imminent).
-3. **ASCI-01 G1** — **awaiting Kuroda-san**; Lead to **follow up Monday (2026-10-27)**. No feedback yet.
-4. **ASCI leave-coverage** — **Throy-san oversees ASCI during the Lead's leave (2026-11-11 → 11-23).** Confirm formally as the last item before leave.
-5. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
+**Next actions (as of 2026-10-26):**
+1. **Ingest Kuroda-san's ASCI-01 G1 feedback** → fold in, then promote requirements to the code repo `.kiro/specs/` + create the ASCI epic/stories. (Capture the feedback as a verbatim REF first.)
+2. **Create the two DB-safety fix sub-tickets** (ASCA-17 accounting / ASCA-16 ls-db) after Lead review of the drafts.
+3. **Confirm ASCA-80** DEV04 Oct–Nov run results when Throy posts them.
+4. **NEW ASCH (2027) requirements — review (committed in the Friday Slack update):** Kuroda-san/Patrick-san provided **new requirements for an ASCH project targeted at 2027**. ⚠️ This is a **NEW** ASCH — NOT the 2026 cancelled predecessor; it reuses the name only. **Not yet reviewed.** Task: read the new requirements, then determine whether they overlap with / reuse the old cancelled ASCH research or are entirely new scope, and prepare feedback for Kuroda-san. (New project — likely its own context/tracking later; for now it's a Lead review task.)
+5. **ASCI leave-coverage** — **Throy-san oversees ASCI during the Lead's leave (2026-11-11 → 11-23).** Confirm formally before leave.
+6. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
 
 **Doc/admin (low effort, optional):**
 - **02a CIP wording fix (doc-only)** — Req 2.2/2.5 + design.md CIP clause already corrected in the code-repo 02a. Fold into the ASCA-40 Coding PR (no code/tasks impact).
 
-> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** ASCA CAP Integration is dev-complete + DEV04-verified; only the 02c removal (ASCA-78, handed to Throy, Dec-1) + admin closes remain, so ASCA is well-positioned against the leave. **ASCI is the watch item** — blocked on Kuroda-san's G1; **Throy-san to oversee ASCI during the leave.**
+> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** ASCA CAP Integration is dev-complete + DEV04-verified and the 02c removal is merged, so ASCA is well-positioned against the leave (only the DB-safety fix + admin closes remain). **ASCI is the watch item** — G1 feedback received and being processed; if design/build runs into the leave window, **Throy-san oversees ASCI**.
 
 ### Key source docs (Spec 02)
 - **REF-CAP-12** — G1 round 1 feedback

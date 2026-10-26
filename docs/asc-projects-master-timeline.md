@@ -32,9 +32,20 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-23)
+## ⚠️ Status / Actuals (as of 2026-10-26)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-26 (02c removal DONE; ASCI G1 feedback received)
+
+- **Spec 01 + Spec 02 code:** ✅ all MERGED to ASCA-master; DEV04 deployed + verified (ASCA-24, ASCA-71).
+- **02c AllocationDetail CSV removal ([ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)) — ✅ DONE** (Throy, weekend). Surgical removal; `tests/Unit/RevenueAllocation` green at 126 tests / 43,662 assertions. Allocated value still lands in the daily-rate table (02a overwrite); existing DailyRateCalculation CSV carries it.
+- **CEIL steering note ([ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)) — ✅ merged.**
+- **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — ✅ done** (Throy, reported at 2026-10-26 DSM): redeployed + re-ran batch to **regenerate QA reports** after the 02c removal. Month wording reconciled — batch processes the previous month, so "Sept/Oct data" → "Oct/Nov report" (same run).
+- **DB-safety fix (ASCA-70 follow-on):** two sub-tickets drafted + grounded (accounting→ASCA-17, ls-db→ASCA-16) with dev-Kiro prompts; awaiting Lead review → JIRA creation.
+- **NEW ASCH (2027) requirements:** Kuroda-san/Patrick-san provided new requirements for a **2027 ASCH** project (⚠️ NOT the 2026 cancelled predecessor — name reused only). Lead to review and determine overlap with the old cancelled ASCH vs. new scope, then give feedback. Not yet reviewed.
+- **ASCI-01 requirements → G1 feedback RECEIVED from Kuroda-san** (shared at DSM). Now being ingested/processed; then promote requirements + create the ASCI epic/stories → design/build. (Supersedes the 2026-10-23 "awaiting sign-off" line.)
+- **Leave coverage (Nov 11–23):** **Throy-san to oversee ASCI** during the Lead's leave (confirm before leave). ASCA is dev-complete + 02c-removed → minimal leave risk.
 
 ### Snapshot — 2026-10-23 (02c removal handed off; ASCI-01 at G1)
 
