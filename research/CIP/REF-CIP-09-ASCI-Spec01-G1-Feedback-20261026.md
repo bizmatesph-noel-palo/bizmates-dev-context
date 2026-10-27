@@ -138,6 +138,44 @@
 
 ---
 
+## Comment 4 — Hayato Kuroda (2026-10-28, 2:01 PM) — Round 2 / G1 confirmation
+
+> Hi @Noel san
+> cc: @Roi Patrick Florentino
+>
+> Thank you for the quick update.
+> I checked the requirements and all of what I requested are reflected.
+> The worked examples (standard and half-price months) are all correct too.
+>
+> **[Your two questions]**
+>
+> **Refund basis = the original charge's booked amount:**
+> Agreed. It gives the same results for standard and half-price months. It is also more accurate when the amount is not evenly divisible. For example, for a full refund of a ¥50,000 site amount, the booked App is 2,621. The fixed ratio would reverse −2,622 (¥1 too much), while the booked basis reverses exactly −2,621.
+> One wording request: "the refunded month's booked App amount" can be read as the day-prorated amount for a target month. Please define it as the original charge's booking amount before day-proration (and the same for original_site_amount).
+>
+> **price_flag = 2:**
+> Please follow CIP-179 (the 10025 flag-2 rows are removed). My W-2 comment that it "stays" was wrong. ASCI does not depend on it, so the Req 1.2 open item can be closed.
+>
+> **[Two small additions (G1 condition)]**
+> **A. Req 2 — which App row receives the converted amount.** The conversion writes the App booking amount (3,980) onto the paired App (10022) charge. Please state how the Coaching Intensive charge is paired with its App charge.
+>
+> I'd like to reuse the CAP rule (Spec 01 G1 1-5): group by student_id + order_no + plan_id, and match by contract period (start/end date) when order_no is NULL. Convert only when exactly 1 Coaching Intensive + 1 App is found. Otherwise skip without guessing (V-3), and record the reason on the run.
+> Plz also state what is booked for a skipped pair (e.g. the site amounts 75,900 / 0 stay as they are).
+>
+> **B. Req 4 — where the App part of a refund is written.** The site creates a negative only on the Coaching Intensive charge, so there is no App row for the App portion.
+> When the refund is executed after the contract has ended (e.g. a consumption-tax exemption or a shareholder refund months later), there is no App row in that month at all. Please state that CIP reuses the ASCA 02b Req 9 mechanism: insert a new App row in the refund's execution month carrying the negative App amount.
+>
+> **[For the design phase (no need to add to the requirements now)]**
+>
+> What happens if the original charge cannot be found via log_refund_history
+> Multiple refunds on the same charge: the total App refund should not exceed the original App booking amount
+> Add a test with a non-divisible amount (e.g. a ¥50,000 full refund) so the booked-basis behavior is actually covered
+>
+> Once A and B are added, G1 is approved from my side.
+> Thank you
+
+---
+
 ## Cross-Reference (added by Noel — NOT part of the verbatim source)
 
 > Interpretation, classification, and impact analysis. None of this is Kuroda-san's text. The verbatim source ends above.
@@ -198,5 +236,20 @@ Classification and proposed edits are in `projects/asci/` for the Lead's review.
 | CIP-179 (Jefferson) | The ticket that creates the 10025 price_flag=3 record — referenced by W-1. **Verified in Jira (2026-10-26):** Task "Add price_flag for product_id 10025", created 2026-09-25, status **QA Passed** (as of 2026-10-12), tier1 65,382 / tier2 32,691 tax-excl. Its ACs **also remove** the 10025 price_flag=2 rows (66,500 / 33,250) — the source of the W-2 "stays vs removed" open item. No seeder for this record exists in any of the four code repos (`ReferencePriceSeeder` explicitly disclaims it: "CAP-only; no CIP (10025) row"). |
 | CIP Calc Patterns (Google Sheets) | Pattern 3 (half-price conversion) cited in B-1 / Comment 2. |
 | `domain-knowledge/campaigns.md` → Honki Set | Authoritative source for the Honki Set shape used only as a **durable campaign fact** (month-1 + month-6, 50%, App ¥0). Its ASCH proration mechanics (List-Price-basis) are **NOT** used — they predate CIP residual pricing and do not apply to CIP. |
+
+### Round 2 (Comment 4, 2026-10-28) — G1 approved pending A + B
+
+**Verdict:** approved-with-two-additions. "Once A and B are added, G1 is approved from my side." All round-1 changes and both worked-example tables confirmed correct.
+
+| Item | Classification | Action |
+|---|---|---|
+| Refund basis = original charge's booked amount | ✅ Confirmed (with the ¥50,000 → −2,621 vs −2,622 non-divisible rationale) | None — already folded |
+| Wording: define "booked amount" precisely | **Req change** | Req 4.1/4.2: define as the **original charge's booking amount BEFORE day-proration** (same for `original_site_amount`); drop the "refunded month's" phrasing |
+| price_flag = 2 "stays" was wrong | ✅ Open item CLOSED | Req 1.2: follow CIP-179 (flag-2 rows removed); remove the "stays vs removed / open item" framing |
+| **A — Req 2 App-charge pairing** | **Req change (G1 condition)** | Add AC: pair Coaching Intensive ↔ App via the CAP rule (Spec 01 G1 1-5) — group by `student_id + order_no + plan_id`, match by contract period when `order_no` NULL; convert only when exactly 1 CI + 1 App; else skip (V-3), record reason on the run; a skipped pair keeps its site amounts (75,900 / 0) |
+| **B — Req 4 App refund row home** | **Req change (G1 condition)** | Add AC: reuse the **ASCA 02b Req 9** mechanism — insert a new App row in the refund's execution month carrying the negative App amount (site makes a negative only on the CI charge; after contract-end there is no App row that month) |
+| 3 design-phase notes | Parked (he says NOT in requirements) | missing `log_refund_history` link handling; multi-refund cap (Σ App refund ≤ original App booking); add a non-divisible (¥50,000) test |
+
+**Status:** fold the 3 req changes (wording + A + B) and close the flag-2 item → that meets the G1 condition → then promote to the code-repo `.kiro/specs/` + create the ASCI epic/stories. Design-phase notes recorded here for the G2 phase.
 
 > Compliance note: the verbatim section reproduces Kuroda-san's own review comments in full (internal source document, preserved by request). All analysis in this Cross-Reference section is paraphrased interpretation.
