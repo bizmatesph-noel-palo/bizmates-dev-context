@@ -1,6 +1,6 @@
 # ASCA-82 — [Spec 01][DB Safety] Structural guard so tests cannot drop a real/shared DB (accounting)
 
-> **Created in JIRA 2026-10-27 as [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82)** — Sub-task under ASCA-17, Priority High, Unassigned, status To Do. Linked "relates to" ASCA-70. This file is the source of record; the JIRA ticket carries the same content (renders Markdown). Dev handover prompt: `ASCA-XX-dbsafety-accounting-dev-handover-prompt.md`.
+> **Created in JIRA 2026-10-27 as [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82)** — Sub-task under ASCA-17, Priority High, Unassigned, status To Do. Linked "relates to" ASCA-70. This file is the source of record; the JIRA ticket carries the same content (renders Markdown). Dev handover prompt: `ASCA-82-dbsafety-accounting-dev-handover-prompt.md`.
 
 **Type:** Subtask
 **Parent:** ASCA-17 ([Spec 01] — Coding (accounting application))
@@ -64,7 +64,7 @@ Structural guard applied at **bootstrap** (before any test's `setUp()` runs), so
 
 ## Handover — resources the dev needs
 
-1. **Paste-ready dev-Kiro prompt (START HERE):** `projects/asca/technical-notes/jira/tickets/ASCA-XX-dbsafety-accounting-dev-handover-prompt.md` — context-load + branch step + the decided A/B/C approach. Paste into the assigned dev's Kiro.
+1. **Paste-ready dev-Kiro prompt (START HERE):** `projects/asca/technical-notes/jira/tickets/ASCA-82-dbsafety-accounting-dev-handover-prompt.md` — context-load + branch step + the decided A/B/C approach. Paste into the assigned dev's Kiro.
 2. **Read-only grounding (exact files/lines on current HEAD):** `projects/asca/technical-notes/investigation/20261023-dbsafety-reground-post-asca78/REPORT-00-dbsafety-reground.md`.
 3. **Gold-standard guard to mirror:** `ls-database-migrations/tests/Unit/Database/AllocMigrationRoundTripTest.php` (assert-before-DDL, fail-loud).
 4. **Branch:** `git checkout feature/ASCA/ASCA-master && git pull && git checkout -b feature/ASCA/ASCA-82-dbsafety-guard-accounting`.

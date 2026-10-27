@@ -11,7 +11,7 @@
 ```
 git checkout feature/ASCA/ASCA-master
 git pull
-git checkout -b feature/ASCA/ASCA-XX-dbsafety-guard-accounting
+git checkout -b feature/ASCA/ASCA-82-dbsafety-guard-accounting
 ```
 
 ## Paste this into the dev's Kiro (one message)
@@ -23,7 +23,7 @@ Learn the agentic-toolkit and bizmates-dev-context, then read projects/asca/proj
 Task: Add a STRUCTURAL DB-safety guard so ASCA tests cannot drop/truncate a real shared DB (e.g. DEV04 bizmates_new, tables like trn_charge). Today the only protection is a fragile per-test inline sqlite switch; a real-table wipe already happened once on DEV04. This is a test-infrastructure fix, NOT an allocation-logic change.
 
 Read first (ground truth — do not act from memory, and do not reference deleted files):
-- The CR ticket: projects/asca/technical-notes/jira/tickets/ASCA-XX-dbsafety-guard-accounting.md
+- The CR ticket: projects/asca/technical-notes/jira/tickets/ASCA-82-dbsafety-guard-accounting.md
 - The re-grounding report (current HEAD, exact files/lines): projects/asca/technical-notes/investigation/20261023-dbsafety-reground-post-asca78/REPORT-00-dbsafety-reground.md
 - The ls-db gold-standard guard to mirror: ls-database-migrations/tests/Unit/Database/AllocMigrationRoundTripTest.php
 

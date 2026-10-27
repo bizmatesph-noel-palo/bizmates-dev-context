@@ -11,7 +11,7 @@
 ```
 git checkout feature/ASCA/ASCA-master
 git pull
-git checkout -b feature/ASCA/ASCA-XX-dbsafety-guard-lsdb
+git checkout -b feature/ASCA/ASCA-83-dbsafety-guard-lsdb
 ```
 
 ## Paste this into the dev's Kiro (one message)
@@ -23,7 +23,7 @@ Learn the agentic-toolkit and bizmates-dev-context, then read projects/asca/proj
 Task: Codify the DB-safety guard in ls-database-migrations so a FUTURE test cannot issue CREATE/DROP TABLE/DROP DATABASE/TRUNCATE against a real DB without the same guards the one existing DDL test already uses. ls-db is ALREADY safe today — this is preventive hardening, NOT a fix.
 
 Read first (ground truth):
-- The CR ticket: projects/asca/technical-notes/jira/tickets/ASCA-XX-dbsafety-guard-lsdb.md
+- The CR ticket: projects/asca/technical-notes/jira/tickets/ASCA-83-dbsafety-guard-lsdb.md
 - The re-grounding report §E (exact guard method names): projects/asca/technical-notes/investigation/20261023-dbsafety-reground-post-asca78/REPORT-00-dbsafety-reground.md
 - The ONLY DDL-issuing test (the pattern to extract): ls-database-migrations/tests/Unit/Database/AllocMigrationRoundTripTest.php
 
