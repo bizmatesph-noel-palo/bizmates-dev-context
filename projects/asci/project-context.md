@@ -60,12 +60,13 @@ An earlier version of this file described ASCI as "a configuration exercise — 
 
 ## What ASCI actually builds
 
-1. **New master price record (ls-db seeder):** the Coaching Intensive `price_flag = 3` row (10025, ¥65,382 tax-excl / ¥71,920 tax-incl) so CIP coaching is booked as a real charge. (The App `price_flag = 2` = ¥3,980 already exists; no new App record.) — CIP plans/products/banners are already seeded (CapCoachingAppPlansSeeder created App 10022; CoachingIntensivePlanSeeder created 10025 + plans 1028–1032).
-2. **Verify existing pro-ration + discounts** produce the expected per-charge amounts for CIP Solo (1028) and lesson-bundled (1029–1032): Lesson, Coaching Intensive (71,920), App (3,980) each day-prorated independently; first-month discounts apply per charge, no special-casing.
-3. **CIP refund split (the real logic):** a negative on the Coaching Intensive charge is distributed to App by a fixed per-type rule. Lesson refunds always land on the Lesson charge (existing ASC, untouched). See the refund table below.
-4. **DEV04 validation** for CIP plans.
+1. **Verify the Coaching Intensive price record (NOT built by ASCI):** the `price_flag = 3` row (10025, ¥65,382 tax-excl / ¥71,920 tax-incl / tier2 ¥32,691) is **created by CIP-179** (Jefferson; QA Passed 2026-10-12 — verified in Jira), not by an ASCI seeder. ASCI verifies it shipped to the target env. ⚠️ CIP-179 **also removes** the 10025 `price_flag = 2` rows (66,500/33,250) — REF-CIP-09 W-2 said that row "stays"; open item with Kuroda-san. (The App `price_flag = 2` on 10022 ≈ ¥3,980 tax-incl already exists; no new App record. Plans/products/banners already seeded.)
+2. **Site→booking conversion (B-1 — the new requirement from G1):** on the site the Coaching Intensive charge carries the whole Coaching+App amount (¥75,900) and the App charge is ¥0. The batch converts to Coaching ¥71,920 / App ¥3,980 (App = `FLOOR(site × 3,980 / 75,900)`) **before** day-proration. Campaign-agnostic (no Honki/month detection); a half-price month → 35,960 / 1,990. Not the allocation engine.
+3. **Verify existing pro-ration + discounts** produce the expected per-charge amounts for CIP Solo (1028) and lesson-bundled (1029–1032): Lesson, Coaching Intensive (71,920), App (3,980) each day-prorated independently after the conversion; first-month AND 6th-month 50% discounts (2027 Honki) apply via the conversion, no special-casing.
+4. **CIP refund split (the real logic):** a negative on the Coaching Intensive charge is distributed to App by the month's booked-amount ratio. Lesson refunds always land on the Lesson charge (existing ASC, untouched). See the refund table below.
+5. **DEV04 validation** for CIP plans.
 
-**Estimated effort:** small for normal flow (price record + verification); the refund split is the substantive piece. (The old "1–1.5 weeks, config-only" estimate predates the refund scope.)
+**Estimated effort:** small for normal flow (price-record verification + the B-1 conversion step); the refund split is the substantive piece. (The old "1–1.5 weeks, config-only" estimate predates the refund scope.)
 
 ---
 
@@ -77,23 +78,28 @@ CIP refunds are booked as one negative on the **Coaching Intensive charge** (Adm
 |---|---|---|---|---|
 | Cooling-off (90%) | negative, existing ASC (e.g. 1029: −13,365) | −68,310 (= 75,900 × 90%) | Coaching −64,728 / App −3,582 | — |
 | Consumption-tax exemption | negative, existing ASC (e.g. −1,350) | −6,900 | Coaching −6,538 / App −362 | — |
-| Shareholder benefit | Lesson row → Lesson charge (existing ASC) | Coaching only, −19,800 (interim cap) | **no App split** | refund_charge_id in `trn_receipt_locked_charge` ⇒ shareholder |
-| Contract overlap (B2C/B2E → B2B) | Lesson refunded only | **no refund** | no refund | — |
+| Full refund | — / Lesson separate | −75,900 | Coaching −71,920 / App −3,980 | — |
+| Shareholder benefit | Lesson row → Lesson charge (existing ASC) | Coaching only, −19,800 (CSV amount; cap applied upstream, NOT in batch) | **no App split** (confirmed, REF-CIP-09 W-3) | refund_charge_id in `trn_receipt_locked_charge` ⇒ shareholder |
+| Contract overlap (B2C/B2E → B2B) | Lesson refunded only | **no negative on CI charge** | no refund | — |
 
-- App fixed-ratio (non-shareholder): App = `FLOOR(refund × 3,980 / 75,900)`, Coaching = refund − App (REF-CIP-07).
+- Non-shareholder split (updated REF-CIP-09 Comment 2): App = `FLOOR(refund × App_booked / original_site_amount)`, Coaching = refund − App — basis is the **month's booked App amount** (3,980/75,900 standard; 1,990/37,950 half-price), found via `log_refund_history`, **not** a hard-coded 3,980. Explicit type list: cooling-off / tax-exemption / **full refund**.
+- Half-price month (2027 Honki): cooling-off CI −34,155 → −32,364/−1,791; tax-exemption −3,450 → −3,269/−181; full −37,950 → −35,960/−1,990.
+- Shareholder: batch books the CSV amount **as-is**; it does NOT apply or truncate the ¥19,800 (interim) cap — that is upstream (REF-CIP-09 W-3).
 - Negative recognized as a lump in the `paid_at` (execution) month; not day-prorated, not spread back.
 
 ---
 
-## Open decision (for Kuroda-san / Lead)
+## Decisions & open items
 
-**CIP-refund home** — identification + behavior are fully specified (REF-CIP-07/08), but WHERE the CIP-refund split is implemented is not yet decided: extend ASCA 02b (CAP refund), a new sub-spec, or inside ASCI. Proposed: handle it **inside ASCI-01** (CIP-specific, keeps CIP work in one place). To confirm at ASCI G1.
+**CIP-refund home — ✅ CONFIRMED inside ASCI-01** (Kuroda-san G1 feedback, REF-CIP-09, 2026-10-22): "specify and implement the CIP refund split inside ASCI-01." ASCI stays one spec. (Was the explicit G1 question.)
+
+**Open item — flag-2 "stays vs removed":** REF-CIP-09 W-2 says the 10025 `price_flag = 2` (¥66,500) row stays (unused by CIP); CIP-179's acceptance criteria **remove** it (verified in Jira). Does not affect CIP (uses flag-3), but confirm with Kuroda-san. Also pending human checks: CIP-179 released to the target env (DB), and the half-price tax-exemption −181 figure blessed by Accounting (Wada-san).
 
 ---
 
 ## Spec shape (proposed — for G1)
 
-Because the normal flow is small and the refund rules are fully specified, ASCI is proposed as **one spec, ASCI-01**, with sections for: (a) the CIP booking price record, (b) existing-proration/discount verification, (c) the CIP refund split. Split into a second spec only if the refund home lands elsewhere.
+ASCI is **one spec, ASCI-01** (refund home confirmed inside it — REF-CIP-09), with five requirements: (1) verify the CIP-179 booking price record, (2) the B-1 site→booking conversion, (3) existing-proration/discount verification, (4) the CIP refund split, (5) DEV04 verification/tests.
 
 ---
 
@@ -115,6 +121,7 @@ Because the normal flow is small and the refund rules are fully specified, ASCI 
 | CIP refund patterns (normative) | `research/CIP/REF-CIP-06-CAP-CIP-Refund-Patterns-Overview-20260928.md` |
 | CIP refund-type identification | `research/CIP/REF-CIP-07-CIP-Refund-Type-Identification-20261005.md` |
 | Lesson-bundled CIP refund clarification | `research/CIP/REF-CIP-08-Lesson-Bundled-CIP-Refund-Clarification-20261020.md` |
+| **Kuroda-san G1 feedback (B-1, W-1..W-5, add-ons)** | `research/CIP/REF-CIP-09-ASCI-Spec01-G1-Feedback-20261026.md` |
 | CIP product/plan IDs + price matrix | `research/CIP/REF-CIP-04-Product-Plan-IDs-And-Price-Matrix-20260824.md` |
 | Technical design (shared framework) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
 | Master timeline (all ASC projects) | `docs/asc-projects-master-timeline.md` |
@@ -130,3 +137,5 @@ Because the normal flow is small and the refund rules are fully specified, ASCI 
 > **Status note (2026-10-23):** ASCI-01 requirements **committed and submitted to Kuroda-san for G1**. **No feedback yet** — Lead to **follow up Monday (2026-10-27)**. On sign-off: promote to the code repo `.kiro/specs/`, create the ASCI epic + stories, then design/tasks/implement. **Leave coverage (Lead on leave 2026-11-11 → 11-23): Throy-san oversees ASCI** during the absence (to be confirmed formally as the last pre-leave item). ASCI is the critical-path watch item, since it is blocked on an external G1 and its downstream work may run during the leave.
 >
 > **Status note (2026-10-26):** **Kuroda-san has PROVIDED his G1 feedback** on ASCI-01 (shared at DSM) — this supersedes the 2026-10-23 "awaiting feedback" note. The ball is now on our side: **ingest + process the feedback**, capture it as a verbatim REF (same approach as the other Kuroda-san inputs), fold it into `requirements.md`, then promote to the code repo `.kiro/specs/` and create the ASCI epic + stories → design/build. **Action: capture the feedback (where it came through) and process it.** Leave coverage unchanged (Throy-san oversees ASCI during 2026-11-11 → 11-23).
+>
+> **Status note (2026-10-26, later):** **G1 feedback ingested, processed, and folded in.** Kuroda-san's three Confluence comments captured verbatim as **REF-CIP-09**; verdict = **approved-with-changes** ("once B-1 is reflected, I'm happy to sign off"); **refund home CONFIRMED inside ASCI-01**. `requirements.md` revised (now 5 requirements): added Req 2 (B-1 site→booking conversion, campaign-agnostic), reworded Req 1 (record exists via CIP-179, flag-2 legacy), Req 4 (explicit refund types incl. full refund; basis = month's booked App amount via `log_refund_history`; shareholder no-cap/Coaching-only confirmed), Req 5 (first + 6th-month discount tests). **Jira-verified:** CIP-179 (Add price_flag for 10025) = QA Passed 2026-10-12, Jefferson, tier1 65,382/tier2 32,691 — and its ACs **remove** the 10025 flag-2 rows (→ W-2 "stays vs removed" open item with Kuroda-san). No ASCI seeder creates the record (confirmed via grep; `ReferencePriceSeeder` disclaims it). Synced the flag-2/CIP-179 facts across master-timeline, plans-and-products, and the ASCA technical-design doc. **Still GATED (not done):** sending the revised draft back to Kuroda-san (Confluence — human action), promoting `requirements.md` to the code repos' `.kiro/specs/`, and creating the ASCI epic + stories. **Pending human checks:** CIP-179 released to target env (DB query); −181 half-price tax-exemption figure blessed by Accounting (Wada-san). Leave coverage unchanged (Throy-san, 2026-11-11 → 11-23).
