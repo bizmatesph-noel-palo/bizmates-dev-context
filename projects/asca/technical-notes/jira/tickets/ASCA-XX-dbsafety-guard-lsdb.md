@@ -1,4 +1,6 @@
-# ASCA-XX — [DB Safety] Codify the test-DDL guard so a future ls-db test can't wipe a real DB
+# ASCA-83 — [Spec 01][DB Safety] Codify the test-DDL guard so a future ls-db test can't wipe a real DB
+
+> **Created in JIRA 2026-10-27 as [ASCA-83](https://bizmates.atlassian.net/browse/ASCA-83)** — Sub-task under ASCA-16, Priority Medium, Unassigned, status To Do. Linked "relates to" ASCA-70. This file is the source of record; the JIRA ticket carries the same content (renders Markdown). Dev handover prompt: `ASCA-XX-dbsafety-lsdb-dev-handover-prompt.md`.
 
 **Type:** Subtask
 **Parent:** ASCA-16 ([Spec 01] — Coding (ls-db migrations))
@@ -8,6 +10,10 @@
 **Source (investigations):** ASCA-70 (Cristoff's findings, Done) · verification + re-grounding reports (see accounting ticket)
 
 ---
+
+## The key point — this is PREVENTIVE, not a bug fix
+
+ls-db is **already safe**: the only DDL-issuing test (`AllocMigrationRoundTripTest`) is fully guarded. The job is to **extract that test's existing guards into something reusable** and add a tripwire so a FUTURE test can't add unguarded DDL. **Do NOT change `AllocMigrationRoundTripTest`'s behavior** — only lift its guard methods into a shared trait/base and have it use them (no behavior change). There is no present defect to fix. Companion to the accounting guard (ASCA-82).
 
 ## Summary
 
@@ -47,6 +53,14 @@ ls-db is **already safe** — the one DDL-issuing test (`AllocMigrationRoundTrip
 
 - `vendor/bin/phpunit` green; round-trip test skips by default.
 - Negative check: a scratch test file with unguarded `DROP TABLE` is caught by the CI check / aborted by the assertion.
+
+## Handover — resources the dev needs
+
+1. **Paste-ready dev-Kiro prompt (START HERE):** `projects/asca/technical-notes/jira/tickets/ASCA-XX-dbsafety-lsdb-dev-handover-prompt.md`.
+2. **Read-only grounding (§E = the guard method names/lines to extract):** `projects/asca/technical-notes/investigation/20261023-dbsafety-reground-post-asca78/REPORT-00-dbsafety-reground.md`.
+3. **Branch:** `git checkout feature/ASCA/ASCA-master && git pull && git checkout -b feature/ASCA/ASCA-83-dbsafety-guard-lsdb`.
+
+Verify against live code first; only ask the Lead (Noel) if the live code differs. PR referencing ASCA-83; do not merge without Lead review.
 
 ## Tracking
 

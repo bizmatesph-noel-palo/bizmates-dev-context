@@ -57,7 +57,7 @@
 - ✅ **CEIL steering note (ASCA-79) — merged** (Lead).
 - ✅ **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — done** (Throy, reported at the 2026-10-26 DSM): redeployed to DEV04 + re-ran the batch commands to **regenerate the reports for QA after the 02c-removal changes**. Month wording reconciled — the batch processes the *previous* month, so "September and October **data**" produces the "October–November **report**"; same run, data-month vs report-month wording. (Tidy the JIRA status to Done if not already.)
 - ✅ **ASCI-01 G1 feedback received from Kuroda-san** (shared at DSM) — now ours to ingest/process. (Was "submitted 2026-10-23"; feedback has since come back.)
-- 🔵 **DB-safety fix (ASCA-70 follow-on):** two sub-tickets drafted + grounded + dev-Kiro prompts ready (accounting under ASCA-17, ls-db under ASCA-16) — **awaiting Lead review → create in JIRA.** Drafts: `technical-notes/jira/tickets/ASCA-17-SUB-TBA-...` and `ASCA-16-SUB-TBA-...`.
+- 🔵 **DB-safety fix (ASCA-70 follow-on):** two guard tickets fully fleshed + grounded on live HEAD + paste-ready dev-Kiro prompts (accounting under ASCA-17 = High, ls-db under ASCA-16 = Medium) — **awaiting Lead go → create in JIRA.** Handover drafts: `technical-notes/jira/tickets/ASCA-XX-dbsafety-guard-accounting.md` (+ `-accounting-dev-handover-prompt.md`) and `ASCA-XX-dbsafety-guard-lsdb.md` (+ `-lsdb-dev-handover-prompt.md`); the `ASCA-16/17-SUB-TBA-...` sub-task scope drafts accompany them.
 
 **Next actions (as of 2026-10-26):**
 1. **Ingest Kuroda-san's ASCI-01 G1 feedback** → fold in, then promote requirements to the code repo `.kiro/specs/` + create the ASCI epic/stories. (Capture the feedback as a verbatim REF first.)

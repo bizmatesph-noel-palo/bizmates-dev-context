@@ -1,4 +1,6 @@
-# ASCA-XX — [DB Safety] Structural guard so tests cannot drop a real/shared DB (accounting)
+# ASCA-82 — [Spec 01][DB Safety] Structural guard so tests cannot drop a real/shared DB (accounting)
+
+> **Created in JIRA 2026-10-27 as [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82)** — Sub-task under ASCA-17, Priority High, Unassigned, status To Do. Linked "relates to" ASCA-70. This file is the source of record; the JIRA ticket carries the same content (renders Markdown). Dev handover prompt: `ASCA-XX-dbsafety-accounting-dev-handover-prompt.md`.
 
 **Type:** Subtask
 **Parent:** ASCA-17 ([Spec 01] — Coding (accounting application))
@@ -8,6 +10,10 @@
 **Source (investigations):** ASCA-70 (Cristoff's findings, Done) · verification `projects/asca/technical-notes/investigation/20261023-asca70-dbsafety-verification/REPORT-00-asca70-verification.md` · **re-grounding (current HEAD)** `projects/asca/technical-notes/investigation/20261023-dbsafety-reground-post-asca78/REPORT-00-dbsafety-reground.md`
 
 ---
+
+## The one trap — do NOT miss this
+
+**The guard MUST act at BOOTSTRAP, not in a base `setUp()`.** Every risky test re-points `mysql→sqlite` INSIDE its own `setUp()` (after `parent::setUp()`). A guard placed in a base `setUp()` runs BEFORE that switch and would fail every test. Bootstrap (`CreatesApplication::createApplication()`) runs before all `setUp()`, so neutralising there is order-proof and needs zero edits to the 43 tests. Get this wrong and either every test fails, or the guard does nothing. (Full rationale in the dev-handover prompt.)
 
 ## Summary
 
@@ -55,6 +61,15 @@ Structural guard applied at **bootstrap** (before any test's `setUp()` runs), so
 
 - `vendor/bin/phpunit` → green with the guard active.
 - Negative check (above): guard aborts, no DROP on a real connection. Revert.
+
+## Handover — resources the dev needs
+
+1. **Paste-ready dev-Kiro prompt (START HERE):** `projects/asca/technical-notes/jira/tickets/ASCA-XX-dbsafety-accounting-dev-handover-prompt.md` — context-load + branch step + the decided A/B/C approach. Paste into the assigned dev's Kiro.
+2. **Read-only grounding (exact files/lines on current HEAD):** `projects/asca/technical-notes/investigation/20261023-dbsafety-reground-post-asca78/REPORT-00-dbsafety-reground.md`.
+3. **Gold-standard guard to mirror:** `ls-database-migrations/tests/Unit/Database/AllocMigrationRoundTripTest.php` (assert-before-DDL, fail-loud).
+4. **Branch:** `git checkout feature/ASCA/ASCA-master && git pull && git checkout -b feature/ASCA/ASCA-82-dbsafety-guard-accounting`.
+
+Verify against live code first; only ask the Lead (Noel) if the live code differs from the prompt — do NOT improvise a different design. PR referencing ASCA-82; do not merge without Lead review.
 
 ## Tracking
 
