@@ -32,9 +32,20 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-26)
+## ⚠️ Status / Actuals (as of 2026-10-27)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-27 (ASCI G1 feedback folded + sent back; DB-safety ready to delegate)
+
+- **ASCI-01 G1 feedback — ✅ ingested, folded in, and SENT BACK to Kuroda-san.** Kuroda-san's 3 Confluence comments captured verbatim as **REF-CIP-09**; verdict **approved-with-changes** ("once B-1 is reflected, I'll sign off"); **refund home CONFIRMED inside ASCI-01**. `requirements.md` revised to **5 requirements** (added Req 2 = B-1 site→booking conversion, campaign-agnostic; reworded Req 1 record-exists-via-CIP-179; Req 4 explicit refund types + full refund + basis = month's booked App amount via `log_refund_history`; shareholder no-in-batch-cap/Coaching-only confirmed; Req 5 first+6th-month tests). **Sent back to Kuroda-san for final G1 confirmation + announced on the team Slack channel (2026-10-27).** Awaiting his tick → then promote to the code-repo `.kiro/specs/` + create the ASCI epic/stories.
+- **CIP-179 verified (Jira):** Task "Add price_flag for 10025", Jefferson, QA Passed 2026-10-12, tier1 65,382 / tier2 32,691 — and its ACs **remove** the 10025 flag-2 rows (→ **open item** raised to Kuroda-san: W-2 said "stays," ticket removes). No ASCI seeder creates the record (grep-confirmed). flag-2/CIP-179 facts synced across master-timeline, plans-and-products, ASCA technical-design.
+- **ASCI JIRA tickets — drafted (NOT created).** 1 epic + 6 stories fleshed out in `projects/asci/technical-notes/jira/asci-spec-01-jira-layout.md` with `ASCI-XX#` placeholders. Gated on final G1 tick.
+- **DB-safety fix (ASCA-70 follow-on) — ✅ ready to delegate.** Both guard tickets fully fleshed + grounded on live HEAD (accounting `07ab9ab6`, ls-db `94ec95d`) with paste-ready dev-Kiro prompts; live-code claims verified (`CreatesApplication::createApplication()` body + the hard `->drop()` at `Dev04CapTestDataSeederTest.php:307`). **Pending: Lead go → create the two JIRA sub-tasks (accounting under ASCA-17 = High; ls-db under ASCA-16 = Medium) → implement.** Cleanup: supersede the stale `ASCA-16/17-SUB-TBA` template drafts.
+- **Spec 01 + Spec 02 code:** ✅ all MERGED to ASCA-master; DEV04 deployed + verified (ASCA-24, ASCA-71). Unchanged.
+- **NEW ASCH (2027):** still **not yet reviewed** by Lead.
+- **Pending human checks (ASCI):** CIP-179 released to the target env (DB); Accounting (Wada-san) to bless the −181 half-price tax-exemption figure.
+- **Leave coverage (Nov 11–23):** Throy-san to oversee ASCI (confirm before leave).
 
 ### Snapshot — 2026-10-26 (02c removal DONE; ASCI G1 feedback received)
 
