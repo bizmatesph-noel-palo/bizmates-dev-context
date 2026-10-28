@@ -176,6 +176,16 @@
 
 ---
 
+## Comment 5 — Hayato Kuroda (2026-10-28, 10:51 AM) — G1 approved + one design-phase point
+
+> Thanks @Noel san, I confirmed all of them have been reflected, G1 approved.
+>
+> One small point for the design phase: Addition A says the skip reason is recorded "on the run", but CIP doesn't use the allocation run tables (No-engine invariant). Please decide in design where CIP skip reasons are recorded.
+>
+> Thank you
+
+---
+
 ## Cross-Reference (added by Noel — NOT part of the verbatim source)
 
 > Interpretation, classification, and impact analysis. None of this is Kuroda-san's text. The verbatim source ends above.
@@ -251,5 +261,7 @@ Classification and proposed edits are in `projects/asci/` for the Lead's review.
 | 3 design-phase notes | Parked (he says NOT in requirements) | missing `log_refund_history` link handling; multi-refund cap (Σ App refund ≤ original App booking); add a non-divisible (¥50,000) test |
 
 **Status:** fold the 3 req changes (wording + A + B) and close the flag-2 item → that meets the G1 condition → then promote to the code-repo `.kiro/specs/` + create the ASCI epic/stories. Design-phase notes recorded here for the G2 phase.
+
+**Comment 5 (2026-10-28, 10:51 AM) — G1 confirmed reflected + one design-phase point.** Kuroda-san confirmed all folded changes and **approved G1**. He flagged a self-consistency point: Addition A (Req 2.8) says the skip reason is recorded "on the run", but CIP has no allocation run tables (no-engine invariant), so it cannot reuse CAP's on-the-run recording. **Not a G1 change** — captured as **design-phase note #4** (decide where CIP records conversion skip reasons) and the Req 2.8 wording softened to drop the "on the run" assumption. Carried into the G2 story (ASCI-10).
 
 > Compliance note: the verbatim section reproduces Kuroda-san's own review comments in full (internal source document, preserved by request). All analysis in this Cross-Reference section is paraphrased interpretation.

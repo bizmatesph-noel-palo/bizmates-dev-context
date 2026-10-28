@@ -72,7 +72,7 @@ Bizmates-only (`mysql`). Depends on the ASCA foundation + DEV04 env. Deadline 20
 5. AFTER conversion, THE two booking amounts SHALL each be day-prorated by the **existing** logic. (Day-proration uses **CEIL** on every month except the contract's last month, which takes the remainder — per REF-CAP-17; NOT floor. This governs the verification expected values in Req 5.)
 6. THE conversion SHALL be a fixed per-month arithmetic transform — it SHALL NOT invoke the allocation engine, formula, `mst_alloc_reference_prices`, or run/anchor tracking. (The "no allocation engine" invariant holds: a per-charge arithmetic split is not the engine.)
 7. THE converted App booking amount (¥3,980) SHALL be written onto the **paired App (10022) charge**. THE system SHALL pair the Coaching Intensive charge with its App charge by **reusing the CAP pairing rule (ASCA Spec 01 G1 1-5):** group by `student_id` + `order_no` + `plan_id`; when `order_no` is NULL, match by contract period (`start_date`/`end_date`). (REF-CIP-09 Addition A)
-8. THE system SHALL perform the conversion ONLY when **exactly 1 Coaching Intensive + 1 App** charge is found for the pair. WHERE the pairing is ambiguous (not exactly 1+1), THE system SHALL **skip without guessing (V-3)** and record the reason on the run; the skipped pair's **site amounts stay as they are** (Coaching Intensive ¥75,900 / App ¥0 — no conversion applied). (REF-CIP-09 Addition A)
+8. THE system SHALL perform the conversion ONLY when **exactly 1 Coaching Intensive + 1 App** charge is found for the pair. WHERE the pairing is ambiguous (not exactly 1+1), THE system SHALL **skip without guessing (V-3)** and **record the skip reason** (where CIP records skip reasons is a **design-phase decision** — CIP has no allocation run tables per the no-engine invariant, so it cannot reuse CAP's on-the-run recording; see Design-phase notes); the skipped pair's **site amounts stay as they are** (Coaching Intensive ¥75,900 / App ¥0 — no conversion applied). (REF-CIP-09 Addition A, Comment 5)
 
 ## Requirement 3: Normal CIP charges recognized via existing pro-ration (no engine)
 
@@ -176,6 +176,7 @@ Kuroda-san explicitly deferred these to the design phase (not G1 requirements); 
 1. **Missing original charge:** define behavior when the original charge cannot be found via `log_refund_history` (the refund split has no basis to read).
 2. **Multiple refunds on one charge:** the total App refund across refunds SHALL NOT exceed the original App booking amount (cumulative cap).
 3. **Non-divisible test:** add a test with a non-divisible amount (e.g. a ¥50,000 full refund → App −2,621) so the booked-basis behavior (exact, vs the −2,622 a fixed ratio would over-reverse) is actually covered.
+4. **Where CIP records conversion skip reasons (Req 2.8):** CAP records a skip reason "on the run", but CIP has **no allocation run tables** (no-engine invariant), so it cannot reuse that. Decide in design where a CIP conversion skip (not exactly 1 CI + 1 App) is recorded — e.g. a log line, a dedicated lightweight table, or the existing batch log. (REF-CIP-09 Comment 5 — Kuroda-san, 2026-10-28.)
 
 ## References
 
