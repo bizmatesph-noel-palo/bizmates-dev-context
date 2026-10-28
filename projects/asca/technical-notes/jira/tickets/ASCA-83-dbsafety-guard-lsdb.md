@@ -33,7 +33,7 @@ ls-db is **already safe** — the one DDL-issuing test (`AllocMigrationRoundTrip
 ## Scope (ls-db repo `ls-database-migrations`)
 
 - [ ] **Extract the guard pattern** from `AllocMigrationRoundTripTest` into a reusable trait or base class (the opt-in / name-allowlist / collision-refusal / assert-before-DDL / fail-loud methods), and have `AllocMigrationRoundTripTest` use it (no behavior change).
-- [ ] **Add a guardrail against unguarded DDL** — either a lightweight CI/grep check that flags any new `tests/` file containing `dropIfExists` / `Schema::drop` / `DROP TABLE` / `DROP DATABASE` / `TRUNCATE` / `CREATE DATABASE` not using the shared guard, OR a base-`TestCase` assertion mirroring the accounting fail-closed guard.
+- [ ] **Add a guardrail against unguarded DDL** — **DECIDED (Lead, 2026-10-28): use (a) the CI/grep check** that flags any new `tests/` file containing `dropIfExists` / `Schema::drop` / `DROP TABLE` / `DROP DATABASE` / `TRUNCATE` / `CREATE DATABASE` not using the shared guard. NOT the base-`TestCase` assertion (b): `AllocMigrationRoundTripTest` legitimately uses a **real `bizmates_mysql` scratch DB** (it can't be sqlite — the alloc migrations hard-code `Schema::connection('bizmates_mysql')`), so a "must be disposable/sqlite" assertion would fail that guarded test. Wire (a) into the PR pipeline; if ls-db has no CI gate, it degrades to a convention/pre-commit check (flag to Lead). Do not build both.
 - [ ] **Document** (repo steering or a test README) that any DDL in ls-db tests MUST go through the guard pattern.
 
 ## Out of scope / do NOT touch
