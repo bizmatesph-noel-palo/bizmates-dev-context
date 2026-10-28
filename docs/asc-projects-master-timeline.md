@@ -32,9 +32,19 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-27)
+## ⚠️ Status / Actuals (as of 2026-10-28)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-28 (ASCI-01 G1 APPROVED; epic + stories created; DB-safety tickets created)
+
+- **ASCI-01 — ✅ G1 APPROVED (Kuroda-san, 2026-10-28).** Round-2 reply captured verbatim (REF-CIP-09 Comment 4). Two additions folded into `requirements.md`: **A** = Req 2 App-charge pairing (reuse CAP G1 1-5; skip/V-3 on ambiguity, skipped pair stays 75,900/0); **B** = Req 4 App-refund-row inserted in the execution month via ASCA 02b Req 9. Plus a wording fix (refund basis = original charge's booking amount **before day-proration**) and the flag-2 "stays vs removed" open item **closed** (Kuroda confirmed CIP-179 removes it). 3 items deferred to design (missing-link handling, cumulative App-refund cap, non-divisible ¥50,000 test).
+- **ASCI JIRA created (2026-10-27):** Epic **ASCI-8** + 6 stories **ASCI-9..14** (Requirements/Architecture/Coding/Code Review/Dev Testing/QA), all unassigned. Layout file backfilled with real keys.
+- **Next for ASCI:** promote `requirements.md` → code repos' `.kiro/specs/` (with valid `.config.kiro`) to unlock the spec UI "Continue to Design" → G2 (design + tasks).
+- **ASCA-70 DB-safety fix — ✅ TICKETS CREATED (2026-10-27):** **ASCA-82** (accounting, High, under ASCA-17) + **ASCA-83** (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70, each with a paste-ready dev-Kiro prompt + grounding report. Handover files renamed to real keys. **Next: assign to a dev.**
+- **Pending human checks (ASCI):** CIP-179 released to the target env (DB); Accounting (Wada-san) to bless the −181 half-price tax-exemption figure.
+- **NEW ASCH (2027):** still **not yet reviewed** by Lead.
+- **Leave coverage (Nov 11–23):** Throy-san to oversee ASCI (confirm before leave).
 
 ### Snapshot — 2026-10-27 (ASCI G1 feedback folded + sent back; DB-safety ready to delegate)
 
