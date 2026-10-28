@@ -125,6 +125,7 @@ ASCI is **one spec, ASCI-01** (refund home confirmed inside it — REF-CIP-09), 
 | CIP product/plan IDs + price matrix | `research/CIP/REF-CIP-04-Product-Plan-IDs-And-Price-Matrix-20260824.md` |
 | Technical design (shared framework) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
 | Master timeline (all ASC projects) | `docs/asc-projects-master-timeline.md` |
+| Task tracker (day-to-day actuals) | `docs/asc-projects-task-tracker.md` |
 | ASCA project context (shared) | `projects/asca/project-context.md` |
 | Plans & products reference | `domain-knowledge/plans-and-products.md` |
 
