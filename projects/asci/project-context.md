@@ -32,6 +32,7 @@ An earlier version of this file described ASCI as "a configuration exercise — 
 | Full name | ASC for CIP (Coaching Intensive Plan) |
 | Upstream project | CIP (Jefferson's team) |
 | Code repo | `accounting_related_system_for_freee`, `ls-database-migrations` |
+| Project branch | **`feature/ASCI/ASCI-master`** (both repos) — branched from `feature/ASCA/ASCA-master` (the ASCA foundation base), created 2026-10-28 |
 | Lead | Noel Palo |
 | Developer | Throy Embudo, Cristoff Danganan |
 | QA | Glenn Flamiano |

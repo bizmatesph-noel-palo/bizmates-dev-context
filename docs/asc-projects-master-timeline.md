@@ -30,6 +30,8 @@
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
 | DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) | — |
 
+> **Work branches (both code repos — `accounting_related_system_for_freee` + `ls-database-migrations`):** ASCA → **`feature/ASCA/ASCA-master`**; ASCI → **`feature/ASCI/ASCI-master`** (branched from `feature/ASCA/ASCA-master`, 2026-10-28). Historical `feature/ASCA/ASCA-master` references throughout this doc are ASCA's branch and are correct as-is.
+
 ---
 
 ## ⚠️ Status / Actuals (as of 2026-10-28)
@@ -40,7 +42,8 @@
 
 - **ASCI-01 — ✅ G1 APPROVED (Kuroda-san, 2026-10-28).** Round-2 reply captured verbatim (REF-CIP-09 Comment 4). Two additions folded into `requirements.md`: **A** = Req 2 App-charge pairing (reuse CAP G1 1-5; skip/V-3 on ambiguity, skipped pair stays 75,900/0); **B** = Req 4 App-refund-row inserted in the execution month via ASCA 02b Req 9. Plus a wording fix (refund basis = original charge's booking amount **before day-proration**) and the flag-2 "stays vs removed" open item **closed** (Kuroda confirmed CIP-179 removes it). 3 items deferred to design (missing-link handling, cumulative App-refund cap, non-divisible ¥50,000 test).
 - **ASCI JIRA created (2026-10-27):** Epic **ASCI-8** + 6 stories **ASCI-9..14** (Requirements/Architecture/Coding/Code Review/Dev Testing/QA), all unassigned. Layout file backfilled with real keys.
-- **Next for ASCI:** promote `requirements.md` → code repos' `.kiro/specs/` (with valid `.config.kiro`) to unlock the spec UI "Continue to Design" → G2 (design + tasks).
+- **ASCI work branch created (2026-10-28):** `feature/ASCI/ASCI-master` in **both** repos (`accounting_related_system_for_freee`, `ls-database-migrations`), branched from `feature/ASCA/ASCA-master` (the ASCA foundation base). (ASCA work stays on `feature/ASCA/ASCA-master`.)
+- **Next for ASCI:** promote `requirements.md` → code repos' `.kiro/specs/` **on `feature/ASCI/ASCI-master`** (with valid `.config.kiro`) to unlock the spec UI "Continue to Design" → G2 (design + tasks).
 - **ASCA-70 DB-safety fix — ✅ TICKETS CREATED (2026-10-27):** **ASCA-82** (accounting, High, under ASCA-17) + **ASCA-83** (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70, each with a paste-ready dev-Kiro prompt + grounding report. Handover files renamed to real keys. **Next: assign to a dev.**
 - **Pending human checks (ASCI):** CIP-179 released to the target env (DB); Accounting (Wada-san) to bless the −181 half-price tax-exemption figure.
 - **NEW ASCH (2027):** still **not yet reviewed** by Lead.

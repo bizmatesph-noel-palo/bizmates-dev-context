@@ -47,6 +47,7 @@
 - **ASCI-01 G1 APPROVED** (Kuroda-san). Round-2 reply captured (REF-CIP-09 Comment 4); additions A (Req 2 App-charge pairing, CAP G1 1-5 + skip/V-3) and B (Req 4 App-refund row via ASCA 02b Req 9) folded into `requirements.md`; wording fix (refund basis = original charge's booking amount before day-proration); flag-2 open item closed (CIP-179 removes it). 3 items deferred to design.
 - **ASCI JIRA created:** Epic **ASCI-8** + stories **ASCI-9..14** (all unassigned). Layout file backfilled with real keys.
 - Master timeline + ASCI project-context updated to G1-approved; this task tracker created.
+- **ASCI work branch created:** `feature/ASCI/ASCI-master` in both repos (accounting + ls-db), branched from `feature/ASCA/ASCA-master`. Branch recorded across ASCI project-context (Key Info), requirements.md (Dependencies §1), and the master timeline (JIRA Projects note + snapshot). ASCA branch unchanged = `feature/ASCA/ASCA-master`.
 
 ### 2026-10-27
 - **ASCI-01 round-1 G1 feedback** ingested + folded in (REF-CIP-09): new Req 2 (site→booking conversion), W-1..W-5, two 10-23 add-ons. Sent back to Kuroda-san + announced on Slack.
