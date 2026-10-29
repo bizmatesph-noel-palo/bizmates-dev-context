@@ -59,11 +59,12 @@
 - ✅ **ASCI-01 G1 feedback received from Kuroda-san** (shared at DSM) — now ours to ingest/process. (Was "submitted 2026-10-23"; feedback has since come back.)
 - ✅ **DB-safety fix (ASCA-70 follow-on) — TICKETS CREATED (2026-10-27).** [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82) (accounting, High, under ASCA-17) + [ASCA-83](https://bizmates.atlassian.net/browse/ASCA-83) (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70. Each has a paste-ready dev-Kiro prompt + grounding report in its Handover section. Source-of-record + handover files: `technical-notes/jira/tickets/ASCA-82-dbsafety-guard-accounting.md` (+ `ASCA-82-dbsafety-accounting-dev-handover-prompt.md`) and `ASCA-83-dbsafety-guard-lsdb.md` (+ `ASCA-83-dbsafety-lsdb-dev-handover-prompt.md`). **Next: assign to a dev.** (The `ASCA-16/17-SUB-TBA-...` scope stubs remain as earlier drafts.)
 
-**Next actions (as of 2026-10-26):**
-1. **Ingest Kuroda-san's ASCI-01 G1 feedback** → fold in, then promote requirements to the code repo `.kiro/specs/` + create the ASCI epic/stories. (Capture the feedback as a verbatim REF first.)
-2. **Create the two DB-safety fix sub-tickets** (ASCA-17 accounting / ASCA-16 ls-db) after Lead review of the drafts.
-3. **Confirm ASCA-80** DEV04 Oct–Nov run results when Throy posts them.
-4. **NEW ASCH (2027) requirements — review (committed in the Friday Slack update):** Kuroda-san/Patrick-san provided **new requirements for an ASCH project targeted at 2027**. ⚠️ This is a **NEW** ASCH — NOT the 2026 cancelled predecessor; it reuses the name only. **Not yet reviewed.** Task: read the new requirements, then determine whether they overlap with / reuse the old cancelled ASCH research or are entirely new scope, and prepare feedback for Kuroda-san. (New project — likely its own context/tracking later; for now it's a Lead review task.)
+**Next actions (as of 2026-10-28):**
+> Live task status is tracked in `docs/asc-projects-task-tracker.md` (Remaining checklist + Daily log). Summary below.
+1. ✅ **DONE — ASCI-01 G1 feedback ingested + folded + G1 APPROVED** (Kuroda-san 2026-10-28; REF-CIP-09 rounds 1+2); ASCI epic+stories created (ASCI-8..14). **Still pending:** promote `requirements.md` → code repo `.kiro/specs/` → G2 design/tasks.
+2. ✅ **DONE — DB-safety fix sub-tickets created** (ASCA-82 accounting / ASCA-83 ls-db, unassigned). **Still pending:** assign to a dev → implement.
+3. **Confirm ASCA-80** DEV04 Oct–Nov run results (Throy reported done at the 2026-10-26 DSM).
+4. **NEW ASCH (2027) requirements — review:** Kuroda-san/Patrick-san provided **new requirements for an ASCH project targeted at 2027**. ⚠️ A **NEW** ASCH — NOT the 2026 cancelled predecessor; reuses the name only. **Not yet reviewed.** Task: read the new requirements, determine overlap with the old cancelled ASCH vs. new scope, prepare feedback for Kuroda-san.
 5. **ASCI leave-coverage** — **Throy-san oversees ASCI during the Lead's leave (2026-11-11 → 11-23).** Confirm formally before leave.
 6. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
 

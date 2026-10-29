@@ -30,17 +30,28 @@
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
 | DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) | — |
 
+> **Work branches (both code repos — `accounting_related_system_for_freee` + `ls-database-migrations`):** ASCA → **`feature/ASCA/ASCA-master`**; ASCI → **`feature/ASCI/ASCI-master`** (branched from `feature/ASCA/ASCA-master`, 2026-10-28). Historical `feature/ASCA/ASCA-master` references throughout this doc are ASCA's branch and are correct as-is.
+
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-28)
+## ⚠️ Status / Actuals (as of 2026-10-29)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-29 (ASCI at G2 review — critical-path gate; leave window ~2 weeks out)
+
+- **ASCI is the critical path.** ASCA is dev-complete + DEV04-verified + 02c-removed; the only ASCA remainder is assigning ASCA-82/83 (DB-safety guards). So ASCI Spec 01 is the sole work between now and the **2026/12/17** deadline / **2027/01/01** first prod run.
+- **ASCI blocked on G2 sign-off.** Yesterday's G2 artifacts are in review: **ASCI-9** (Requirements PR) + **ASCI-10** (Design + Tasks PR), both on the `feature/ASCI/ASCI-master` base, both format-validated. Nothing downstream (Coding ASCI-11 → G3 ASCI-12 → testing) can start until the Lead + Cristoff approve these two PRs.
+- **Priority (leave-window-driven):** (1) **clear ASCI G2 sign-off now** — cheapest action, unblocks everything; (2) **start ASCI-11 Coding (Cristoff)** immediately after, targeting Coding + G3 **done before Nov 11** (Lead owns G3 and is on leave Nov 11–23); (3) **formally confirm Throy-san's ASCI coverage this week**; (4) assign ASCA-82/83 as parallel pre-leave work; (5) defer the NEW ASCH (2027) review past the leave unless a quick first pass fits before Nov 11.
+- **Unchanged:** CIP-179-to-target-env + Wada-san's −181 blessing remain pending human checks (not code blockers). Day-to-day in `docs/asc-projects-task-tracker.md`.
 
 ### Snapshot — 2026-10-28 (ASCI-01 G1 APPROVED; epic + stories created; DB-safety tickets created)
 
 - **ASCI-01 — ✅ G1 APPROVED (Kuroda-san, 2026-10-28).** Round-2 reply captured verbatim (REF-CIP-09 Comment 4). Two additions folded into `requirements.md`: **A** = Req 2 App-charge pairing (reuse CAP G1 1-5; skip/V-3 on ambiguity, skipped pair stays 75,900/0); **B** = Req 4 App-refund-row inserted in the execution month via ASCA 02b Req 9. Plus a wording fix (refund basis = original charge's booking amount **before day-proration**) and the flag-2 "stays vs removed" open item **closed** (Kuroda confirmed CIP-179 removes it). 3 items deferred to design (missing-link handling, cumulative App-refund cap, non-divisible ¥50,000 test).
 - **ASCI JIRA created (2026-10-27):** Epic **ASCI-8** + 6 stories **ASCI-9..14** (Requirements/Architecture/Coding/Code Review/Dev Testing/QA), all unassigned. Layout file backfilled with real keys.
-- **Next for ASCI:** promote `requirements.md` → code repos' `.kiro/specs/` (with valid `.config.kiro`) to unlock the spec UI "Continue to Design" → G2 (design + tasks).
+- **ASCI work branch created (2026-10-28):** `feature/ASCI/ASCI-master` in **both** repos (`accounting_related_system_for_freee`, `ls-database-migrations`), branched from `feature/ASCA/ASCA-master` (the ASCA foundation base). (ASCA work stays on `feature/ASCA/ASCA-master`.)
+- **ASCI G2 artifacts done (2026-10-28, later):** `requirements.md` **promoted** to `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (valid `.config.kiro`; reformatted to the Kiro spec-format validator), and `design.md` + `tasks.md` **generated** (grounded in live code; both pass `validate_spec_format`; no-engine invariant preserved; all 4 design-phase notes resolved; 10-task plan). **PRs raised: ASCI-9 (Requirements), ASCI-10 (Design + Tasks).**
+- **Next for ASCI:** **G2 review + sign-off** (Lead + Dev Cristoff) on the ASCI-9 / ASCI-10 PRs → then **Coding (ASCI-11)** on `feature/ASCI/ASCI-11-...` → PR to `feature/ASCA/ASCA-master`. Day-to-day status in `docs/asc-projects-task-tracker.md`.
 - **ASCA-70 DB-safety fix — ✅ TICKETS CREATED (2026-10-27):** **ASCA-82** (accounting, High, under ASCA-17) + **ASCA-83** (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70, each with a paste-ready dev-Kiro prompt + grounding report. Handover files renamed to real keys. **Next: assign to a dev.**
 - **Pending human checks (ASCI):** CIP-179 released to the target env (DB); Accounting (Wada-san) to bless the −181 half-price tax-exemption figure.
 - **NEW ASCH (2027):** still **not yet reviewed** by Lead.

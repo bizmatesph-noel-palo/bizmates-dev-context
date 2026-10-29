@@ -32,6 +32,7 @@ An earlier version of this file described ASCI as "a configuration exercise — 
 | Full name | ASC for CIP (Coaching Intensive Plan) |
 | Upstream project | CIP (Jefferson's team) |
 | Code repo | `accounting_related_system_for_freee`, `ls-database-migrations` |
+| Project branch | **`feature/ASCI/ASCI-master`** (both repos) — branched from `feature/ASCA/ASCA-master` (the ASCA foundation base), created 2026-10-28 |
 | Lead | Noel Palo |
 | Developer | Throy Embudo, Cristoff Danganan |
 | QA | Glenn Flamiano |
@@ -125,6 +126,7 @@ ASCI is **one spec, ASCI-01** (refund home confirmed inside it — REF-CIP-09), 
 | CIP product/plan IDs + price matrix | `research/CIP/REF-CIP-04-Product-Plan-IDs-And-Price-Matrix-20260824.md` |
 | Technical design (shared framework) | `projects/asca/documentation/asc-allocation-framework-technical-design.md` |
 | Master timeline (all ASC projects) | `docs/asc-projects-master-timeline.md` |
+| Task tracker (day-to-day actuals) | `docs/asc-projects-task-tracker.md` |
 | ASCA project context (shared) | `projects/asca/project-context.md` |
 | Plans & products reference | `domain-knowledge/plans-and-products.md` |
 
