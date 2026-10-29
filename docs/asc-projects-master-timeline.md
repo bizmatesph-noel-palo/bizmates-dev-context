@@ -34,9 +34,16 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-28)
+## ⚠️ Status / Actuals (as of 2026-10-29)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-29 (ASCI at G2 review — critical-path gate; leave window ~2 weeks out)
+
+- **ASCI is the critical path.** ASCA is dev-complete + DEV04-verified + 02c-removed; the only ASCA remainder is assigning ASCA-82/83 (DB-safety guards). So ASCI Spec 01 is the sole work between now and the **2026/12/17** deadline / **2027/01/01** first prod run.
+- **ASCI blocked on G2 sign-off.** Yesterday's G2 artifacts are in review: **ASCI-9** (Requirements PR) + **ASCI-10** (Design + Tasks PR), both on the `feature/ASCI/ASCI-master` base, both format-validated. Nothing downstream (Coding ASCI-11 → G3 ASCI-12 → testing) can start until the Lead + Cristoff approve these two PRs.
+- **Priority (leave-window-driven):** (1) **clear ASCI G2 sign-off now** — cheapest action, unblocks everything; (2) **start ASCI-11 Coding (Cristoff)** immediately after, targeting Coding + G3 **done before Nov 11** (Lead owns G3 and is on leave Nov 11–23); (3) **formally confirm Throy-san's ASCI coverage this week**; (4) assign ASCA-82/83 as parallel pre-leave work; (5) defer the NEW ASCH (2027) review past the leave unless a quick first pass fits before Nov 11.
+- **Unchanged:** CIP-179-to-target-env + Wada-san's −181 blessing remain pending human checks (not code blockers). Day-to-day in `docs/asc-projects-task-tracker.md`.
 
 ### Snapshot — 2026-10-28 (ASCI-01 G1 APPROVED; epic + stories created; DB-safety tickets created)
 
