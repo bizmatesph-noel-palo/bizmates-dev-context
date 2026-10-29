@@ -23,16 +23,17 @@
 - [ ] Assign **ASCA-82** (accounting DB-safety guard, High) + **ASCA-83** (ls-db, Medium) to a dev → implement → PR → Lead review (G3) → merge.
   - Both created 2026-10-27, unassigned; follow-on from ASCA-70. Handover prompts ready.
 
-### ASCI (ASC for CIP) — G1 cleared, build ahead
-- [ ] **Promote** `requirements.md` → code repos' `.kiro/specs/` (+ valid `.config.kiro`) to unlock the spec UI "Continue to Design". *(immediate next step)*
-- [ ] **G2 — Architecture** (ASCI-10): generate + review `design.md` + `tasks.md`.
-- [ ] **Coding** (ASCI-11): price-record verification, site→booking conversion (Req 2), CIP refund split (Req 4).
+### ASCI (ASC for CIP) — G2 artifacts in review (PRs raised)
+- [x] **Promote** `requirements.md` → `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (+ valid `.config.kiro`), reformatted to the Kiro spec-format validator. **PR raised for ASCI-9** (Requirements). *(done 2026-10-28)*
+- [x] **G2 — Architecture** (ASCI-10): `design.md` + `tasks.md` generated (grounded in live code; both validate clean). **PR raised for ASCI-10** (Design + Tasks). *(done 2026-10-28)*
+- [ ] **G2 review + sign-off** (Lead + Dev Cristoff): approve ASCI-9 + ASCI-10 PRs → unblocks Coding. *(awaiting review)*
+- [ ] **Coding** (ASCI-11): site→booking conversion (Req 2), CIP refund split (Req 4), price-record verification (Req 1). 10-task plan ready in `tasks.md`; Tasks 5–6 pre-grounded against live `trn_receipt_locked_charge` + `log_refund_history`. Branch `feature/ASCI/ASCI-11-...` → PR to `feature/ASCA/ASCA-master`. *(blocked on G2 sign-off)*
 - [ ] **Code Review / G3** (ASCI-12).
 - [ ] **Dev/Manual Testing** (ASCI-13) on DEV04: standard + first/6th-month conversion; refund worked examples (standard + half-price).
 - [ ] **QA Testing** (ASCI-14).
 - [ ] Human check: confirm **CIP-179** released to the target env (DB query).
 - [ ] Human check: Accounting (**Wada-san**) blesses the −181 half-price tax-exemption figure.
-- [ ] Design-phase notes to carry into G2 (REF-CIP-09 Comment 4): missing-`log_refund_history`-link handling; cumulative App-refund cap (≤ original App booking); non-divisible ¥50,000 test.
+- [x] Design-phase notes (REF-CIP-09 Comment 4 + 5) **resolved in `design.md`**: missing-`log_refund_history`-link handling (→ CipRefundAllocator: no split, record + warn); cumulative App-refund cap ≤ original App booking (→ clamp, remainder to Coaching); non-divisible ¥50,000 test (→ Task 8.1); where CIP records conversion skip reasons (→ `CipSkipLog` batch log line, no run table — keeps the no-engine invariant).
 
 ### Cross-cutting
 - [ ] **NEW ASCH (2027)** requirements — Lead to review overlap vs. the cancelled 2026 ASCH, then give feedback. *(not started)*
@@ -42,6 +43,13 @@
 ---
 
 ## Daily log (append-only)
+
+### 2026-10-28 (later — G2 artifacts)
+- **ASCI-01 promoted to the code repo.** `requirements.md` copied into `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` with a valid `.config.kiro` (fresh `specId`, `requirements-first` / `feature`). Reformatted to the Kiro spec-format validator (H1 `# Requirements Document`, top-level `## Requirements` + `## Glossary`) — the dev-context/PM draft format was rejected by the spec UI linter; captured as a reusable fix (toolkit `templates/spec/requirements.md` + a workflow-doc promotion checklist + KB lesson `projects/asci/knowledge-base/01-...`).
+- **G2 generated (ASCI-10).** `design.md` + `tasks.md` authored, grounded against live code (`CommonUtil::createDailyRateCalculation`, the negative-charge recognition branch, ASCA 02b's `RefundLinkageResolver`/`RefundAppRowWriter`, `CoachingIntensivePlanEnum`). Both pass `validate_spec_format`. Design keeps the **no-engine invariant** (CIP writes no `log_alloc_*`, reads no `mst_alloc_*`); two CIP-specific arithmetic transforms (site→booking conversion + refund split) wired into `CommonUtil` at two points; all 4 design-phase notes resolved. 10-task plan with 10 correctness properties.
+- **PRs raised:** **ASCI-9** (Requirements — the G1-approved `requirements.md` committed **verbatim** under its own story for time-logging/traceability; promotion, not regeneration — same discipline as ASCA 02a) and **ASCI-10** (Design + Tasks). Branch `feature/ASCI/ASCI-master` base. **Awaiting G2 review** (Lead + Cristoff) before Coding (ASCI-11).
+- **Grounded Tasks 5–6:** confirmed `trn_receipt_locked_charge` = single `charge_id` col (only writer = bizmates.jp shareholder-refund CSV import — validates the REF-CIP-07 dependency risk); `log_refund_history` = `id, refunded_charge_id, refund_charge_id, created_at`, direction `refund_charge_id → refunded_charge_id` (matches ASCA 02b). No task-description changes needed.
+- **Workflow doc aligned:** corrected the stale ASCI entry in `projects/asca/documentation/asca-development-workflow.md` (repo `accounting_related_system_for_freee` not "ls-db seeder"; scope = conversion + refund split; epic ASCI-8 CREATED).
 
 ### 2026-10-28
 - **ASCI-01 G1 APPROVED** (Kuroda-san). Round-2 reply captured (REF-CIP-09 Comment 4); additions A (Req 2 App-charge pairing, CAP G1 1-5 + skip/V-3) and B (Req 4 App-refund row via ASCA 02b Req 9) folded into `requirements.md`; wording fix (refund basis = original charge's booking amount before day-proration); flag-2 open item closed (CIP-179 removes it). 3 items deferred to design.
