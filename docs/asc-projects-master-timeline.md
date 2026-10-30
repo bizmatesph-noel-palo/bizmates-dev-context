@@ -34,9 +34,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-29)
+## ⚠️ Status / Actuals (as of 2026-10-30)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-10-30 (ASCI Coding started; ASCA DB-safety in progress; ASCH 2027 estimate grounded)
+
+- **ASCI — G2 CLEARED, Coding in progress.** ASCI-9 (Requirements) + ASCI-10 (Design + Tasks) **merged to `feature/ASCI/ASCI-master`**; **Throy-san picked up ASCI-11 Coding** (owner changed from the earlier-planned Cristoff). ASCI is the active critical path. Goal: Coding + G3 before the 2026-11-11 leave (Lead owns G3). *(Merge reported by Lead; local checkout not yet fetched — verify on next pull.)*
+- **ASCA DB-safety (ASCA-70 follow-on) — both in progress, PRs OPEN.** **ASCA-82** (accounting, High, Cristoff-san): ⚠️ test issues + **Kiro-generated code still contains a `drop table`** — the exact hazard the guard exists to prevent; must be fixed before merge. **ASCA-83** (ls-db, Medium, Throy-san): held pending ASCA-82.
+- **DEV04 QA rerun (Throy-san):** regenerated reports for the **2026/02/01 (Jan data) → 2026/12/01 (Nov data)** window for QA.
+- **ASCH 2027 — estimate grounded + investigation done.** Scoped as **downstream test-and-verify riding ASCA/ASCI, no new ASC code** (code-verified, REPORT-00: `CommonUtil`/`BundleDetectionService`/`TwoWayAllocationFormula`/`getContractDateInfoList` + ASCI campaign-agnostic conversion). Estimate: **Scenario A ~2–2.5 weeks** (3–5 testing-days + 1–2wk buffer); **Scenario B ~4–5wk contingency** only if a §7 run finds a gap. Sequence after ASCI-11. Residual risk is upstream (CDB clean charges + App 10021→10022). Requirements captured (REF-ASCH2027-01); Slack reply to Kuroda-san drafted, under Lead review. Docs: `projects/asch/technical-notes/research/ASCH-2027/` + day-to-day in the task tracker.
+- **Slack reply to Kuroda-san (ASCH 2027 Q1–3 + estimate):** drafted, **not yet sent** (Lead reviewing).
+- **Leave coverage (Nov 11–23):** Throy-san oversees ASCI — now also carrying ASCI-11 Coding; confirm formally before leave.
 
 ### Snapshot — 2026-10-29 (ASCI at G2 review — critical-path gate; leave window ~2 weeks out)
 

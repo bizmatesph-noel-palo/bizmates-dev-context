@@ -19,17 +19,17 @@
 
 ## Remaining — live checklist
 
-> **Priority (as of 2026-10-29, Lead on leave Nov 11–23 ≈ 2 weeks out):** (1) **G2 sign-off on ASCI-9 / ASCI-10** — the single blocker on the whole ASCI build chain; do first. (2) **Start ASCI-11 Coding (Cristoff)** right after sign-off — ASCI is the critical path (ASCA is done); aim to finish Coding + G3 **before Nov 11** (Lead owns G3). (3) **Confirm Throy-san's ASCI leave coverage this week.** (4) Assign ASCA-82/83 (parallel, pre-leave). (5) NEW ASCH (2027) — defer past the leave unless a quick first pass fits before Nov 11.
+> **Priority (as of 2026-10-30, Lead on leave Nov 11–23 ≈ 1.5 weeks out):** (1) **ASCI-11 Coding (Throy-san)** — G2 cleared (ASCI-9/10 merged to ASCI-master); Coding is now live and is the critical path. Push to finish Coding + G3 **before Nov 11** (Lead owns G3). (2) **Close out ASCA-82 DB-safety** — PR open, test issues + ⚠️ Kiro-generated code still contains a `drop table` (the exact risk ASCA-82 guards); fix before merge. ASCA-83 PR waits on 82. (3) **Confirm Throy-san's ASCI leave coverage** (now also carrying ASCI-11 Coding). (4) **Send the ASCH 2027 Slack reply** to Kuroda-san (drafted, under Lead review). (5) NEW ASCH (2027) verification stays deferred (downstream of ASCI-11; ~2–2.5 wk when it runs).
 
 ### ASCA (ASC for CAP) — essentially complete
-- [ ] Assign **ASCA-82** (accounting DB-safety guard, High) + **ASCA-83** (ls-db, Medium) to a dev → implement → PR → Lead review (G3) → merge.
-  - Both created 2026-10-27, unassigned; follow-on from ASCA-70. Handover prompts ready.
+- [ ] **ASCA-82** (accounting DB-safety guard, High) — **IN PROGRESS, Cristoff-san; PR OPEN.** ⚠️ Test issues found, and **Kiro-generated code still contains a `drop table`** — the exact hazard ASCA-82 exists to prevent. Must be removed/guarded before merge → Lead review (G3). Follow-on from ASCA-70.
+- [ ] **ASCA-83** (ls-db DB-safety guard, Medium) — **IN PROGRESS, Throy-san; PR OPEN**, intentionally held pending ASCA-82 (same pattern, 82 lands first). Follow-on from ASCA-70.
 
-### ASCI (ASC for CIP) — G2 artifacts in review (PRs raised)
+### ASCI (ASC for CIP) — G2 CLEARED; Coding (ASCI-11) in progress (Throy-san)
 - [x] **Promote** `requirements.md` → `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (+ valid `.config.kiro`), reformatted to the Kiro spec-format validator. **PR raised for ASCI-9** (Requirements). *(done 2026-10-28)*
 - [x] **G2 — Architecture** (ASCI-10): `design.md` + `tasks.md` generated (grounded in live code; both validate clean). **PR raised for ASCI-10** (Design + Tasks). *(done 2026-10-28)*
-- [ ] **G2 review + sign-off** (Lead + Dev Cristoff): approve ASCI-9 + ASCI-10 PRs → unblocks Coding. *(awaiting review)*
-- [ ] **Coding** (ASCI-11) — Dev (Cristoff), branch `feature/ASCI/ASCI-11-...` → PR to `feature/ASCA/ASCA-master`. *(blocked on G2 sign-off)* Day-to-day tasks (from `.kiro/specs/asci-spec-01-cip-integration/tasks.md`; all under `App\Libs\RevenueAllocation\Cip`):
+- [x] **G2 review + sign-off** — ✅ **ASCI-9 + ASCI-10 merged to `feature/ASCI/ASCI-master`** (per Lead, 2026-10-29/30); Throy-san picked up Coding. *(local checkout not yet fetched the merge — verify on next pull; recorded per Lead.)*
+- [ ] **Coding** (ASCI-11) — **IN PROGRESS, Dev (Throy-san)** (picked up after the G2 merge; note: owner is Throy-san, not Cristoff as earlier planned). Branch `feature/ASCI/ASCI-11-...` → PR to `feature/ASCA/ASCA-master`. Day-to-day tasks (from `.kiro/specs/asci-spec-01-cip-integration/tasks.md`; all under `App\Libs\RevenueAllocation\Cip`):
   - [ ] **T1** — value objects (`CipChargePair`, `CipOriginalBundleData`). *(root — unblocks the rest)*
   - [ ] **T2** — `CipBundlePairing` (reuse CAP pairing rule) + **T2.1** unit tests.
   - [ ] **T3** — `CipSkipLog` (structured batch log line; no run table — design-phase note 4).
@@ -64,11 +64,19 @@
   - _Source:_ `projects/asch/technical-notes/research/ASCH-2027/REF-ASCH2027-01-Requirements-20261023.md`. _Placement open item:_ consider a fresh `projects/asch-2027/` if this becomes a tracked project.
 - [ ] **(DEFERRED — decide later) Fix the ASCH doc location + structure.** `REF-ASCH2027-01` currently sits under `projects/asch/technical-notes/research/ASCH-2027/` — i.e. inside the **cancelled 2026** ASCH project tree, which is misleading. **Not** simply a new `projects/asch-2027/` (that would wrongly imply the 2026 ASCH shipped). Preferred approach (Lead, 2026-10-29): **archive the obsolete 2026 ASCH docs** (the pooled-proration engine design, 9-table schema, adjustment-journal/CSV material — all superseded) and **retain only what the 2027 ASCH still needs**, then settle the 2027 project's home/structure. Until then the current path stands. When moved, update references in: this tracker (`_Source:_` line), the REF doc's placement note, and any master-timeline mention.
 - [ ] **Leave coverage (Nov 11–23):** formally confirm Throy-san oversees ASCI before the Lead's leave.
-- [~] Commit the dev-context edits — **important docs committed** (2026-10-29). **Still pending/local-only:** `.ai/mcp/mcp.json` (local MCP config — Lead to handle later; ⚠️ note it is NOT covered by the `.gitignore` rule `.kiro/settings/*.json`, so it's a different path and will keep surfacing unless unstaged or ignored). Today's session also adds: `docs/asc-projects-task-tracker.md`, the ASCH-2027 REF doc, and the toolkit/accounting-repo spec changes (separate repos — commit per repo).
+- [~] Commit the dev-context edits — **most staged changes committed** (Lead, 2026-10-29). **Still uncommitted (intentional, Lead to handle):** `.ai/mcp/mcp.json` (local MCP config; ⚠️ NOT matched by the `.gitignore` rule `.kiro/settings/*.json` — different path, will keep surfacing) + **3 files** + the **new ASCH-2027 timeline/estimate files**. New since: today's tracker + master-timeline edits, the ASCH-2027 estimate (grounded) + investigation report, and the toolkit/accounting-repo spec changes (separate repos — commit per repo).
 
 ---
 
 ## Daily log (append-only)
+
+### 2026-10-30
+- **ASCI G2 CLEARED → Coding started.** ASCI-9 (Requirements) + ASCI-10 (Design + Tasks) **merged to `feature/ASCI/ASCI-master`** (Lead); **Throy-san picked up ASCI-11 Coding.** ASCI moves from "G2 in review" to "Coding in progress" — the critical path is now live. (Note: Coding owner is Throy-san, not Cristoff as earlier planned.) *Local checkout had not fetched the merge at time of writing — verify on next pull.*
+- **ASCA-82 (DB-safety, accounting) in progress — Cristoff-san, PR OPEN.** ⚠️ **Test issues found + Kiro-generated code still contains a `drop table`** — precisely the hazard ASCA-82 was created to guard against (follow-on from ASCA-70). Must be removed/guarded before merge.
+- **ASCA-83 (DB-safety, ls-db) in progress — Throy-san, PR OPEN**, held pending ASCA-82 (82 lands first, same pattern).
+- **DEV04 QA report rerun (Throy-san):** regenerated reports for the batch window **2026/02/01 (January data) → 2026/12/01 (November data)** for QA testing. (Batch processes the previous month, so the data-month vs report-month wording differs as usual.)
+- **ASCH 2027 estimate finalized + grounded.** Light estimate created (`asch-2027-development-estimate-20261029.md`), then a read-only investigation (REPORT-00) **verified in code** that ASCH needs **no new ASC logic** (all §7 transitions + §4.4/§4.5 resolve to "billing issues the charges, ASC books them"). Estimate updated to **Scenario A ~2–2.5 weeks** (3–5 testing-days + 1–2wk buffer) / **Scenario B ~4–5wk contingency**, with a grounding section citing the code evidence. ASCH 2027 Slack reply to Kuroda-san **drafted, under Lead review (not yet sent).**
+- **Docs aligned:** tracker advanced to 2026-10-30; master timeline given a 2026-10-30 snapshot + its first ASCH-2027 entry (was absent). Priority banner refreshed.
 
 ### 2026-10-29
 - **Status review (Lead).** Yesterday's G2 artifacts (ASCI-9 Requirements PR + ASCI-10 Design/Tasks PR) stand; **ASCI is now blocked on G2 review + sign-off** (Lead + Cristoff) — the one gate holding the entire ASCI build chain. No new code written today.
