@@ -17,7 +17,7 @@
 
 **Deadline:** ASCA + ASCI = 2026/12/17  
 **Start date:** Aug 24, 2026 (Monday) — per Kuroda-san's ASAP directive.  
-**Work schedule:** Mon–Fri only. PH holidays skipped. No weekend work.
+**Work schedule:** Mon–Fri only. PH holidays skipped. No weekend work. **PH and JP holiday calendars are independent** — each team works through the other's holiday unless the date is a holiday in BOTH. **Upcoming:** Mon **2026-11-02 (PH)** — PH dev team off, JP/Kuroda-san works; Tue **2026-11-03 (JP)** — Kuroda-san/PM off, PH dev team works. They do not stack: dev loses only 11-02, PM turnaround unavailable only 11-03. Both sit just before the Lead's 2026-11-11–23 leave, so they still compress the pre-leave ASCI-11 Coding + G3 window.
 
 ### JIRA Projects
 
