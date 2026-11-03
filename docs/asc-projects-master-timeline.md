@@ -34,9 +34,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-30)
+## ⚠️ Status / Actuals (as of 2026-11-03)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-03 (ASCI Coding reported done/no-PR; ASCA DB-safety + new ASCA-81; JP holiday)
+
+- **Today = JP holiday (Culture Day):** Kuroda-san/PM off; PH dev team working. Lead leave (Nov 11–23) ~6 working days out.
+- **ASCI-11 Coding — Throy-san reports DONE (2026-11-03 DSM), PR not yet raised.** Critical-path next step is the PR → G3 (Lead owns G3; target before 11-11). Not git-verified from the local checkout.
+- **ASCA DB-safety — ASCA-82 (accounting, Cristoff) + ASCA-83 (ls-db, Throy) PRs both still open, issues to fix;** ASCA-82's `drop table` finding is the blocker to clear; 83 waits on 82.
+- **ASCA-81 — NEW, reported over the long weekend; investigated by Cristoff-san (Jira comment, per DSM).** Scope/next step to be captured by the Lead — not yet described in the project docs.
+- **ASCH 2027 — estimate + code-check SENT to Kuroda-san** (Slack + Confluence); awaiting feedback (PM on JP holiday). Rough ~2–2.5 wk, no new ASC code (code-verified), pending upstream CDB confirmations.
+- **Leave coverage (Nov 11–23):** Throy-san oversees ASCI (also carrying ASCI-11); confirm formally before leave.
 
 ### Snapshot — 2026-10-30 (ASCI Coding started; ASCA DB-safety in progress; ASCH 2027 estimate grounded)
 

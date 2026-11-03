@@ -19,17 +19,18 @@
 
 ## Remaining — live checklist
 
-> **Priority (as of 2026-10-30, Lead on leave Nov 11–23 ≈ 1.5 weeks out):** (1) **ASCI-11 Coding (Throy-san)** — G2 cleared (ASCI-9/10 merged to ASCI-master); Coding is now live and is the critical path. Push to finish Coding + G3 **before Nov 11** (Lead owns G3). (2) **Close out ASCA-82 DB-safety** — PR open, test issues + ⚠️ Kiro-generated code still contains a `drop table` (the exact risk ASCA-82 guards); fix before merge. ASCA-83 PR waits on 82. (3) **Confirm Throy-san's ASCI leave coverage** (now also carrying ASCI-11 Coding). (4) **Send the ASCH 2027 Slack reply** to Kuroda-san (drafted, under Lead review). (5) NEW ASCH (2027) verification stays deferred (downstream of ASCI-11; ~2–2.5 wk when it runs). ⚠️ **Holidays next week (PH and JP calendars are independent — each team only stops on its own):** Mon **2026-11-02 (PH)** = PH dev team off, **Kuroda-san/JP still works**; Tue **2026-11-03 (JP)** = Kuroda-san/PM off, **PH dev team still works**. So the dev team loses only Mon 11-02 and PM turnaround is unavailable only Tue 11-03 — they do NOT stack into two shared off-days. Still tightens the pre-leave window (Lead leave from Wed 11-11).
+> **Priority (as of 2026-11-03 — JP holiday today, Kuroda-san/PM off; Lead leave Nov 11–23 now ~6 working days out):** (1) **ASCI-11 Coding — raise the PR.** Throy-san reports Coding **done**, but **no PR yet** — getting it up is the gate to G3 (Lead owns G3, must land before 11-11). (2) **ASCA-82 / ASCA-83 unit tests** — both PRs still open with issues to fix; close before the leave. (3) **ASCA-81** — reported over the weekend, investigated by Cristoff-san (comment left, per today's DSM); Lead to review the finding + decide next step. (4) **ASCH 2027** — Slack reply + Confluence docs **sent** to Kuroda-san; awaiting his feedback (he's on JP holiday today). (5) Confirm Throy-san's ASCI leave coverage.
 
 ### ASCA (ASC for CAP) — essentially complete
-- [ ] **ASCA-82** (accounting DB-safety guard, High) — **IN PROGRESS, Cristoff-san; PR OPEN.** ⚠️ Test issues found, and **Kiro-generated code still contains a `drop table`** — the exact hazard ASCA-82 exists to prevent. Must be removed/guarded before merge → Lead review (G3). Follow-on from ASCA-70.
-- [ ] **ASCA-83** (ls-db DB-safety guard, Medium) — **IN PROGRESS, Throy-san; PR OPEN**, intentionally held pending ASCA-82 (same pattern, 82 lands first). Follow-on from ASCA-70.
+- [ ] **ASCA-82** (accounting DB-safety guard, High) — **PR OPEN, Cristoff-san; still open with issues to fix** (unit-test work). ⚠️ Earlier finding: Kiro-generated code contained a `drop table` — the exact hazard this guard exists to prevent; must be removed/guarded before merge → Lead G3. Follow-on from ASCA-70.
+- [ ] **ASCA-83** (ls-db DB-safety guard, Medium) — **PR OPEN, Throy-san; still open**, held pending ASCA-82 (same pattern, 82 lands first). Follow-on from ASCA-70.
+- [ ] **ASCA-81** — **reported over the weekend; investigated by Cristoff-san**, who left a comment (per the 2026-11-03 DSM). ⚠️ Details not yet captured in this tracker — Lead to read the Jira comment, confirm what ASCA-81 is (bug? data? scope?), then decide next step and record it here.
 
 ### ASCI (ASC for CIP) — G2 CLEARED; Coding (ASCI-11) in progress (Throy-san)
 - [x] **Promote** `requirements.md` → `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (+ valid `.config.kiro`), reformatted to the Kiro spec-format validator. **PR raised for ASCI-9** (Requirements). *(done 2026-10-28)*
 - [x] **G2 — Architecture** (ASCI-10): `design.md` + `tasks.md` generated (grounded in live code; both validate clean). **PR raised for ASCI-10** (Design + Tasks). *(done 2026-10-28)*
 - [x] **G2 review + sign-off** — ✅ **ASCI-9 + ASCI-10 merged to `feature/ASCI/ASCI-master`** (per Lead, 2026-10-29/30); Throy-san picked up Coding. *(local checkout not yet fetched the merge — verify on next pull; recorded per Lead.)*
-- [ ] **Coding** (ASCI-11) — **IN PROGRESS, Dev (Throy-san)** (picked up after the G2 merge; note: owner is Throy-san, not Cristoff as earlier planned). Branch `feature/ASCI/ASCI-11-...` → PR to `feature/ASCA/ASCA-master`. Day-to-day tasks (from `.kiro/specs/asci-spec-01-cip-integration/tasks.md`; all under `App\Libs\RevenueAllocation\Cip`):
+- [~] **Coding** (ASCI-11) — **Throy-san reports Coding DONE (2026-11-03 DSM), but NO PR raised yet.** Next action: raise the PR to `feature/ASCA/ASCA-master` → unblocks G3 (ASCI-12). Day-to-day tasks below reflect the plan; mark each as the PR/review confirms them (not yet individually verified). From `.kiro/specs/asci-spec-01-cip-integration/tasks.md`, all under `App\Libs\RevenueAllocation\Cip`:
   - [ ] **T1** — value objects (`CipChargePair`, `CipOriginalBundleData`). *(root — unblocks the rest)*
   - [ ] **T2** — `CipBundlePairing` (reuse CAP pairing rule) + **T2.1** unit tests.
   - [ ] **T3** — `CipSkipLog` (structured batch log line; no run table — design-phase note 4).
@@ -69,6 +70,13 @@
 ---
 
 ## Daily log (append-only)
+
+### 2026-11-03
+- **JP holiday (Culture Day)** — Kuroda-san/PM off; PH dev team worked. Lead leave now ~6 working days out (starts Wed 11-11).
+- **ASCI-11 Coding — Throy-san reports DONE at DSM, but NO PR yet.** Next action is raising the PR → then G3 (Lead owns it, must land before the leave). Not git-verified (local checkout still on the ASCI-10 branch).
+- **ASCA-82 / ASCA-83 (DB-safety unit tests)** — both PRs still open, issues to fix. ASCA-82's earlier `drop table` finding still the thing to clear before merge; 83 waits on 82.
+- **ASCA-81 — NEW:** reported over the weekend, investigated by Cristoff-san, who left a Jira comment (per today's DSM). What it is isn't captured here yet — Lead to read the comment and record scope/next step.
+- **ASCH 2027 — Slack reply + Confluence docs SENT to Kuroda-san.** No feedback yet (he's on JP holiday). Estimate stands at ~2–2.5 wk rough, pending CDB confirmations.
 
 ### 2026-10-30
 - **ASCI G2 CLEARED → Coding started.** ASCI-9 (Requirements) + ASCI-10 (Design + Tasks) **merged to `feature/ASCI/ASCI-master`** (Lead); **Throy-san picked up ASCI-11 Coding.** ASCI moves from "G2 in review" to "Coding in progress" — the critical path is now live. (Note: Coding owner is Throy-san, not Cristoff as earlier planned.) *Local checkout had not fetched the merge at time of writing — verify on next pull.*
