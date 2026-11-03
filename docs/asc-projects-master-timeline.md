@@ -43,7 +43,7 @@
 - **Today = JP holiday (Culture Day):** Kuroda-san/PM off; PH dev team working. Lead leave (Nov 11–23) ~6 working days out.
 - **ASCI-11 Coding — Throy-san reports DONE (2026-11-03 DSM), PR not yet raised.** Critical-path next step is the PR → G3 (Lead owns G3; target before 11-11). Not git-verified from the local checkout.
 - **ASCA DB-safety — ASCA-82 (accounting, Cristoff) + ASCA-83 (ls-db, Throy) PRs both still open, issues to fix;** ASCA-82's `drop table` finding is the blocker to clear; 83 waits on 82.
-- **ASCA-81 — NEW, reported over the long weekend; investigated by Cristoff-san (Jira comment, per DSM).** Scope/next step to be captured by the Lead — not yet described in the project docs.
+- **ASCA-81 (investigation) — RESOLVED to a real Spec 02b defect.** CAP refunds drop the negative App row: `RefundLinkageResolver` pairs the App companion on `end_date`, which differs for refunds (App runs to month-end). Independently validated (REPORT-00/01 in `projects/asca/.../20261030-asca81-cap-refund-no-app-row/`): diagnosis confirmed, but the fix is NOT in any branch, and **CIP (ASCI) repeats the same bug** in `CipBundlePairing`. Fix tickets raised, both UNASSIGNED: **ASCA-86** (under ASCA-47) + **ASCI-17** (under ASCI-11). Spec-doc wording corrections (Spec 01 Req 6.4 / ASCI Req 2.7) are separate Lead tasks.
 - **ASCH 2027 — estimate + code-check SENT to Kuroda-san** (Slack + Confluence); awaiting feedback (PM on JP holiday). Rough ~2–2.5 wk, no new ASC code (code-verified), pending upstream CDB confirmations.
 - **Leave coverage (Nov 11–23):** Throy-san oversees ASCI (also carrying ASCI-11); confirm formally before leave.
 
