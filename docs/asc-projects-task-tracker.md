@@ -24,7 +24,9 @@
 ### ASCA (ASC for CAP) — essentially complete
 - [ ] **ASCA-82** (accounting DB-safety guard, High) — **PR OPEN, Cristoff-san; still open with issues to fix** (unit-test work). ⚠️ Earlier finding: Kiro-generated code contained a `drop table` — the exact hazard this guard exists to prevent; must be removed/guarded before merge → Lead G3. Follow-on from ASCA-70.
 - [ ] **ASCA-83** (ls-db DB-safety guard, Medium) — **PR OPEN, Throy-san; still open**, held pending ASCA-82 (same pattern, 82 lands first). Follow-on from ASCA-70.
-- [ ] **ASCA-81** — **reported over the weekend; investigated by Cristoff-san**, who left a comment (per the 2026-11-03 DSM). ⚠️ Details not yet captured in this tracker — Lead to read the Jira comment, confirm what ASCA-81 is (bug? data? scope?), then decide next step and record it here.
+- [ ] **ASCA-86** (fix — ASCA-81 defect) — created, **UNASSIGNED** (not pre-assigned). Drop `end_date` match in `RefundLinkageResolver::fetchAppCompanion()` + warning log + real regression test (471 shape). Sub-task under ASCA-47. Full handover in the ticket.
+- [ ] **LEAD spec-doc fix (ASCA)** — correct Spec 01 Req 6.4/6.5 (+ design Property 3): App companion shares `start_date` but NOT `end_date`. Separate checkout/commit on the ASCA branch. Lead owns.
+- [x] **ASCA-81 (investigation task) — DONE.** Confirmed a real Spec 02b defect: CAP refunds drop the negative App row because `RefundLinkageResolver` pairs the App companion on `end_date` (which differs for refunds). Validated independently (REPORT-01): diagnosis correct, but the fix is NOT in any branch. Fixes raised: **ASCA-86** (CAP) + **ASCI-17** (CIP repeats it). Close ASCA-81 once both land.
 
 ### ASCI (ASC for CIP) — G2 CLEARED; Coding (ASCI-11) in progress (Throy-san)
 - [x] **Promote** `requirements.md` → `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (+ valid `.config.kiro`), reformatted to the Kiro spec-format validator. **PR raised for ASCI-9** (Requirements). *(done 2026-10-28)*
@@ -44,6 +46,8 @@
 - [ ] **Code Review / G3** (ASCI-12).
 - [ ] **Dev/Manual Testing** (ASCI-13) on DEV04: standard + first/6th-month conversion; refund worked examples (standard + half-price).
 - [ ] **QA Testing** (ASCI-14).
+- [ ] **ASCI-17** (fix — same defect as ASCA-81) — created, **UNASSIGNED** (not pre-assigned). Drop `end_date` match in `CipBundlePairing::findPair()`, flip the test that asserts the bug, add a half-price refund test. Sub-task under ASCI-11. Full handover in the ticket.
+- [ ] **LEAD spec-doc fix (ASCI)** — correct ASCI Req 2.7 / design Component 2 / tasks T2: drop the `end_date` match from the prescribed pairing rule (+ ASCA-81 cross-ref). Separate checkout/commit on the ASCI branch. Lead owns.
 - [ ] Human check: confirm **CIP-179** released to the target env (DB query).
 - [ ] Human check: Accounting (**Wada-san**) blesses the −181 half-price tax-exemption figure.
 - [x] Design-phase notes (REF-CIP-09 Comment 4 + 5) **resolved in `design.md`**: missing-`log_refund_history`-link handling (→ CipRefundAllocator: no split, record + warn); cumulative App-refund cap ≤ original App booking (→ clamp, remainder to Coaching); non-divisible ¥50,000 test (→ Task 8.1); where CIP records conversion skip reasons (→ `CipSkipLog` batch log line, no run table — keeps the no-engine invariant).
