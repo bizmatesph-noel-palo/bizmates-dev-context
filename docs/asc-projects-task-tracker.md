@@ -30,7 +30,7 @@
 - [x] **Promote** `requirements.md` → `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (+ valid `.config.kiro`), reformatted to the Kiro spec-format validator. **PR raised for ASCI-9** (Requirements). *(done 2026-10-28)*
 - [x] **G2 — Architecture** (ASCI-10): `design.md` + `tasks.md` generated (grounded in live code; both validate clean). **PR raised for ASCI-10** (Design + Tasks). *(done 2026-10-28)*
 - [x] **G2 review + sign-off** — ✅ **ASCI-9 + ASCI-10 merged to `feature/ASCI/ASCI-master`** (per Lead, 2026-10-29/30); Throy-san picked up Coding. *(local checkout not yet fetched the merge — verify on next pull; recorded per Lead.)*
-- [~] **Coding** (ASCI-11) — **Throy-san reports Coding DONE (2026-11-03 DSM), but NO PR raised yet.** Next action: raise the PR to `feature/ASCA/ASCA-master` → unblocks G3 (ASCI-12). Day-to-day tasks below reflect the plan; mark each as the PR/review confirms them (not yet individually verified). From `.kiro/specs/asci-spec-01-cip-integration/tasks.md`, all under `App\Libs\RevenueAllocation\Cip`:
+- [~] **Coding** (ASCI-11) — **Throy-san reports Coding DONE (2026-11-03 DSM).** **Lead direction: merge to `feature/ASCI/ASCI-master` → deploy DEV04** (for testing ahead of the leave). ⚠️ This precedes a formal **G3** (ASCI-12, Lead) — G3 still owed; confirm parallel/post-merge vs waived. Day-to-day tasks below reflect the plan; mark each as the PR/review confirms them (not yet individually verified). From `.kiro/specs/asci-spec-01-cip-integration/tasks.md`, all under `App\Libs\RevenueAllocation\Cip`:
   - [ ] **T1** — value objects (`CipChargePair`, `CipOriginalBundleData`). *(root — unblocks the rest)*
   - [ ] **T2** — `CipBundlePairing` (reuse CAP pairing rule) + **T2.1** unit tests.
   - [ ] **T3** — `CipSkipLog` (structured batch log line; no run table — design-phase note 4).
@@ -74,6 +74,7 @@
 ### 2026-11-03
 - **JP holiday (Culture Day)** — Kuroda-san/PM off; PH dev team worked. Lead leave now ~6 working days out (starts Wed 11-11).
 - **ASCI-11 Coding — Throy-san reports DONE at DSM, but NO PR yet.** Next action is raising the PR → then G3 (Lead owns it, must land before the leave). Not git-verified (local checkout still on the ASCI-10 branch).
+- **ASCI-11 → DEV04 (Lead direction, 2026-11-03):** Lead instructed Throy-san to **merge the ASCI-11 changes to `feature/ASCI/ASCI-master` and deploy to DEV04.** ⚠️ Note this puts ASCI-11 on DEV04 **ahead of a formal G3 code review** (Lead owns G3) — intent is to get it on DEV04 for testing before the leave; **G3 still to be done** (confirm whether in-parallel/post-merge or waived). Flagging so the gate isn't silently dropped.
 - **ASCA-82 / ASCA-83 (DB-safety unit tests)** — both PRs still open, issues to fix. ASCA-82's earlier `drop table` finding still the thing to clear before merge; 83 waits on 82.
 - **ASCA-81 — NEW:** reported over the weekend, investigated by Cristoff-san, who left a Jira comment (per today's DSM). What it is isn't captured here yet — Lead to read the comment and record scope/next step.
 - **ASCH 2027 — Slack reply + Confluence docs SENT to Kuroda-san.** No feedback yet (he's on JP holiday). Estimate stands at ~2–2.5 wk rough, pending CDB confirmations.
