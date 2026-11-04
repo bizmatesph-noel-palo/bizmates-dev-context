@@ -191,3 +191,75 @@ And separately, a **design-heritage** lineage: ASCA/ASCI themselves reused the *
 - `research/CDB/REF-CDB-02-...` — the cancelled ASCH's CDB cross-check (now largely superseded for ASC: 2027 ASC does not read CDB).
 - `projects/asch/project-context.md` — the CANCELLED 2026 ASCH (architecture that the 2027 version does NOT reuse).
 - `domain-knowledge/campaigns.md` — Honki Set campaign shape.
+
+---
+
+## Slack thread (verbatim — Kuroda-san, team channel)
+
+> Captured 2026-10-29. These messages accompanied the Confluence [DRAFT] above and define what the PM is asking the team to return. Verbatim; analysis in the next section.
+
+**Hayato Kuroda — 2026-10-23, 10:53 AM**
+> Hi @Roi Patrick Florentino san @Noel san
+> For the ASCH for 2027 I put the requirement here — [DRAFT] ASCH 2027 — Revenue Booking for the 2027 Honki Campaign: Requirements.
+> Some of the requirement are still not sure but kindly estimate based on this.
+> BTW I used previous ASCH board so u can change if it's better.
+> Thank you.
+
+**Hayato Kuroda — 2026-10-23, 10:54 AM**
+> @Noel san
+> **Summary**
+> - ASC needs almost no campaign-specific logic. The charge batch issues the 50% charges (first month and 6th month), and ASC books the paid amount as usual.
+> - Lesson: existing booking. CAP: the ASCA allocation as is. CIP: the ASCI conversion and refund split.
+> - ASC does not need to know which charges are Honki charges. Accounting confirmed this.
+>
+> Based on the requirement, plz let me know following Questions:
+> 1. ASCI (§4.3, §4.4): the two points I sent yesterday in the Spec 01 thread (6th-month case for B-1, and the refund split based on the App's booked amount). Are they OK to include in ASCI-01?
+> 2. Anything else to change in ASC? §6 lists what I expect to change. Please tell me if you see anything else, for example in CAP or in the existing proration.
+> 3. Effort: could you give a rough estimate for the ASC part of the campaign? I expect it to be mostly testing (§7 test patterns), plus the CIP points above if they are not already in the ASCI estimate.
+>
+> No rush on 3. A rough number is enough for now. Thank you.
+
+**Hayato Kuroda — 2026-10-28, 4:10 PM**
+> BTW @Noel san
+> When do u think u could estimate this new PJ?
+> Kindly note to handle this after the prioritized tasks in ASCA/I, thank you.
+
+---
+
+## Response analysis (added by Noel — NOT Kuroda-san's text)
+
+> Draft answers to the three questions + the estimate-timing follow-up. For the Lead to review before replying on Slack/Confluence.
+
+### Q1 — ASCI §4.3 / §4.4: are the 6th-month B-1 case + booked-amount refund basis OK to include in ASCI-01?
+
+**Answer: Yes — and they are already in ASCI-01, G1-approved.** Both points landed in REF-CIP-09 Comment 2 (2026-10-23) and were folded into the ASCI Spec 01 requirements, which Kuroda-san **G1-approved on 2026-10-28** (REF-CIP-09 Comment 4). Specifically:
+- **6th-month B-1 conversion** → ASCI Req 2 is campaign-agnostic (derives the split from the month's paid amount; §4.4 "first and sixth month" are test scenarios, Req 5, not branches). Already in design + tasks (T4).
+- **Refund split on the App's booked amount** → ASCI Req 4.2 (basis = original charge's booking amount before day-proration, via `log_refund_history`; 1,990/37,950 for a half-price month, not a fixed 3,980). Already in design + tasks (T6/T8).
+
+So Q1 is a **close-the-loop**: the two Slack points (dated 2026-10-23, "waiting for reply") have since been answered and approved inside ASCI-01. Point Kuroda-san at `asci-spec-01-cip-integration` and REF-CIP-09 Comment 4.
+
+### Q2 — Anything else to change in ASC beyond §6?
+
+**Answer: §6 is essentially complete. Three small observations, none of them new code:**
+1. **CAP needs a half-price-month verification, not a change.** §4.2 is correct that the ASCA formula already operates on the discounted N — but confirm via test that a half-price N yields the same-rate App reduction (§5.1: 57,200 → 28,600). ASCA is merged; this is a QA item.
+2. **The §4.1 "Lesson booked alone" rule should be verified against the current pipeline** — confirm no residual expectation that ASC pools Lesson with Coaching/App (it doesn't, post-ASCA/ASCI). Reconciliation, not code.
+3. **No existing-proration change** — the CEIL day-proration (REF-CAP-17, last month = remainder) already handles the discounted amounts; the discount is just a smaller paid_price flowing through unchanged.
+
+Nothing in CAP or the existing proration needs new logic. The one genuine upstream risk is **not in ASC**: CDB Open Item 3 (CDB catalog still expects App 10021, must be 10022) — flag it to Soli-san, since wrong charges at the source would make ASC book wrong numbers.
+
+### Q3 — Rough estimate for the ASC part
+
+**Answer (rough, as requested): ~3–5 dev-days, almost entirely testing — assuming ASCI-01 ships as planned.**
+- **CIP conversion + refund (§4.3/§4.4):** already in the ASCI-01 estimate — **0 incremental** for the 2027 ASCH.
+- **CAP:** no code — **test only.**
+- **The 8 §7 test patterns:** the bulk of the effort. Patterns 1–4, 8 are largely covered by ASCI-01's own tests + a CAP half-month case. Patterns **5 (Lesson plan change), 6 (CIP⇔CAP move), 7 (joins coaching later)** are campaign-transition scenarios broader than ASCI's unit scope → these are the net-new verification work (~2–4 days to build fixtures + run on DEV04 + reconcile).
+- **No new build** — no spec, no tables, no services. Likely folds into ASCI's QA story rather than a standalone build.
+
+Caveat: this assumes the still-open items don't expand scope — shareholder-App-share (Open Item 4) and the CDB catalog fix (Open Item 3) are the variables. If shareholder handling changes, add a small amount.
+
+### Q (follow-up 2026-10-28) — When can you estimate this new project?
+
+**Answer: the rough estimate above can go to Kuroda-san now** (it's what he asked for — "a rough number is enough"). A **firmer** estimate waits until after the prioritized ASCA/I tasks, per his own instruction ("handle this after the prioritized tasks in ASCA/I"). Concretely: deliver the rough number this week; firm it up once ASCI-11 Coding is underway (so the §7 test-pattern effort is grounded in the real code), targeting **before the Nov 11 leave** so Kuroda-san has it in hand during the absence.
+
+### Board question (10:53 message)
+Kuroda-san used the **previous ASCH JIRA board** and invited a change. Recommendation ties to the deferred doc-structure decision: since the 2027 ASCH is a distinct project, decide board reuse-vs-new together with the `projects/` restructure (archive old 2026 ASCH, retain what 2027 needs). Low priority; note it, decide later.
