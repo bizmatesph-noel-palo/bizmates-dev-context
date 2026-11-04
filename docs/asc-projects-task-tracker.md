@@ -19,13 +19,13 @@
 
 ## Remaining — live checklist
 
-> **Priority (as of 2026-11-03 — JP holiday today, Kuroda-san/PM off; Lead leave Nov 11–23 now ~6 working days out):** (1) **ASCI-11 Coding — raise the PR.** Throy-san reports Coding **done**, but **no PR yet** — getting it up is the gate to G3 (Lead owns G3, must land before 11-11). (2) **ASCA-82 / ASCA-83 unit tests** — both PRs still open with issues to fix; close before the leave. (3) **ASCA-81** — reported over the weekend, investigated by Cristoff-san (comment left, per today's DSM); Lead to review the finding + decide next step. (4) **ASCH 2027** — Slack reply + Confluence docs **sent** to Kuroda-san; awaiting his feedback (he's on JP holiday today). (5) Confirm Throy-san's ASCI leave coverage.
+> **Priority (as of 2026-11-04 — Lead leave Nov 11–23, ~5 working days left incl. today):** (1) **ASCI-11 G3 review** — Throy reports Coding done; merge → ASCI-master → DEV04 directed, but G3 (Lead) is still owed and must land before 11-11. (2) **Assign ASCA-86 + ASCI-17** (unassigned code fixes for the ASCA-81 defect) — each also needs Lead G3 before 11-11, so pick owners today. Cristoff is still stuck on ASCA-82, so weigh load. (3) **Close ASCA-82 / ASCA-83** — unit tests + `drop table` finding still open. (4) **ASCH 2027** — reply + docs sent; awaiting Kuroda-san. (5) **Confirm Throy-san's ASCI leave coverage** (also carrying ASCI-11).
 
 ### ASCA (ASC for CAP) — essentially complete
 - [ ] **ASCA-82** (accounting DB-safety guard, High) — **PR OPEN, Cristoff-san; still open with issues to fix** (unit-test work). ⚠️ Earlier finding: Kiro-generated code contained a `drop table` — the exact hazard this guard exists to prevent; must be removed/guarded before merge → Lead G3. Follow-on from ASCA-70.
 - [ ] **ASCA-83** (ls-db DB-safety guard, Medium) — **PR OPEN, Throy-san; still open**, held pending ASCA-82 (same pattern, 82 lands first). Follow-on from ASCA-70.
 - [ ] **ASCA-86** (fix — ASCA-81 defect) — created, **UNASSIGNED** (not pre-assigned). Drop `end_date` match in `RefundLinkageResolver::fetchAppCompanion()` + warning log + real regression test (471 shape). Sub-task under ASCA-47. Full handover in the ticket.
-- [ ] **LEAD spec-doc fix (ASCA)** — correct Spec 01 Req 6.4/6.5 (+ design Property 3): App companion shares `start_date` but NOT `end_date`. Separate checkout/commit on the ASCA branch. Lead owns.
+- [x] **LEAD spec-doc fix (ASCA)** — ✅ DONE + committed (2026-11-03/04, Lead). Option A (refund-path carve-out only): new 02b Req 9.7 + 02b design (RefundLinkageResolver bullet + component row) + 02b tasks, plus a refund-exception note on Spec 01 Req 6.5. Positive-path Req 6.4 / Property 3 / Req 10.6 deliberately unchanged. ls-db: no change needed.
 - [x] **ASCA-81 (investigation task) — DONE.** Confirmed a real Spec 02b defect: CAP refunds drop the negative App row because `RefundLinkageResolver` pairs the App companion on `end_date` (which differs for refunds). Validated independently (REPORT-01): diagnosis correct, but the fix is NOT in any branch. Fixes raised: **ASCA-86** (CAP) + **ASCI-17** (CIP repeats it). Close ASCA-81 once both land.
 
 ### ASCI (ASC for CIP) — G2 CLEARED; Coding (ASCI-11) in progress (Throy-san)
@@ -46,8 +46,9 @@
 - [ ] **Code Review / G3** (ASCI-12).
 - [ ] **Dev/Manual Testing** (ASCI-13) on DEV04: standard + first/6th-month conversion; refund worked examples (standard + half-price).
 - [ ] **QA Testing** (ASCI-14).
+- [~] **ASCI-15** (epic, non-spec Ops: DEV04, investigations, debugging, deployment) — created 2026-11-03. **ASCI-16** "DEV04 - 20261103 deployment" — task under ASCI-15, assigned to Throy-san, To Do.
 - [ ] **ASCI-17** (fix — same defect as ASCA-81) — created, **UNASSIGNED** (not pre-assigned). Drop `end_date` match in `CipBundlePairing::findPair()`, flip the test that asserts the bug, add a half-price refund test. Sub-task under ASCI-11. Full handover in the ticket.
-- [ ] **LEAD spec-doc fix (ASCI)** — correct ASCI Req 2.7 / design Component 2 / tasks T2: drop the `end_date` match from the prescribed pairing rule (+ ASCA-81 cross-ref). Separate checkout/commit on the ASCI branch. Lead owns.
+- [x] **LEAD spec-doc fix (ASCI)** — ✅ DONE + committed (2026-11-03/04, Lead). ASCI Req 2.7 + design Component 2 + tasks T2 now pair on `start_date` only (no `end_date`), with ASCA-81 rationale (shared `CipBundlePairing` serves both conversion and refund).
 - [ ] Human check: confirm **CIP-179** released to the target env (DB query).
 - [ ] Human check: Accounting (**Wada-san**) blesses the −181 half-price tax-exemption figure.
 - [x] Design-phase notes (REF-CIP-09 Comment 4 + 5) **resolved in `design.md`**: missing-`log_refund_history`-link handling (→ CipRefundAllocator: no split, record + warn); cumulative App-refund cap ≤ original App booking (→ clamp, remainder to Coaching); non-divisible ¥50,000 test (→ Task 8.1); where CIP records conversion skip reasons (→ `CipSkipLog` batch log line, no run table — keeps the no-engine invariant).
@@ -60,7 +61,7 @@
   - [x] **Overlap analysis done** (REF-ASCH2027-01 Cross-Reference): the 2027 ASCH is a **near-no-op, architecturally unrelated to the cancelled 2026 ASCH** — no `asch_*` tables, no pooled proration, no adjustment-journal engine, no ASC-side Honki identification. It rides CAP (ASCA, done) + CIP (ASCI, in build) on the discounted paid amount.
   - [x] **Key finding:** the 2027 ASCH's only CIP asks (Open Items 1+2: the B-1 conversion for discounted months + the booked-amount refund basis) are **already in ASCI Spec 01** (Req 2 + Req 4, G1-approved 2026-10-28, design + tasks done). Not new ASCH work.
   - [ ] **Genuinely-new 2027 ASCH work (small, test-and-verify — NOT a build):** (a) CAP half-price-month verification (ASCA formula on discounted N; 57,200→28,600); (b) the 8 §7 test patterns, esp. the campaign-transition ones ASCI doesn't cover (pattern 5 Lesson plan change, pattern 6 CIP⇔CAP move, pattern 7 joins-coaching-later); (c) reconcile the §4.1 "Lesson booked alone" rule.
-  - [ ] **Reply to Kuroda-san's Slack (3 questions + estimate-timing)** — draft answers ready in REF-ASCH2027-01 "Response analysis"; Lead to review + send. (Slack thread captured verbatim in the REF.)
+  - [x] **Reply to Kuroda-san's Slack (3 questions + estimate-timing)** — ✅ SENT 2026-11-03 (with the 2 Confluence docs: estimate + code-check). Awaiting his feedback (he was on JP holiday 11-03). Draft/analysis in REF-ASCH2027-01.
     - **Q1 (ASCI §4.3/§4.4 OK to include?):** ✅ Yes — already in ASCI-01, G1-approved 2026-10-28 (REF-CIP-09 Comment 4). Close-the-loop; point at `asci-spec-01-cip-integration`.
     - **Q2 (anything else in ASC beyond §6?):** No new code. 3 QA/reconcile items: CAP half-price-month test (57,200→28,600), verify §4.1 Lesson-booked-alone, no proration change. Real risk is upstream: CDB catalog App 10021→10022 (Soli-san).
     - **Q3 (rough estimate):** ~3–5 dev-days, almost all testing (CIP = 0 incremental, in ASCI; CAP test-only; the net-new is §7 patterns 5/6/7). No new build.
@@ -74,6 +75,11 @@
 ---
 
 ## Daily log (append-only)
+
+### 2026-11-04
+- **Recap of 11-03:** ASCA-81 investigation closed (diagnosis valid; fix not in any branch; CIP repeats the bug). Fix tickets **ASCA-86** (under ASCA-47) + **ASCI-17** (under ASCI-11) created, unassigned, rewritten junior-friendly. Ops epic **ASCI-15** + **ASCI-16** (DEV04 deploy, Throy) created. Spec-doc corrections done + committed on both sides (ASCA: 02b Req 9.7/design/tasks + Spec 01 Req 6.5 note; ASCI: Req 2.7/design/T2). ls-db: no change. ASCH 2027 reply + docs sent to Kuroda-san.
+- **Open today:** ASCI-11 G3 (Lead); assign ASCA-86 + ASCI-17; ASCA-82 (Cristoff, unit tests + `drop table`) then ASCA-83; Throy leave coverage; ASCH awaiting Kuroda-san. Leave starts 11-11 (~5 working days incl. today).
+- Docs synced: tracker + master timeline to 2026-11-04 (stale items fixed: Lead spec tasks done, ASCH reply sent, ASCI-15/16 added).
 
 ### 2026-11-03
 - **JP holiday (Culture Day)** — Kuroda-san/PM off; PH dev team worked. Lead leave now ~6 working days out (starts Wed 11-11).

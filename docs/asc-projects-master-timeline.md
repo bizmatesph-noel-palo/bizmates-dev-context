@@ -34,9 +34,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-03)
+## ⚠️ Status / Actuals (as of 2026-11-04)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-04 (ASCA-81 resolved into fix tickets; spec docs corrected; G3 + fix ownership due before leave)
+
+- **ASCA-81 resolved:** real Spec 02b defect (CAP refund drops the negative App row — `end_date` pairing). CIP repeats it. Fix tickets **ASCA-86** (under ASCA-47) + **ASCI-17** (under ASCI-11) created, **unassigned**. Fix is not yet in any branch.
+- **Spec docs corrected + committed (Lead):** ASCA (02b Req 9.7 + design + tasks; Spec 01 Req 6.5 note — refund-path exception only, positive path unchanged) and ASCI (Req 2.7 + design + T2: pair on `start_date` only). ls-db unaffected.
+- **ASCI:** G2 cleared; Coding reported done by Throy; merge → ASCI-master → DEV04 directed. **G3 (Lead) still owed — must land before the 11-11 leave.** New Ops epic **ASCI-15** with **ASCI-16** (DEV04 deployment, Throy).
+- **ASCA DB-safety:** ASCA-82 (Cristoff) still fixing unit tests + `drop table` finding; ASCA-83 (Throy) waits on it.
+- **ASCH 2027:** estimate + code-check sent to Kuroda-san (Slack + Confluence); awaiting feedback.
+- **Critical window:** Lead leave Nov 11–23 (~5 working days incl. today). Needed before then: ASCI-11 G3, owners for ASCA-86/ASCI-17 and their G3, ASCA-82/83 closed, Throy's coverage confirmed.
 
 ### Snapshot — 2026-11-03 (ASCI Coding reported done/no-PR; ASCA DB-safety + new ASCA-81; JP holiday)
 
