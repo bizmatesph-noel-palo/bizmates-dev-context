@@ -1,3 +1,5 @@
+> **Status (2026-11-05):** Findings still valid. The guard shape recommended here is the ASCA-82/83 interim fix (now merging). The current conclusion adds a follow-on: remove the over-engineered migration round-trip test rather than only guarding it. See `../20261105-roundtrip-test-overengineering/REPORT-00-roundtrip-test-root-cause.md`. Retained (not archived).
+
 # DB-Safety Test-Guard — Re-grounding against current HEAD (post-ASCA-78 / ASCA-79)
 
 **Investigation date:** 2026-10-23
