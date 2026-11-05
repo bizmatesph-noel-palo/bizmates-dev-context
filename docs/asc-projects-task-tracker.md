@@ -14,6 +14,8 @@
 | **Companion** | `docs/asc-projects-master-timeline.md` (the authoritative timeline + planned baseline; this file is the running task/day-to-day view) |
 
 > **How to use this file:** the **Remaining** checklist below is the live to-do; the **Daily log** is append-only history. When something is done, tick it in Remaining and add a dated line to the Daily log. Keep the authoritative schedule/baseline in the master timeline; keep granular day-to-day task status here.
+>
+> **Entry format (SOD/EOD):** Daily-log entries use a `### YYYY-MM-DD` header, newest first, append-only (never edit a past entry). Each bullet leads with a bold tag describing it (e.g. `**Open today:**`, `**Update (later HH:MM / 11-04):**`, `**Recap of <date>:**`). Remaining items use `- [ ]` (open), `- [x]` (done), `- [~]` (in progress/partial). This is the shape the toolkit's Daily Sync workflow (`agentic-toolkit/workflows/daily-sync.md`) reads and writes.
 
 ---
 
