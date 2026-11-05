@@ -60,6 +60,9 @@ This workspace uses the toolkit's **Daily Sync** workflow (`agentic-toolkit/work
 
 - **`SOD: resume my day`** (optionally `— today is YYYY-MM-DD`) → read-only resume report: since-last-entry, unverified items (asked back), today's priorities. No doc edits until the user confirms.
 - **`EOD: wrap my day`** + what got done → tick the tracker's Remaining, append a dated daily-log entry, refresh the priority banner, add a timeline snapshot only if something material changed.
+- **`ST: status`** (optionally `— ASCA` / `— ASCI + ASCH`) → read-only tracker pulse: open / in-progress / unverified per project. No priorities, no edits.
+- **`LOG: <update>`** → record one scoped update to the tracker (tick/reword the affected Remaining item + append to today's log). Timeline is offered, not auto-written — only snapshots on confirmation if material.
+- **`PU: project update`** (optionally `— for <name>, ASCA + ASCI`) → stakeholder highlight/lowlight update from the tracker + timeline (toolkit `workflows/project-update.md`). Read-only, paste-ready. Default audience: Patrick-san (SDM); per project (ASCA, ASCI). Done-but-unverified items are never shown as highlights.
 
 **Tracking documents (ASC projects):**
 
