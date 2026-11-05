@@ -34,9 +34,16 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-04)
+## ⚠️ Status / Actuals (as of 2026-11-05)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-05 (DB-safety reviewed; Lead continues ASCA-82 work; ASCA-83 clear to merge after one fix; ~4 working days to leave)
+
+- **Unit-test scope (Lead):** DB-safety / test work is **ASCA + ASCI tests only**; old unrelated tests are untouched unless a project change broke them.
+- **ASCA-82 (accounting):** per-test SQLite re-pointing in place across all 45 DDL test files; real-table drop removed from `AllocationInjectorTest`. Two items remain (guard to accept only `sqlite :memory:` / `_test`; force SQLite in `phpunit.xml`) → carried into a new Lead-owned ticket (key TBD), Throy to review. Cristoff-san's work carries forward.
+- **ASCA-83 (ls-db, `074b710`):** confirmed **mergeable to ls-db ASCA-master independently of ASCA-82**; no real-table drops (only guarded scratch-DB ops). One pre-existing fix before approve — round-trip test omits `log_alloc_bundle_outcomes` while the FK migration references it (opt-in test fails on missing table; scratch DB only, no data risk). PR comment drafted.
+- **Still open from 11-04:** ASCI-11 G3 (ASCI-12); DEV04 verification of the ASCA-86/ASCI-17 fixes (471/7185 + CIP refund) after the 11-04 command re-run — not yet reported; Throy leave coverage; ASCH awaiting Kuroda-san.
 
 ### Snapshot — 2026-11-04 (ASCA-86 / ASCI-17 fixes merged + deployed to DEV04; verification pending; G3 due before leave)
 
@@ -44,9 +51,9 @@
 - **ASCA-81 resolved:** real Spec 02b defect (CAP refund drops the negative App row — `end_date` pairing). CIP repeats it. Fix tickets **ASCA-86** (under ASCA-47) + **ASCI-17** (under ASCI-11) created, **unassigned**. (Superseded: fixes since merged + deployed to DEV04, see update above.)
 - **Spec docs corrected + committed (Lead):** ASCA (02b Req 9.7 + design + tasks; Spec 01 Req 6.5 note — refund-path exception only, positive path unchanged) and ASCI (Req 2.7 + design + T2: pair on `start_date` only). ls-db unaffected.
 - **ASCI:** G2 cleared; Coding done by Throy-san and **merged to ASCI-master, included in the 2026-11-04 DEV04 deployment** (with the ASCI-17 fix). Formal **G3 (ASCI-12) not yet recorded as done** — Lead to confirm/complete before the 11-11 leave. New Ops epic **ASCI-15** with **ASCI-16** (DEV04 deployment, Throy).
-- **ASCA DB-safety:** ASCA-82 (Cristoff) still fixing unit tests + `drop table` finding; ASCA-83 (Throy) waits on it.
+- **ASCA DB-safety:** **ASCA-82 work carries forward into a new Lead-owned ticket (key TBD); Lead (Noel) picks up the remaining items to close before the 11-11 leave**, Throy-san to review. Cristoff-san's guard + test fixes are kept; two items remain (tighten the guard to `sqlite :memory:` / `_test` only; force SQLite in `phpunit.xml`). **ASCA-83** (ls-db, Throy, commit `074b710`) is a separate repo and proceeds independently.
 - **ASCH 2027:** estimate + code-check sent to Kuroda-san (Slack + Confluence); awaiting feedback.
-- **Critical window:** Lead leave Nov 11–23 (~5 working days incl. today). Needed before then: ASCI-11 G3, DEV04 verification of the ASCA-86/ASCI-17 fixes, ASCA-82/83 closed, Throy's coverage confirmed.
+- **Critical window:** Lead leave Nov 11–23 (~5 working days incl. today). Needed before then: ASCI-11 G3, DEV04 verification of the ASCA-86/ASCI-17 fixes, the new Lead-owned DB-safety ticket (continues ASCA-82) + ASCA-83 closed, Throy's coverage confirmed.
 
 ### Snapshot — 2026-11-03 (ASCI Coding reported done/no-PR; ASCA DB-safety + new ASCA-81; JP holiday)
 
