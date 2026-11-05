@@ -15,10 +15,13 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | Project Code | JIRA | Code Repo(s) | Artifacts Directory | Status | Deadline |
 |---|---|---|---|---|---|
 | ASC | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
-| ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | ❌ Cancelled (2026-08-07) | — |
+| OLD ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` (legacy) | ❌ Cancelled (2026-08-07) | — |
+| ASCH (NEW 2027) | — (home TBD) | rides ASCA + ASCI | `projects/asch/technical-notes/research/ASCH-2027/` (provisional) | Active — assessment/estimate phase | 2027 campaign |
 | ASCA | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asca/` | Active — builds shared foundation | 2026/12/17 |
 | ASCI | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asci/` | Active — reuses ASCA foundation | 2026/12/17 |
 | CDB | — | `MBTI_backend` | — | Active (upstream, Patrick-san's team) | — |
+
+> **Naming convention — ASCH:** Unqualified **"ASCH" always means the NEW 2027 ASCH** (active, rides the finished CAP/ASCA + in-build CIP/ASCI work on the discounted paid amount). The cancelled 2026 project is **"OLD ASCH"** — only ever referenced with that explicit label. The two are different projects that reused the name; never conflate them. (OLD ASCH artifacts currently sit under `projects/asch/`; the NEW ASCH home is still provisional — see the deferred doc-structure item in the task tracker.)
 
 **Note:** ASC is the JIRA code for ASCM (the original project was just "ASC" before subsequent projects were created).
 
