@@ -6,9 +6,21 @@
 
 ---
 
-## Current State (as of 2026-10-19 — git-verified on `feature/ASCA/ASCA-master` @ PR #313: **ALL of Spec 01 + Spec 02 (02a/02b/02c/02d) coding MERGED.** Spec 01 CR (ASCA-66/67/68) ✅; **02a (ASCA-40, PR #307)** ✅; **02b (ASCA-47, PR #311)** ✅; **02c AllocationDetail CSV (ASCA-48, PR #312)** ✅ — `RevenueAllocationCsvService` + `allocationDetailFile` config present; **02d DataCorrection decommission (ASCA-61, PR #313)** ✅ — `DataCorrectionCommand` is now a guarded `@deprecated` no-op. **No open blockers. ASCA-master is feature-complete for CAP integration.** Next milestone: deploy ASCA-master (accounting + ls-db) to DEV04 for G3/QA + a controlled Pre test-run. Kuroda-san feedback (2026-10-19) to be folded into a task list separately.)
+## Current State (as of 2026-10-23 — DEV04 verified; 02c removal handed off; ASCI-01 at G1)
 
-> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. ASCI runs during/after the absence (delegate TBD — Orlino sub-lead / Patrick-san backstop). A Lead delegate for any G2/G3 landing Nov 11–23 must be named before leave.
+**ASCA CAP integration is dev-complete + DEV04-verified; the 02c removal is now merged too.** As of 2026-10-26: **ASCA-78 (02c AllocationDetail CSV removal) is DONE** (Throy, weekend — full allocation unit suite green, 126 tests / 43,662 assertions). **ASCA-79 (CEIL steering note) merged.** A fresh **DEV04 Oct–Nov command run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) is in progress** (Throy) to re-verify batch output on the post-removal code. ASCI-01 requirements **G1 feedback has been received from Kuroda-san** (shared at DSM) — now being ingested. What advanced earlier was **DEV04 deployment + command execution + QA allocation verification**:
+
+- ✅ **ASCA-master deployed to DEV04** (both repos: `accounting_related_system_for_freee` + `ls-database-migrations`).
+- ✅ **ASCA-24 (DEV04 Command Execution 20261020) — Done.** October (202610) + November (202611) batch commands executed on DEV04.
+- ✅ **ASCA-71 ([QA] App price verification) — Done / PASS.** Glenn-san's retest (2026-10-21) confirms the CAP App allocation is correct in the DailyRateCalculation CSV: e.g. student 568/567/1032 App = ¥2,921 (15-min), 1014 App = ¥2,994 (30-min), all balancing to N. The earlier "all App rows ¥0" defect is **resolved**. Remaining 15 zero-App rows are valid V-3 skips / refund pairs / out-of-scope / missing-mapping — not failures.
+- **freee-400 on real-send = DEV ENVIRONMENT issue, NOT a code bug.** Root cause: DEV04 had no mailer configured, so the send/email step couldn't complete. Does not affect the project; the allocation path itself is verified. (The ASCA-24 comment's Stripe-master-ID theory was a red herring.)
+- **Stripe errors are out of ASCA scope.** Any Stripe-related failure (STRP-4 journal lines, Stripe master IDs) belongs to the responsible team — ignore for ASCA.
+
+**The DEV04-verification gate from REF-CAP-17 is SATISFIED.** → The 02c removal CR is **unblocked** (no dependency on ASCA-8/Metabase — the system never reads from Metabase). Hard deadline for the removal: before the CAP beta release **2026-12-01**.
+
+> Code baseline (unchanged, git-verified on `feature/ASCA/ASCA-master` @ PR #313): Spec 01 CR (ASCA-66/67/68) ✅; 02a (ASCA-40, PR #307) ✅; 02b (ASCA-47, PR #311) ✅; 02c AllocationDetail CSV (ASCA-48, PR #312) ✅; 02d DataCorrection decommission (ASCA-61, PR #313) ✅.
+
+> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** ASCA CAP Integration is dev-complete + DEV04-verified (only the 02c removal ASCA-78 + admin closes remain). ASCI runs during/after the absence — **Throy-san to oversee ASCI during the leave** (to be confirmed formally as the last pre-leave item). Team is Noel/Throy/Cristoff/Glenn, no sub-lead.
 
 - **ASCM Refactor (DEVOPS-6415) + ZPR (DEVOPS-6596):** ✅ deployed to production together **2026-09-28**; **`main` merged into `feature/ASCA/ASCA-master` on 2026-10-01**.
 - **ZPR daily-table cleanup + September FINAL:** ✅ all complete. Data cleanup executed 2026-09-30 (Yijun-san). 10/01 PRE verified. September FINAL (10/02) initially crashed — root cause was a Zipan product-type resolution issue in `ZipanUtil.php`; fixed by **DEVOPS-6274** (Harvey-san) + **DEVOPS-6284** (Yijun-san), deployed alongside 6415/6596. DevOps re-ran after deploy — both monthly and send-journal commands completed successfully. Investigation reports: `projects/ascm/technical-notes/investigation/20261002-sendjournals-othersales-product-type-null/`.
@@ -30,27 +42,36 @@
 - **02d (epic ASCA-59): ✅ CODING MERGED (ASCA-61, PR #313).** DECOMMISSION of `DataCorrectionCommand` — `handle()` is now a guarded no-op that logs a deprecation warning, prints a decommissioned notice pointing to the DevOps direct-SQL process (DEVOPS-6706), and returns success without invoking `DataCorrectionLogic`; both classes carry `@deprecated` docblocks + unit tests. G1 approved (Kuroda-san 2026-10-05). ADR + evidence note in `projects/asca/documentation/` (`ASCA-ADR-20261005-datacorrection-decommission.md`, `ASCA-NOTE-20261005-datacorrection-usage-confirmation.md`).
 - **02c (epic ASCA-52): ✅ CODING MERGED (ASCA-48, PR #312).** `RevenueAllocationCsvService` + `allocationDetailFile` entry in `config/const.php` present on ASCA-master. G2 (requirements+design+tasks) merged; ASCA-54 Architecture done. (Coding story is **ASCA-48**, not ASCA-55 as earlier notes assumed.) Follow-up notes retained: run-status/view (ASCA-68 ✅ merged); 02a Req 2.5 CIP wording fixed (doc-only); refund skip/fail emits an exception row for the refund charge only (Req 2.3/2.12).
 - **Spec 01 change-request (`log_alloc_bundle_outcomes` + run-status/view + `effective_from`):** the money table (`log_alloc_prorations`) stays money-only. Required by **both 02a and 02c**. Approved by Kuroda-san 2026-10-13; three sub-tasks under ASCA-18 (like ASCA-34), **all ✅ MERGED (git-verified 2026-10-15):** **ASCA-66** (table, ls-db, PR #976), **ASCA-67** (`effective_from`, accounting, PR #302), **ASCA-68** (run-status + ls-db view `status IN (2,4)`, PR #985). Proposal: `projects/asca/documentation/ASCA-PROPOSAL-20261008-skipped-failed-bundle-recording.md`.
-- **CIP-refund split home:** still **open** — extend 02b / new sub-spec / ASCI undecided. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio); the home decision is on hold pending the scope decision.
+- **CIP-refund split home:** ✅ **decided — inside ASCI-01** (not extending ASCA 02b, not a new ASCA sub-spec). Lead decision; to be ratified by Kuroda-san at ASCI-01 G1. Identification resolved (REF-CIP-07: shareholder via `trn_receipt_locked_charge`, else fixed ratio). CIP refund is therefore an ASCI concern, not an ASCA one.
 
 ### Immediate next actions
 
 > **Task flow (agreed):** ASCA-66 + ASCA-67 + ASCA-68 (✅ all merged) → **02a Coding (ASCA-40, ✅ MERGED, PR #307)** → **02b Coding (ASCA-47, ✅ MERGED, PR #311)** → **02c Coding (ASCA-55, in progress — Throy) + 02d Coding (ASCA-59/61, picked up — Cristoff)**. ✅ **ASCA-68 fully merged** (ls-db view PR #985): `v_alloc_prorations_active` now filters `status IN (2,4)` (Completed OR Completed-with-errors) + `run_type = 2`. **No open blockers remain.**
 
-**Status (2026-10-19, Lead — git-verified on ASCA-master @ PR #313):**
-- ✅ **ALL Spec 01 + Spec 02 coding MERGED.** 02a (ASCA-40, PR #307), 02b (ASCA-47, PR #311), 02c (ASCA-48, PR #312), 02d (ASCA-61, PR #313); Spec 01 CR ASCA-66/67/68. ASCA-master is feature-complete for CAP integration.
-- ✅ Test state (2026-10-16 run): `tests/Unit/RevenueAllocation` 125/125, `tests/Feature/RevenueAllocation` 34/34 green. (Re-run after 02c/02d merge recommended before the DEV04 run.)
+**Status (2026-10-23, Lead):**
+- ✅ **ALL Spec 01 + Spec 02 coding MERGED** (unchanged): 02a (ASCA-40, PR #307), 02b (ASCA-47, PR #311), 02c (ASCA-48, PR #312), 02d (ASCA-61, PR #313); Spec 01 CR ASCA-66/67/68.
+- ✅ **DEV04 deploy + command execution (ASCA-24) + QA allocation verification (ASCA-71) all Done.** CAP allocation verified correct in the DailyRateCalculation CSV (Glenn-san, 2026-10-21).
+- ✅ Test state (post-ASCA-78 weekend run, 2026-10-25/26): `tests/Unit/RevenueAllocation` **126/126 green (43,662 assertions)** — the AllocationDetail tests are gone with the CSV; no regressions.
+- freee-400 = dev-env mailer config (not a code bug); Stripe errors out of ASCA scope.
+- ✅ **02c removal (ASCA-78) — DONE** (Throy, weekend of 2026-10-25/26). Surgical removal per the grounded trace; full `tests/Unit/RevenueAllocation` suite green (126 tests / 43,662 assertions). The allocated value remains the `paid_price` in the daily-rate table (02a overwrite untouched), so the existing DailyRateCalculation CSV still carries it.
+- ✅ **CEIL steering note (ASCA-79) — merged** (Lead).
+- ✅ **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — done** (Throy, reported at the 2026-10-26 DSM): redeployed to DEV04 + re-ran the batch commands to **regenerate the reports for QA after the 02c-removal changes**. Month wording reconciled — the batch processes the *previous* month, so "September and October **data**" produces the "October–November **report**"; same run, data-month vs report-month wording. (Tidy the JIRA status to Done if not already.)
+- ✅ **ASCI-01 G1 feedback received from Kuroda-san** (shared at DSM) — now ours to ingest/process. (Was "submitted 2026-10-23"; feedback has since come back.)
+- ✅ **DB-safety fix (ASCA-70 follow-on) — TICKETS CREATED (2026-10-27).** [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82) (accounting, High, under ASCA-17) + [ASCA-83](https://bizmates.atlassian.net/browse/ASCA-83) (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70. Each has a paste-ready dev-Kiro prompt + grounding report in its Handover section. Source-of-record + handover files: `technical-notes/jira/tickets/ASCA-82-dbsafety-guard-accounting.md` (+ `ASCA-82-dbsafety-accounting-dev-handover-prompt.md`) and `ASCA-83-dbsafety-guard-lsdb.md` (+ `ASCA-83-dbsafety-lsdb-dev-handover-prompt.md`). **Next: assign to a dev.** (The `ASCA-16/17-SUB-TBA-...` scope stubs remain as earlier drafts.)
 
-**Next actions:**
-1. **Deploy ASCA-master to DEV04 — BOTH repos** (`accounting_related_system_for_freee` + `ls-database-migrations`). New dev ticket under ASCA-9 (see `technical-notes/jira/` draft). Precondition for G3 + a controlled Pre test-run.
-2. **DEV04 Pre test-run** per the readiness review (`technical-notes/investigation/20261016-asca-master-readiness-review/`): seed CAP master data + reference prices + DEV04 test charges, align `exeDate` to the seeded target month, grep `REVENUE_ALLOCATION`, inspect `log_alloc_calculation_runs`.
-3. **Fold in Kuroda-san's 2026-10-19 feedback** into a task list (pending — to be provided).
-4. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
+**Next actions (as of 2026-10-28):**
+> Live task status is tracked in `docs/asc-projects-task-tracker.md` (Remaining checklist + Daily log). Summary below.
+1. ✅ **DONE — ASCI-01 G1 feedback ingested + folded + G1 APPROVED** (Kuroda-san 2026-10-28; REF-CIP-09 rounds 1+2); ASCI epic+stories created (ASCI-8..14). **Still pending:** promote `requirements.md` → code repo `.kiro/specs/` → G2 design/tasks.
+2. ✅ **DONE — DB-safety fix sub-tickets created** (ASCA-82 accounting / ASCA-83 ls-db, unassigned). **Still pending:** assign to a dev → implement.
+3. **Confirm ASCA-80** DEV04 Oct–Nov run results (Throy reported done at the 2026-10-26 DSM).
+4. **NEW ASCH (2027) requirements — review:** Kuroda-san/Patrick-san provided **new requirements for an ASCH project targeted at 2027**. ⚠️ A **NEW** ASCH — NOT the 2026 cancelled predecessor; reuses the name only. **Not yet reviewed.** Task: read the new requirements, determine overlap with the old cancelled ASCH vs. new scope, prepare feedback for Kuroda-san.
+5. **ASCI leave-coverage** — **Throy-san oversees ASCI during the Lead's leave (2026-11-11 → 11-23).** Confirm formally before leave.
+6. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
 
-**Doc/admin (low effort):**
+**Doc/admin (low effort, optional):**
 - **02a CIP wording fix (doc-only)** — Req 2.2/2.5 + design.md CIP clause already corrected in the code-repo 02a. Fold into the ASCA-40 Coding PR (no code/tasks impact).
-- **ASCA-34 merged + Done.** Admin only: optionally close Spec 01 **G3 (ASCA-18)** (Lead left it open).
 
-> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** Target: ASCA CAP Integration (02a–02d) **dev-complete + through G3 before Nov 11**. Name a G2/G3 delegate for anything landing during the leave.
+> **⚠️ Lead on leave 2026-11-11 → 2026-11-23.** ASCA CAP Integration is dev-complete + DEV04-verified and the 02c removal is merged, so ASCA is well-positioned against the leave (only the DB-safety fix + admin closes remain). **ASCI is the watch item** — G1 feedback received and being processed; if design/build runs into the leave window, **Throy-san oversees ASCI**.
 
 ### Key source docs (Spec 02)
 - **REF-CAP-12** — G1 round 1 feedback
@@ -79,7 +100,8 @@
 | Upstream project | CAP (Keith's team) |
 | Code repo | `accounting_related_system_for_freee`, `ls-database-migrations` |
 | Lead | Noel Palo |
-| Developer | Throy Embudo |
+| Developer | Throy Embudo, Cristoff Danganan |
+| QA | Glenn Flamiano |
 | SDM | Patrick-san |
 | PM | Kuroda-san |
 | Deadline | 2026/12/17 |
@@ -157,7 +179,7 @@ Zipan accounting change, billed under DEVOPS (like the ASCM refactor — no ASC 
 | [ASCA-17](https://bizmates.atlassian.net/browse/ASCA-17) | Story | ASCA-13 | [Spec 01] — Coding (accounting application) | Dev (Throy) |
 | [ASCA-18](https://bizmates.atlassian.net/browse/ASCA-18) | Story | ASCA-13 | [Spec 01] — Code Review | Lead · G3 |
 | [ASCA-34](https://bizmates.atlassian.net/browse/ASCA-34) | Sub-task | ASCA-18 | [G3 Fix] v_alloc_prorations_active — add run_type = Final filter + view test | Cristoff · **committed, NOT yet merged** to `feature/ASCA/ASCA-master` — verify/merge to close G3 |
-| [ASCA-19](https://bizmates.atlassian.net/browse/ASCA-19) | Story | ASCA-13 | [Spec 01] — QA Testing | QA (Miko) |
+| [ASCA-19](https://bizmates.atlassian.net/browse/ASCA-19) | Story | ASCA-13 | [Spec 01] — QA Testing | QA (Glenn) |
 | [ASCA-20](https://bizmates.atlassian.net/browse/ASCA-20) | Story | ASCA-13 | [Spec 01] — Dev/Manual Testing | Lead |
 
 ### DEV04 environment (under ASCA-9 Scaffolding)

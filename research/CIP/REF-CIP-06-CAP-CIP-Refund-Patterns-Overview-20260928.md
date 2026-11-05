@@ -129,7 +129,7 @@ How to read the columns:
 
 - Accounting Month — the month the row is recognized in (merged across that month's rows).
 - Contract Start / End — the charge period. When a contract ends early (e.g. cooling-off), the end date is changed to the actual end date and shown in bold.
-- Period in Month Start / End, Contract Days (I) — the day-proration inputs: FLOOR(Paid Amount × (End - Start + 1) / Contract Days, 1).
+- Period in Month Start / End, Contract Days (I) — the day-proration inputs. ⚠️ **SUPERSEDED-IN-PART by REF-CAP-17 (2026-10-21):** the real code uses **CEIL** on every month except the contract's last month, with the last month taking the remainder — not FLOOR. The original (incorrect) text read `FLOOR(Paid Amount × (End - Start + 1) / Contract Days, 1)`. See `research/CAP/REF-CAP-17-CEIL-Proration-Correction-20261021.md`.
 - Amount in current accounting system — what existing ASC recognizes for that charge in that month (negative in a refund month). Refunds are not day-prorated.
 - Amount after ASCA/I — the figure after ASCA (CAP: list-price allocation) or ASCI (CIP: refund distribution to App). For CIP it equals the current amount except on refund rows.
 - List Price — CAP: tax-excluded allocation weight (18,000 / 36,000 / 3,618). CIP: tax-included unit price (71,920 / 3,980).

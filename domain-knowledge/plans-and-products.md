@@ -259,7 +259,9 @@ Reference prices (L) are **tax-exclusive**, from `mst_new_price_listing`, seeded
 
 Formula (CAP only): `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coaching = N − P_app`.
 
-> **CIP has no allocation weights.** For reference, the CIP residual booking price is Coaching Intensive 10025 = ¥65,382 tax-excl / ¥71,920 tax-incl (`mst_new_price_listing` price_flag 3) — a real charge amount, not a weight. The old "¥84,020 / O-5" row is removed: it belonged to the withdrawn engine-split design.
+> **CIP has no allocation weights.** For reference, the CIP residual booking price is Coaching Intensive 10025 = ¥65,382 tax-excl / ¥71,920 tax-incl (`mst_new_price_listing` price_flag 3; tier2 ¥32,691) — a real charge amount, not a weight. The old "¥84,020 / O-5" row is removed: it belonged to the withdrawn engine-split design.
+>
+> **price_flag=3 for 10025 is created by CIP-179** (Jefferson; QA Passed 2026-10-12 — verified in Jira). Note CIP-179's acceptance criteria **also remove** the 10025 `price_flag=2` rows (66,500 tier1 / 33,250 tier2). ⚠️ REF-CIP-09 W-2 described the flag-2 row as "stays, unused for CIP" — the ticket removes it; a Kuroda-comment-vs-ticket **open item**. This concerns only the **10025** flag-2 rows; the App 10022 `price_flag=2` = ¥3,618 row below is a different product and is untouched.
 
 ### price_flag reference (CAP/CIP master pricing)
 

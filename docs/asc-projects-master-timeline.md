@@ -9,7 +9,7 @@
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro (AI-assisted timeline consolidation and document generation) |
 | **Status** | Active |
-| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM), Kuroda-san (PM), QA Team |
+| **Audience** | Dev team (Noel, Throy, Cristoff), Glenn (QA), Patrick-san (SDM), Kuroda-san (PM) |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) · [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) · [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) |
 | **Supersedes** | `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` (timeline content; archived 2026-09-23), `archive/docs/asc-cap-cip-combined-estimate-20260808.md` (Scenario C estimate; archived 2026-09-23) |
 
@@ -17,7 +17,7 @@
 
 **Deadline:** ASCA + ASCI = 2026/12/17  
 **Start date:** Aug 24, 2026 (Monday) — per Kuroda-san's ASAP directive.  
-**Work schedule:** Mon–Fri only. PH holidays skipped. No weekend work.
+**Work schedule:** Mon–Fri only. PH holidays skipped. No weekend work. **PH and JP holiday calendars are independent** — each team works through the other's holiday unless the date is a holiday in BOTH. **Upcoming:** Mon **2026-11-02 (PH)** — PH dev team off, JP/Kuroda-san works; Tue **2026-11-03 (JP)** — Kuroda-san/PM off, PH dev team works. They do not stack: dev loses only 11-02, PM turnaround unavailable only 11-03. Both sit just before the Lead's 2026-11-11–23 leave, so they still compress the pre-leave ASCI-11 Coding + G3 window.
 
 ### JIRA Projects
 
@@ -30,11 +30,107 @@
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
 | DEVOPS | ZPR accounting change (Zipan Price Revision) — add product 38 to Zipan enum; billed under DEVOPS, no ASC project | [DEVOPS-6596](https://bizmates.atlassian.net/browse/DEVOPS-6596) | — |
 
+> **Work branches (both code repos — `accounting_related_system_for_freee` + `ls-database-migrations`):** ASCA → **`feature/ASCA/ASCA-master`**; ASCI → **`feature/ASCI/ASCI-master`** (branched from `feature/ASCA/ASCA-master`, 2026-10-28). Historical `feature/ASCA/ASCA-master` references throughout this doc are ASCA's branch and are correct as-is.
+
 ---
 
-## ⚠️ Status / Actuals (as of 2026-10-13)
+## ⚠️ Status / Actuals (as of 2026-11-05)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-05 (DB-safety reviewed; Lead continues ASCA-82 work; ASCA-83 clear to merge after one fix; ~4 working days to leave)
+
+- **Unit-test scope (Lead):** DB-safety / test work is **ASCA + ASCI tests only**; old unrelated tests are untouched unless a project change broke them.
+- **ASCA-82 (accounting):** per-test SQLite re-pointing in place across all 45 DDL test files; real-table drop removed from `AllocationInjectorTest`. Two items remain (guard to accept only `sqlite :memory:` / `_test`; force SQLite in `phpunit.xml`) → carried into a new Lead-owned ticket (key TBD), Throy to review. Cristoff-san's work carries forward.
+- **ASCA-83 (ls-db, `074b710`):** confirmed **mergeable to ls-db ASCA-master independently of ASCA-82**; no real-table drops (only guarded scratch-DB ops). One pre-existing fix before approve — round-trip test omits `log_alloc_bundle_outcomes` while the FK migration references it (opt-in test fails on missing table; scratch DB only, no data risk). PR comment drafted.
+- **Still open from 11-04:** ASCI-11 G3 (ASCI-12); DEV04 verification of the ASCA-86/ASCI-17 fixes (471/7185 + CIP refund) after the 11-04 command re-run — not yet reported; Throy leave coverage; ASCH awaiting Kuroda-san.
+
+### Snapshot — 2026-11-04 (ASCA-86 / ASCI-17 fixes merged + deployed to DEV04; verification pending; G3 due before leave)
+
+- **Update (later 11-04):** the ASCA-86 and ASCI-17 refund fixes were approved by the Lead, merged to ASCA-master / ASCI-master by Throy-san, and **deployed to DEV04** (one go: new branch from DEV04 with both masters merged, then merged to DEV04). **Batch commands are being re-executed on DEV04 today** (time-logging tickets **ASCA-87** under ASCA-9 and **ASCI-18** under ASCI-15). Next: verify the negative App row for students 471/7185 and a CIP refund, then close ASCA-81 / ASCA-86 / ASCI-17.
+- **ASCA-81 resolved:** real Spec 02b defect (CAP refund drops the negative App row — `end_date` pairing). CIP repeats it. Fix tickets **ASCA-86** (under ASCA-47) + **ASCI-17** (under ASCI-11) created, **unassigned**. (Superseded: fixes since merged + deployed to DEV04, see update above.)
+- **Spec docs corrected + committed (Lead):** ASCA (02b Req 9.7 + design + tasks; Spec 01 Req 6.5 note — refund-path exception only, positive path unchanged) and ASCI (Req 2.7 + design + T2: pair on `start_date` only). ls-db unaffected.
+- **ASCI:** G2 cleared; Coding done by Throy-san and **merged to ASCI-master, included in the 2026-11-04 DEV04 deployment** (with the ASCI-17 fix). Formal **G3 (ASCI-12) not yet recorded as done** — Lead to confirm/complete before the 11-11 leave. New Ops epic **ASCI-15** with **ASCI-16** (DEV04 deployment, Throy).
+- **ASCA DB-safety:** **ASCA-82 work carries forward into a new Lead-owned ticket (key TBD); Lead (Noel) picks up the remaining items to close before the 11-11 leave**, Throy-san to review. Cristoff-san's guard + test fixes are kept; two items remain (tighten the guard to `sqlite :memory:` / `_test` only; force SQLite in `phpunit.xml`). **ASCA-83** (ls-db, Throy, commit `074b710`) is a separate repo and proceeds independently.
+- **ASCH 2027:** estimate + code-check sent to Kuroda-san (Slack + Confluence); awaiting feedback.
+- **Critical window:** Lead leave Nov 11–23 (~5 working days incl. today). Needed before then: ASCI-11 G3, DEV04 verification of the ASCA-86/ASCI-17 fixes, the new Lead-owned DB-safety ticket (continues ASCA-82) + ASCA-83 closed, Throy's coverage confirmed.
+
+### Snapshot — 2026-11-03 (ASCI Coding reported done/no-PR; ASCA DB-safety + new ASCA-81; JP holiday)
+
+- **Today = JP holiday (Culture Day):** Kuroda-san/PM off; PH dev team working. Lead leave (Nov 11–23) ~6 working days out.
+- **ASCI-11 Coding — Throy-san reports DONE (2026-11-03 DSM), PR not yet raised.** Critical-path next step is the PR → G3 (Lead owns G3; target before 11-11). Not git-verified from the local checkout.
+- **ASCA DB-safety — ASCA-82 (accounting, Cristoff) + ASCA-83 (ls-db, Throy) PRs both still open, issues to fix;** ASCA-82's `drop table` finding is the blocker to clear; 83 waits on 82.
+- **ASCA-81 (investigation) — RESOLVED to a real Spec 02b defect.** CAP refunds drop the negative App row: `RefundLinkageResolver` pairs the App companion on `end_date`, which differs for refunds (App runs to month-end). Independently validated (REPORT-00/01 in `projects/asca/.../20261030-asca81-cap-refund-no-app-row/`): diagnosis confirmed, but the fix is NOT in any branch, and **CIP (ASCI) repeats the same bug** in `CipBundlePairing`. Fix tickets raised, both UNASSIGNED: **ASCA-86** (under ASCA-47) + **ASCI-17** (under ASCI-11). Spec-doc wording corrections (Spec 01 Req 6.4 / ASCI Req 2.7) are separate Lead tasks.
+- **ASCH 2027 — estimate + code-check SENT to Kuroda-san** (Slack + Confluence); awaiting feedback (PM on JP holiday). Rough ~2–2.5 wk, no new ASC code (code-verified), pending upstream CDB confirmations.
+- **Leave coverage (Nov 11–23):** Throy-san oversees ASCI (also carrying ASCI-11); confirm formally before leave.
+
+### Snapshot — 2026-10-30 (ASCI Coding started; ASCA DB-safety in progress; ASCH 2027 estimate grounded)
+
+- **ASCI — G2 CLEARED, Coding in progress.** ASCI-9 (Requirements) + ASCI-10 (Design + Tasks) **merged to `feature/ASCI/ASCI-master`**; **Throy-san picked up ASCI-11 Coding** (owner changed from the earlier-planned Cristoff). ASCI is the active critical path. Goal: Coding + G3 before the 2026-11-11 leave (Lead owns G3). *(Merge reported by Lead; local checkout not yet fetched — verify on next pull.)*
+- **ASCA DB-safety (ASCA-70 follow-on) — both in progress, PRs OPEN.** **ASCA-82** (accounting, High, Cristoff-san): ⚠️ test issues + **Kiro-generated code still contains a `drop table`** — the exact hazard the guard exists to prevent; must be fixed before merge. **ASCA-83** (ls-db, Medium, Throy-san): held pending ASCA-82.
+- **DEV04 QA rerun (Throy-san):** regenerated reports for the **2026/02/01 (Jan data) → 2026/12/01 (Nov data)** window for QA.
+- **ASCH 2027 — estimate grounded + investigation done.** Scoped as **downstream test-and-verify riding ASCA/ASCI, no new ASC code** (code-verified, REPORT-00: `CommonUtil`/`BundleDetectionService`/`TwoWayAllocationFormula`/`getContractDateInfoList` + ASCI campaign-agnostic conversion). Estimate: **Scenario A ~2–2.5 weeks** (3–5 testing-days + 1–2wk buffer); **Scenario B ~4–5wk contingency** only if a §7 run finds a gap. Sequence after ASCI-11. Residual risk is upstream (CDB clean charges + App 10021→10022). Requirements captured (REF-ASCH2027-01); Slack reply to Kuroda-san drafted, under Lead review. Docs: `projects/asch/technical-notes/research/ASCH-2027/` + day-to-day in the task tracker.
+- **Slack reply to Kuroda-san (ASCH 2027 Q1–3 + estimate):** drafted, **not yet sent** (Lead reviewing).
+- **Leave coverage (Nov 11–23):** Throy-san oversees ASCI — now also carrying ASCI-11 Coding; confirm formally before leave.
+
+### Snapshot — 2026-10-29 (ASCI at G2 review — critical-path gate; leave window ~2 weeks out)
+
+- **ASCI is the critical path.** ASCA is dev-complete + DEV04-verified + 02c-removed; the only ASCA remainder is assigning ASCA-82/83 (DB-safety guards). So ASCI Spec 01 is the sole work between now and the **2026/12/17** deadline / **2027/01/01** first prod run.
+- **ASCI blocked on G2 sign-off.** Yesterday's G2 artifacts are in review: **ASCI-9** (Requirements PR) + **ASCI-10** (Design + Tasks PR), both on the `feature/ASCI/ASCI-master` base, both format-validated. Nothing downstream (Coding ASCI-11 → G3 ASCI-12 → testing) can start until the Lead + Cristoff approve these two PRs.
+- **Priority (leave-window-driven):** (1) **clear ASCI G2 sign-off now** — cheapest action, unblocks everything; (2) **start ASCI-11 Coding (Cristoff)** immediately after, targeting Coding + G3 **done before Nov 11** (Lead owns G3 and is on leave Nov 11–23); (3) **formally confirm Throy-san's ASCI coverage this week**; (4) assign ASCA-82/83 as parallel pre-leave work; (5) defer the NEW ASCH (2027) review past the leave unless a quick first pass fits before Nov 11.
+- **Unchanged:** CIP-179-to-target-env + Wada-san's −181 blessing remain pending human checks (not code blockers). Day-to-day in `docs/asc-projects-task-tracker.md`.
+
+### Snapshot — 2026-10-28 (ASCI-01 G1 APPROVED; epic + stories created; DB-safety tickets created)
+
+- **ASCI-01 — ✅ G1 APPROVED (Kuroda-san, 2026-10-28).** Round-2 reply captured verbatim (REF-CIP-09 Comment 4). Two additions folded into `requirements.md`: **A** = Req 2 App-charge pairing (reuse CAP G1 1-5; skip/V-3 on ambiguity, skipped pair stays 75,900/0); **B** = Req 4 App-refund-row inserted in the execution month via ASCA 02b Req 9. Plus a wording fix (refund basis = original charge's booking amount **before day-proration**) and the flag-2 "stays vs removed" open item **closed** (Kuroda confirmed CIP-179 removes it). 3 items deferred to design (missing-link handling, cumulative App-refund cap, non-divisible ¥50,000 test).
+- **ASCI JIRA created (2026-10-27):** Epic **ASCI-8** + 6 stories **ASCI-9..14** (Requirements/Architecture/Coding/Code Review/Dev Testing/QA), all unassigned. Layout file backfilled with real keys.
+- **ASCI work branch created (2026-10-28):** `feature/ASCI/ASCI-master` in **both** repos (`accounting_related_system_for_freee`, `ls-database-migrations`), branched from `feature/ASCA/ASCA-master` (the ASCA foundation base). (ASCA work stays on `feature/ASCA/ASCA-master`.)
+- **ASCI G2 artifacts done (2026-10-28, later):** `requirements.md` **promoted** to `accounting_related_system_for_freee/.kiro/specs/asci-spec-01-cip-integration/` (valid `.config.kiro`; reformatted to the Kiro spec-format validator), and `design.md` + `tasks.md` **generated** (grounded in live code; both pass `validate_spec_format`; no-engine invariant preserved; all 4 design-phase notes resolved; 10-task plan). **PRs raised: ASCI-9 (Requirements), ASCI-10 (Design + Tasks).**
+- **Next for ASCI:** **G2 review + sign-off** (Lead + Dev Cristoff) on the ASCI-9 / ASCI-10 PRs → then **Coding (ASCI-11)** on `feature/ASCI/ASCI-11-...` → PR to `feature/ASCA/ASCA-master`. Day-to-day status in `docs/asc-projects-task-tracker.md`.
+- **ASCA-70 DB-safety fix — ✅ TICKETS CREATED (2026-10-27):** **ASCA-82** (accounting, High, under ASCA-17) + **ASCA-83** (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70, each with a paste-ready dev-Kiro prompt + grounding report. Handover files renamed to real keys. **Next: assign to a dev.**
+- **Pending human checks (ASCI):** CIP-179 released to the target env (DB); Accounting (Wada-san) to bless the −181 half-price tax-exemption figure.
+- **NEW ASCH (2027):** still **not yet reviewed** by Lead.
+- **Leave coverage (Nov 11–23):** Throy-san to oversee ASCI (confirm before leave).
+
+### Snapshot — 2026-10-27 (ASCI G1 feedback folded + sent back; DB-safety ready to delegate)
+
+- **ASCI-01 G1 feedback — ✅ ingested, folded in, and SENT BACK to Kuroda-san.** Kuroda-san's 3 Confluence comments captured verbatim as **REF-CIP-09**; verdict **approved-with-changes** ("once B-1 is reflected, I'll sign off"); **refund home CONFIRMED inside ASCI-01**. `requirements.md` revised to **5 requirements** (added Req 2 = B-1 site→booking conversion, campaign-agnostic; reworded Req 1 record-exists-via-CIP-179; Req 4 explicit refund types + full refund + basis = month's booked App amount via `log_refund_history`; shareholder no-in-batch-cap/Coaching-only confirmed; Req 5 first+6th-month tests). **Sent back to Kuroda-san for final G1 confirmation + announced on the team Slack channel (2026-10-27).** Awaiting his tick → then promote to the code-repo `.kiro/specs/` + create the ASCI epic/stories.
+- **CIP-179 verified (Jira):** Task "Add price_flag for 10025", Jefferson, QA Passed 2026-10-12, tier1 65,382 / tier2 32,691 — and its ACs **remove** the 10025 flag-2 rows (→ **open item** raised to Kuroda-san: W-2 said "stays," ticket removes). No ASCI seeder creates the record (grep-confirmed). flag-2/CIP-179 facts synced across master-timeline, plans-and-products, ASCA technical-design.
+- **ASCI JIRA tickets — drafted (NOT created).** 1 epic + 6 stories fleshed out in `projects/asci/technical-notes/jira/asci-spec-01-jira-layout.md` with `ASCI-XX#` placeholders. Gated on final G1 tick.
+- **DB-safety fix (ASCA-70 follow-on) — ✅ ready to delegate.** Both guard tickets fully fleshed + grounded on live HEAD (accounting `07ab9ab6`, ls-db `94ec95d`) with paste-ready dev-Kiro prompts; live-code claims verified (`CreatesApplication::createApplication()` body + the hard `->drop()` at `Dev04CapTestDataSeederTest.php:307`). **Pending: Lead go → create the two JIRA sub-tasks (accounting under ASCA-17 = High; ls-db under ASCA-16 = Medium) → implement.** Cleanup: supersede the stale `ASCA-16/17-SUB-TBA` template drafts.
+- **Spec 01 + Spec 02 code:** ✅ all MERGED to ASCA-master; DEV04 deployed + verified (ASCA-24, ASCA-71). Unchanged.
+- **NEW ASCH (2027):** still **not yet reviewed** by Lead.
+- **Pending human checks (ASCI):** CIP-179 released to the target env (DB); Accounting (Wada-san) to bless the −181 half-price tax-exemption figure.
+- **Leave coverage (Nov 11–23):** Throy-san to oversee ASCI (confirm before leave).
+
+### Snapshot — 2026-10-26 (02c removal DONE; ASCI G1 feedback received)
+
+- **Spec 01 + Spec 02 code:** ✅ all MERGED to ASCA-master; DEV04 deployed + verified (ASCA-24, ASCA-71).
+- **02c AllocationDetail CSV removal ([ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)) — ✅ DONE** (Throy, weekend). Surgical removal; `tests/Unit/RevenueAllocation` green at 126 tests / 43,662 assertions. Allocated value still lands in the daily-rate table (02a overwrite); existing DailyRateCalculation CSV carries it.
+- **CEIL steering note ([ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)) — ✅ merged.**
+- **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — ✅ done** (Throy, reported at 2026-10-26 DSM): redeployed + re-ran batch to **regenerate QA reports** after the 02c removal. Month wording reconciled — batch processes the previous month, so "Sept/Oct data" → "Oct/Nov report" (same run).
+- **DB-safety fix (ASCA-70 follow-on):** two sub-tickets drafted + grounded (accounting→ASCA-17, ls-db→ASCA-16) with dev-Kiro prompts; awaiting Lead review → JIRA creation.
+- **NEW ASCH (2027) requirements:** Kuroda-san/Patrick-san provided new requirements for a **2027 ASCH** project (⚠️ NOT the 2026 cancelled predecessor — name reused only). Lead to review and determine overlap with the old cancelled ASCH vs. new scope, then give feedback. Not yet reviewed.
+- **ASCI-01 requirements → G1 feedback RECEIVED from Kuroda-san** (shared at DSM). Now being ingested/processed; then promote requirements + create the ASCI epic/stories → design/build. (Supersedes the 2026-10-23 "awaiting sign-off" line.)
+- **Leave coverage (Nov 11–23):** **Throy-san to oversee ASCI** during the Lead's leave (confirm before leave). ASCA is dev-complete + 02c-removed → minimal leave risk.
+
+### Snapshot — 2026-10-23 (02c removal handed off; ASCI-01 at G1)
+
+- **Spec 01 + Spec 02 code:** ✅ all coding MERGED to ASCA-master (PR #313 HEAD). DEV04 deployed + verified (ASCA-24, ASCA-71).
+- **02c AllocationDetail CSV removal → handed to devs.** **[ASCA-78](https://bizmates.atlassian.net/browse/ASCA-78)** created (sub-task under ASCA-55, Priority High, Dec-1 deadline), with a grounded line-level footprint trace + paste-ready dev-Kiro prompt + QA-scope note. **Handover announced on Slack 2026-10-23; assigned to Throy-san.** Status check planned Monday 2026-10-27 (no micromanaging).
+- **CEIL steering note → [ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)** (Task under ASCA-9): one-file edit to `batch-execution-flow.md`; Lead to merge + log time.
+- **ASCI-01 requirements → submitted to Kuroda-san for G1 (2026-10-23).** Polished + cross-checked (no blockers; refund logic verified against REF-CIP-07/08 + REF-CAP-17 and against live ASCA code — CIP cannot enter the allocation engine). **Awaiting G1 sign-off; Lead to follow up Monday 2026-10-27.**
+- **Leave coverage (Nov 11–23):** **Throy-san to oversee ASCI** during the Lead's leave (confirm formally as the last pre-leave item). ASCA itself is dev-complete + verified, so it carries minimal leave risk.
+- **Methodology upkeep (non-billable, GitHub-only):** CR-to-completed-spec workflow + CR template added to the toolkit; knowledge-bucket taxonomy codified + ASCA `knowledge/`→`knowledge-base/` aligned in dev-context. Committed.
+
+### Snapshot — 2026-10-21 (DEV04 verified; CR unblocked)
+
+- **Spec 01 + Spec 02 code:** ✅ all coding MERGED to ASCA-master (unchanged from 2026-10-19; PR #313 HEAD).
+- **DEV04:** ✅ **deployed (both repos) + command execution done (ASCA-24) + QA allocation verification done/PASS (ASCA-71, Glenn-san 2026-10-21).** CAP App allocation confirmed correct in the DailyRateCalculation CSV (¥2,921 / ¥2,994 worked examples balance to N). Earlier "App ¥0" defect resolved.
+- **freee-400 on real-send:** DEV ENVIRONMENT issue (DEV04 mailer not configured) — **not a code bug, no project impact.** Stripe-related errors are out of ASCA scope (responsible team's).
+- **02c removal CR:** **UNBLOCKED** — the REF-CAP-17 DEV04-verification gate is satisfied. **No dependency on ASCA-8/Metabase** (the system never reads from Metabase). Next action: create the CR under ASCA-55; scope = AllocationDetail CSV removal only; hard deadline **2026-12-01** (CAP beta). QA scope note to Glenn (ASCA QA): DailyRateCalculation CSV in, AllocationDetail CSV out (being removed).
+- **ASCI-01:** requirements draft near-ready; polish → publish to Confluence for Kuroda-san G1 (runs parallel to the ASCA CR).
+- **⚠️ Lead leave 2026-11-11 → 11-23** — unchanged risk; name a G2/G3 delegate for anything landing during the leave.
 
 ### Snapshot — 2026-10-19 (critical path + blockers) [git-verified]
 
@@ -177,8 +273,8 @@ First real batch:                    Jan 1, 2027
 |---|---|---|---|---|
 | **CAP** (upstream) | Keith Manuntag | — | Terry Balahadia | Jasser-san |
 | **CIP** (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Jasser-san |
-| **ASCA** (first) | Noel Palo | — | Throy Embudo | Patrick-san |
-| **ASCI** (second) | Noel Palo | Orlino Monares | Cristoff Danganan | Patrick-san |
+| **ASCA** (first) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Patrick-san |
+| **ASCI** (second) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Patrick-san |
 | **CDB** (upstream) | Paolo Sandoval | — | Efren Petarte | Patrick-san |
 | **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
 | **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |
@@ -188,9 +284,9 @@ First real batch:                    Jan 1, 2027
 | Phase | QA Owner | Scope |
 |---|---|---|
 | ASCM Refactor verification | QA Team | Manual report comparison |
-| ASCA CAP scenarios (10 cases) | Miko | CAP allocation testing |
-| ASCI CIP scenarios (11 cases) | Glenn | CIP allocation testing |
-| Integration + Regression | QA Team (both) | Cross-project, failure isolation |
+| ASCA CAP scenarios | Glenn | CAP allocation testing (ASCA QA — corrected 2026-10-21; Miko was never deployed to ASCA) |
+| ASCI CIP scenarios | Glenn | CIP allocation testing |
+| Integration + Regression | Glenn | Cross-project, failure isolation |
 
 ---
 
@@ -386,8 +482,8 @@ Scope: New DB tables, models, enums, services. The shared infrastructure that bo
 | 1 | **Spec** | Lead | ASCI Spec 01: requirements.md | Formalize CIP residual-value requirements (REF-CIP-05) — add Coaching Intensive `price_flag=3` master record (¥71,920 tax-incl) for `product_id 10025`; CIP books separate already-priced charges (Lesson / App ¥3,980 / Coaching Intensive) through existing pro-ration. **No allocation engine, no split formula for CIP.** Written during W9. |
 | 2 | **Gate 1** | PM | Requirements sign-off | Kuroda-san approves the CIP residual-value approach (already confirmed in REF-CIP-05): Coaching Intensive booking price ¥71,920, App ¥3,980, Lesson at its own price — separate charges, no split. |
 | 3 | **Spec** | Lead | ASCI Spec 01: design.md + tasks.md | Implementation plan — add the `product_id 10025` `price_flag=3` master price record; verify existing daily pro-ration + first-month-discount logic produce the expected independent CIP charges. **No CIP detection, no allocation formula, no `mst_alloc_reference_prices` CIP rows.** |
-| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev 2 (Orlino/Cristoff) — confirm the master-price-record + pro-ration-verification scope (no allocation engine for CIP, per REF-CIP-05). |
-| 5 | **Execute** | Dev 2 | Add Coaching Intensive `price_flag=3` master price record + verify pro-ration/discount produces the expected separate CIP charges (residual-value, REF-CIP-05) | ~1–2 days |
+| 4 | **Gate 2** | Lead + Dev | Design & tasks approval | Lead reviews with Dev (Cristoff) — confirm the master-price-record + pro-ration-verification scope (no allocation engine for CIP, per REF-CIP-05). |
+| 5 | **Execute** | Dev (Cristoff) | Add Coaching Intensive `price_flag=3` master price record + verify pro-ration/discount produces the expected separate CIP charges (residual-value, REF-CIP-05) | ~1–2 days |
 | 6 | **Gate 3** | Lead | Code review — CIP Integration PRs | PR approved before merge. |
 | 7 | **Verify** | Lead | ASCI dev testing on DEV04 | ~1–2 days |
 
@@ -688,7 +784,7 @@ ASC is NOT blocked by upstream timelines:
 | O-1 | CAP App product_id | CAP team | ✅ Resolved — was 10021; changed to **10022** on 2026-08-19 (see O-7) | — |
 | O-2 | Asymmetric discount (CIP RA-04) | Accounting | Low risk — if rejected, proration_basis returns | — |
 | O-4 | B2B App reversal logic | Accounting + CAP | Post-release (Phase 4) | — |
-| O-5 | CIP coaching reference price | Accounting | ✅ **MOOT for allocation (REF-CIP-05, 2026-09-17)** — CIP uses no allocation weight. Instead a real Coaching Intensive charge price ¥71,920 tax-incl (65,382 tax-excl) is added as `product_id 10025` `price_flag=3` in `mst_new_price_listing`. The old 66,500 `price_flag=2` reference row is retained (shareholder-refund reference) but not used for CIP allocation. | ASCI master-price seed |
+| O-5 | CIP coaching reference price | Accounting | ✅ **MOOT for allocation (REF-CIP-05, 2026-09-17)** — CIP uses no allocation weight. Instead a real Coaching Intensive charge price ¥71,920 tax-incl (65,382 tax-excl / tier2 32,691) is added as `product_id 10025` `price_flag=3` in `mst_new_price_listing` via **CIP-179** (Jefferson; QA Passed 2026-10-12 — verified in Jira). ⚠️ The old 66,500 `price_flag=2` row is **removed by CIP-179** (its ACs delete the 10025 flag-2 rows 66,500/33,250) — not "retained." REF-CIP-09 W-2 said it "stays"; the ticket removes it — **open item to confirm with Kuroda-san** (does not affect CIP, which uses flag-3). | ASCI (CIP-179 verifies; no ASCI seeder) |
 | O-6 | Allocation breakdown for Accounting | Accounting | ✅ Resolved — CSV in zip + Metabase (2026-08-17) | — |
 | O-7 | Product ID changes | Business (Go-san) | ✅ **Confirmed FINAL (2026-08-19)** — CAP App `10021→10022`, CIP Coaching Intensive `10022→10025`. | Detection + seeder + Freee mapping |
 | O-8 | CIP split arity | Accounting (Kuroda-san) | ✅ **MOOT (REF-CIP-05, 2026-09-17)** — CIP no longer uses proportional allocation at all (residual-value pricing: separate already-priced charges + existing pro-ration). Neither 2-way nor 3-way applies to CIP. | ASCI (no engine) |

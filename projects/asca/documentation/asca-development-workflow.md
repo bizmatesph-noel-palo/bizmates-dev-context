@@ -9,7 +9,7 @@
 | **Author** | Noel Palo, Lead Developer |
 | **Assisted by** | Kiro |
 | **Status** | Active |
-| **Audience** | Dev team (Noel, Throy, Orlino, Cristoff), Patrick-san (SDM) |
+| **Audience** | Dev team (Noel, Throy, Cristoff), Glenn (QA), Patrick-san (SDM) |
 | **JIRA** | [ASCA](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) · [ASCI](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) |
 | **Related** | `docs/asc-projects-master-timeline.md` (schedule + gate timing) |
 
@@ -68,7 +68,7 @@ Three mandatory gates where work cannot proceed without approval:
 |---|---|---|
 | **ASCA Spec 01: Foundation** | `ls-database-migrations` + `accounting_related_system_for_freee` | DB schema (11 tables + 1 view), models, enums, run lifecycle service, allocation engine, reference price seeder, test data seeder |
 | **ASCA Spec 02: CAP Integration** — split into 4 sub-specs (confirmed 2026-09-23) | `accounting_related_system_for_freee` | **02a** CAP Core Injection (`CommonUtil` overwrite + CAP detection) · **02b** Refund Allocation (REF-CAP-09, negative-N) · **02c** AllocationDetail CSV · **02d** DataCorrection Integration (`allocateForCharge()`). Authoring order 02a→02b→02c→02d. (02d **dropped at G1** then **retained by Lead decision 2026-10-01** — DEVOPS-6415-style drift risk — pending re-confirmation with Kuroda-san.) |
-| **ASCI Spec 01: CIP Integration** (residual-value pricing — REF-CIP-05) | `ls-database-migrations` (seeder) | **No allocation engine for CIP.** Add the Coaching Intensive booking record (`product_id 10025`, `price_flag=3`, ¥71,920 tax-incl) to `mst_new_price_listing`; verify existing daily pro-ration + first-month discount produce the expected independent CIP charges (Lesson / App ¥3,980 / Coaching Intensive ¥71,920). No CIP detection, no split formula, no `mst_alloc_reference_prices` CIP rows. Likely a single small spec. |
+| **ASCI Spec 01: CIP Integration** (residual-value pricing — REF-CIP-05; G1 APPROVED 2026-10-28) | `accounting_related_system_for_freee` | **No allocation engine for CIP.** The Coaching Intensive booking record (`product_id 10025`, `price_flag=3`, ¥71,920 tax-incl) is created upstream by **CIP-179** — ASCI only verifies it. ASCI adds two CIP-specific arithmetic transforms in the accounting repo: the **site→booking conversion** (¥75,900 → Coaching ¥71,920 / App ¥3,980, before day-proration, campaign-agnostic) and the **CIP refund split** (negative on the Coaching Intensive charge distributed to App by the booked ratio; shareholder = Coaching-only). No allocation engine, no `mst_alloc_*`, no run/anchor tables. 5 requirements (REF-CIP-09). |
 
 > **Spec 02 split confirmed (2026-09-23) — four sub-specs:** each is its own `.kiro/specs/` folder + branch + PR + G1/G2/G3 gate set (flat naming per the Spec 01 precedent). **02d was dropped at G1 (2026-09-28, REF-CAP-12 §0) then retained by Lead decision (2026-10-01)** — DEVOPS-6415-style drift risk; re-confirm with Kuroda-san. See `docs/asc-projects-master-timeline.md` (Spec Overview) for the sizing rationale.
 >
@@ -111,7 +111,7 @@ Epic: ASCA-13 — [Spec 01] — Foundation (8 stories — Coding spans 2 repos)
 ├── Story: ASCA-17 — [Spec 01] — Coding (accounting application)     → Dev (Throy)
 ├── Story: ASCA-18 — [Spec 01] — Code Review                         → Lead (Noel)
 ├── Story: ASCA-20 — [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
-└── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Miko)
+└── Story: ASCA-19 — [Spec 01] — QA Testing                          → QA (Glenn)
 
 # Spec 02 = 4 separate epics (one per sub-spec) — confirmed 2026-09-28. NOT YET CREATED.
 # 02d was dropped at G1 (REF-CAP-12 §0) then retained by Lead decision (2026-10-01) — re-confirm with Kuroda-san before creating its epic.
@@ -122,7 +122,7 @@ Epic: [Spec 02a] — CAP Core Injection (6 stories — accounting repo)
 ├── Story: [Spec 02a] — Coding                             → Dev (Throy)
 ├── Story: [Spec 02a] — Code Review                        → Lead (Noel)
 ├── Story: [Spec 02a] — Dev/Manual Testing                 → Lead (Noel)
-└── Story: [Spec 02a] — QA Testing                         → QA (Miko)
+└── Story: [Spec 02a] — QA Testing                         → QA (Glenn)
 
 Epic: [Spec 02b] — Refund Allocation (6 stories — accounting repo)
 └── (same 6-story set; Requirements story flags REF-CAP-09 open items: shareholder cap, tax-exemption path)
@@ -134,16 +134,16 @@ Epic: [Spec 02d] — DataCorrection Integration (6 stories — accounting repo)
 └── (same 6-story set; smallest — one scoped allocateForCharge() call site. Dropped at G1 then retained by Lead decision 2026-10-01 — re-confirm with Kuroda-san before creating.)
 
 # ASCI Project (separate JIRA project — reuses ASCA foundation)
-Epic: [Spec 01] — CIP Integration (7 stories — single repo) — NOT YET CREATED
+Epic: ASCI-8 — [Spec 01] — CIP Integration (single repo: accounting_related_system_for_freee) — CREATED (stories ASCI-9..14)
 ├── Story: [Spec 01] — Requirements + Sign-off             → PM (Kuroda-san)
 ├── Story: [Spec 01] — Architecture (Design + Tasks)       → Lead (Noel)
-├── Story: [Spec 01] — Coding                              → Dev (Orlino or Cristoff)
+├── Story: [Spec 01] — Coding                              → Dev (Cristoff)
 ├── Story: [Spec 01] — Code Review                         → Lead (Noel)
 ├── Story: [Spec 01] — Dev/Manual Testing                  → Lead (Noel)
 └── Story: [Spec 01] — QA Testing                          → QA (Glenn)
 ```
 
-> **Scope note (REF-CIP-05, 2026-09-17 — supersedes R-16):** ASCI CIP Integration is **no allocation engine at all**. CIP moved to residual-value pricing — it books separate, already-priced charges (Lesson at its own price, App ¥3,980, Coaching Intensive ¥71,920 via a new `product_id 10025` `price_flag=3` record) through existing daily pro-ration. The Coding story shrinks to a master-price-record addition + pro-ration verification (ls-db seeder). No CIP detection, no split formula. See technical design §1c.
+> **Scope note (REF-CIP-05 + REF-CIP-09, G1 APPROVED 2026-10-28 — supersedes the earlier "ls-db seeder only" framing):** ASCI CIP Integration uses **no allocation engine** — but it is **not** seeder-only. The 10025 `price_flag=3` record is created upstream by CIP-179 (ASCI verifies it). The ASCI Coding work lives in **`accounting_related_system_for_freee`** and is two CIP-specific arithmetic transforms on the existing daily-rate path: (1) the **site→booking conversion** (REF-CIP-09 B-1: ¥75,900 → Coaching ¥71,920 / App ¥3,980 before day-proration, campaign-agnostic) and (2) the **CIP refund split** (booked-ratio distribution of a Coaching Intensive negative to App; shareholder = Coaching-only, no cap in batch). Neither touches `mst_alloc_*`, the allocation formula, or the run/anchor tables (no-engine invariant). The spec lives at `.kiro/specs/asci-spec-01-cip-integration/` (requirements G1-approved, design + tasks generated). See technical design §1c and REF-CIP-09.
 
 **Note on Scaffolding:** This epic (ASCA-9) is project setup, not spec dev work — it does not follow the full Spec story set (Requirements → Architecture → Coding → Review → Testing → QA). It holds the steering story (ASCA-10) plus the DEV04 environment setup/fix tasks (ASCA-11/12/21/22). The originally-planned "Branch setup" story was dropped. Confirmed with Patrick-san (SDM) — the dev-KPI tool aggregates by story type, so a non-spec epic is expected and does not distort measurement.
 
@@ -236,10 +236,9 @@ ls-database-migrations                    accounting_related_system_for_freee
 | **PM** | Kuroda-san | Reviews requirements at G1, approves scope, resolves open business items |
 | **SDM** | Patrick-san | Manages JIRA epics/stories, tracks progress, presents to business |
 | **Lead** | Noel | Steering files, requirements, design, tasks, PR review, deployment |
-| **Dev 1** | Throy | Executes ASCA tasks with AI agent, creates PRs |
-| **Dev 2** | Orlino/Cristoff | Executes ASCI tasks with AI agent, creates PRs |
-| **QA (CAP)** | Miko | Tests ASCA CAP scenarios (10 cases) |
-| **QA (CIP)** | Glenn | Tests ASCI CIP scenarios (11 cases) |
+| **Dev** | Throy | Executes ASCA tasks with AI agent, creates PRs |
+| **Dev** | Cristoff | Executes ASCA/ASCI tasks with AI agent, creates PRs |
+| **QA** | Glenn | Tests ASCA CAP + ASCI CIP scenarios |
 
 ---
 
