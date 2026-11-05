@@ -54,6 +54,26 @@ When producing artifacts (reports, test cases, tickets, KB articles, guides, doc
 2. Check which code repo the user is actively working in
 3. If ambiguous, ask: "Which project should this go under?"
 
+## Daily Sync (SOD / EOD)
+
+This workspace uses the toolkit's **Daily Sync** workflow (`agentic-toolkit/workflows/daily-sync.md`) for start-of-day and end-of-day tracking. Manual invocation:
+
+- **`SOD: resume my day`** (optionally `— today is YYYY-MM-DD`) → read-only resume report: since-last-entry, unverified items (asked back), today's priorities. No doc edits until the user confirms.
+- **`EOD: wrap my day`** + what got done → tick the tracker's Remaining, append a dated daily-log entry, refresh the priority banner, add a timeline snapshot only if something material changed.
+
+**Tracking documents (ASC projects):**
+
+| Role | Path |
+|---|---|
+| Tracker (daily log + Remaining checklist) | `docs/asc-projects-task-tracker.md` |
+| Timeline (authoritative baseline + snapshots) | `docs/asc-projects-master-timeline.md` |
+
+**Project rules the daily sync must honor:**
+- **Verify before claiming.** Never record a deploy result, review gate (G3), or external-team status as done without confirmation — list it as unverified and ask.
+- **Unit-test / DB-safety scope:** ASCA + ASCI tests only. Leave old unrelated tests alone unless a project change actually broke them (missing field, expected-vs-actual drift). Flag out-of-scope findings as note-only.
+- **Working calendar:** Mon–Fri. PH and JP holiday calendars are independent — each team works through the other's holiday unless the date is a holiday in both (they do not stack).
+- Keep the tracker (day-to-day) and the master timeline (baseline) consistent with each other; the daily log is append-only.
+
 ## File Placement (Universal)
 
 Every project directory follows this structure:
