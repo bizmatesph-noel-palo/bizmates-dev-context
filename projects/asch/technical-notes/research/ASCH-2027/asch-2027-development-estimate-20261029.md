@@ -23,6 +23,14 @@
 > - **Still open upstream (CDB):** product IDs 10022 / 10025 are decided in HCI-11 Req 2 but the **released CDB code still has the old lists**; the half-price `price_flag = 4` amounts are in the charge-batch HCI requirements still being drafted (Paolo). Kuroda-san is aligning with Soli-san first; the Lead's reply to his dated plan is on hold. None of this changes ASC logic (see `REF-ASCH2027-03`).
 > - **New dependency to watch:** CIP refunds and the conversion of refunded CIP bundles are **not yet working on DEV04** (`CipBundlePairing` counts the refund charge; fix tracked in **ASCI-19**). The CIP refund tests (pattern 8) need ASCI-19 verified first. This is an ASCI fix, not new ASCH work.
 
+> **Update 2026-11-09 (Kuroda-san's second round of questions, 11-09 21:30; final reply drafted, sending to be confirmed). Supersedes the "1 day / judgment buffer" notes below where they differ.**
+> - **Buffer (about 5–6.5 days) grounded on project actuals, not a generic standard:** rework 1–1.5 (ASCA-81 passed on QA's 3rd recheck); waiting for QA / review 2.5–3 (ZPR: 8 working days from the DEV04 batch run 9/14 to QA complete 9/23); DEV04 data issues 1.5–2 (ZPR stale DEV04 DB → prod DB re-import; ASCA-86 deployed 11/4, not pulled on DEV04 until 11/6). A "20% standard" taken from the toolkit template was withdrawn.
+> - **Roles:** expected values come from Kuroda-san's requirements and detailed test sheet (business decisions). QA prepares test cases and data and runs the checks. Dev runs the DEV04 batch commands per round, checks the pull, and helps when QA cannot or a setting change is needed. Work (estimates): Lead 0.5–1, QA 3–4 (Glenn-san to correct), Dev 1–1.5 → **4.5–6.5 days**.
+> - **Sequential, not parallel.** A logic change / new feature = full spec workflow in order (about 4–5 weeks plus Dev time), not included. Small non-blocking change requests could run side by side.
+> - **Levers:** detailed test sheet + QA test data before the start (about 2–3 days), ASCI-19 verified first (about 1–1.5 days), QA time reserved (depends on QA's schedule).
+> - **Dates:** start Mon 11/30 → about 10–13 working days → **finish about 12/11–12/16**; with the first two levers → about **12/8–12/10**. Testing only; holidays not included.
+> - **Values already on Kuroda-san's 11-04 page:** patterns **1, 3, 8** (§5, §4.4, §4.4b); partial for pattern 2 (§4.3).
+
 > **Changes after Kuroda-san's estimate questions (2026-11-06 evening).** These are the proposed answers. Sending the reply is to be confirmed, and the numbers are provisional until QA confirms its time.
 > - **Error fixed:** the phase table adds up to 4–5.5 days (0 + 0.5 + 1–1.5 + 2–3 + 0.5), not 3–5.
 > - **New work counted:** the CAP half-price refund cases add about **+1 day (0.5–1.5)** to row 3. Work is now **5–6.5 days**, which is **0.25–0.33 man-months** (1 man-month = 20 days). Report the work days, not the buffer.
@@ -89,7 +97,7 @@ The 2027 Honki Campaign gives a 50% discount in the first and 6th months to cust
 
 **QA step (explicit, added 2026-11-06).** The real CDB charge batch cannot issue half-price charges until the CDB release (~12/17), so QA inserts the half-price charges and refunds on DEV04. Sequence: Lead designs the expected values, QA inserts the charges and refunds, the batch runs, we compare. QA's time is inside rows 3 and 4. **To confirm with Glenn-san.**
 
-**Logic-change contingency.** Any logic change is Scenario B, not testing only. That includes the CAP positive-side point sent to Kuroda-san on 2026-11-06 if Accounting wants it fixed, or a gap found in a test run. It adds about 4–5 weeks from the decision date and is not inside the 2–2.5 weeks.
+**Logic-change contingency.** Any logic change is Scenario B, not testing only. That includes a gap found in a test run. (The CAP positive-side point QA found on 2026-11-06 was decided by Kuroda-san on 2026-11-09 as a known limitation with no Spec 01 change, so it is no longer a trigger.) It adds about 4–5 weeks from the decision date and is not inside the 2–2.5 weeks.
 
 ### Grounding — why "testing-only" (code evidence)
 
