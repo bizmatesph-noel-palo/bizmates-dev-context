@@ -1,3 +1,5 @@
+> **Status (2026-11-05):** Verification findings still valid. The *fix recommendation* (structural guards) is now superseded by the simpler root-cause fix — remove the over-engineered migration round-trip test. See `../20261105-roundtrip-test-overengineering/REPORT-00-roundtrip-test-root-cause.md`. Retained as a verification record (not archived).
+
 # ASCA-70 DB-Safety Finding — Independent Verification Report
 
 - **Date:** 2026-10-23

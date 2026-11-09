@@ -1,3 +1,5 @@
+> **SUPERSEDED (2026-11-05):** The requirements capture here is based on Kuroda-san's **old** Confluence page (2026-10-23). He re-created the page on 2026-11-04 and asked us to use the new one — captured as `REF-ASCH2027-02-Requirements-20261104.md`, now the **authoritative requirements source**. Several open items here are closed in REF-02 (shareholder-App-share, App 10021→10022, −181 approval). This doc is retained for its cross-reference analysis and history (not archived). "ASCH" = the NEW 2027 ASCH.
+
 # REF-ASCH2027-01 — ASCH 2027: Revenue Booking for the 2027 Honki Campaign (Requirements)
 
 ## Document Info

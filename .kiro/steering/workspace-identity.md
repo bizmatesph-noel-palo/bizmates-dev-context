@@ -15,10 +15,13 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | Project Code | JIRA | Code Repo(s) | Artifacts Directory | Status | Deadline |
 |---|---|---|---|---|---|
 | ASC | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
-| ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` | ❌ Cancelled (2026-08-07) | — |
+| OLD ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` (legacy) | ❌ Cancelled (2026-08-07) | — |
+| ASCH (NEW 2027) | — (home TBD) | rides ASCA + ASCI | `projects/asch/technical-notes/research/ASCH-2027/` (provisional) | Active — assessment/estimate phase | 2027 campaign |
 | ASCA | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asca/` | Active — builds shared foundation | 2026/12/17 |
 | ASCI | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asci/` | Active — reuses ASCA foundation | 2026/12/17 |
 | CDB | — | `MBTI_backend` | — | Active (upstream, Patrick-san's team) | — |
+
+> **Naming convention — ASCH:** Unqualified **"ASCH" always means the NEW 2027 ASCH** (active, rides the finished CAP/ASCA + in-build CIP/ASCI work on the discounted paid amount). The cancelled 2026 project is **"OLD ASCH"** — only ever referenced with that explicit label. The two are different projects that reused the name; never conflate them. (OLD ASCH artifacts currently sit under `projects/asch/`; the NEW ASCH home is still provisional — see the deferred doc-structure item in the task tracker.)
 
 **Note:** ASC is the JIRA code for ASCM (the original project was just "ASC" before subsequent projects were created).
 
@@ -53,6 +56,30 @@ When producing artifacts (reports, test cases, tickets, KB articles, guides, doc
 1. Check which project context was loaded at session start
 2. Check which code repo the user is actively working in
 3. If ambiguous, ask: "Which project should this go under?"
+
+## Daily Sync (SOD / EOD)
+
+This workspace uses the toolkit's **Daily Sync** workflow (`agentic-toolkit/workflows/daily-sync.md`) for start-of-day and end-of-day tracking. Manual invocation:
+
+- **`SOD: resume my day`** (optionally `— today is YYYY-MM-DD`) → read-only resume report: since-last-entry, unverified items (asked back), today's priorities. No doc edits until the user confirms.
+- **`EOD: wrap my day`** + what got done → tick the tracker's Remaining, append a dated daily-log entry, refresh the priority banner, add a timeline snapshot only if something material changed.
+- **`ST: status`** (optionally `— ASCA` / `— ASCI + ASCH`) → read-only tracker pulse: open / in-progress / unverified per project. No priorities, no edits.
+- **`LOG: <update>`** → record one scoped update to the tracker (tick/reword the affected Remaining item + append to today's log). **Tracker-only** — never writes the timeline; flags material updates as "run SYNC when ready."
+- **`SYNC: reconcile docs`** (optionally `— timeline only`) → reconcile the master timeline + other project docs against the tracker, figuring out the drift itself. Trivial tracker-internal fixes auto-apply; anything touching the timeline is shown for confirmation before writing. Never syncs an unverified item in as done.
+- **`PU: project update`** (optionally `— for <name>, ASCA + ASCI`) → stakeholder highlight/lowlight update from the tracker + timeline (toolkit `workflows/project-update.md`). Read-only, paste-ready. Default audience: Patrick-san (SDM); per project (ASCA, ASCI). Done-but-unverified items are never shown as highlights.
+
+**Tracking documents (ASC projects):**
+
+| Role | Path |
+|---|---|
+| Tracker (daily log + Remaining checklist) | `docs/asc-projects-task-tracker.md` |
+| Timeline (authoritative baseline + snapshots) | `docs/asc-projects-master-timeline.md` |
+
+**Project rules the daily sync must honor:**
+- **Verify before claiming.** Never record a deploy result, review gate (G3), or external-team status as done without confirmation — list it as unverified and ask.
+- **Unit-test / DB-safety scope:** ASCA + ASCI tests only. Leave old unrelated tests alone unless a project change actually broke them (missing field, expected-vs-actual drift). Flag out-of-scope findings as note-only.
+- **Working calendar:** Mon–Fri. PH and JP holiday calendars are independent — each team works through the other's holiday unless the date is a holiday in both (they do not stack).
+- Keep the tracker (day-to-day) and the master timeline (baseline) consistent with each other; the daily log is append-only.
 
 ## File Placement (Universal)
 
