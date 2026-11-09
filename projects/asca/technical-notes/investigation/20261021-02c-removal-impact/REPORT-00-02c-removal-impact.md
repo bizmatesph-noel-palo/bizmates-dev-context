@@ -78,7 +78,7 @@ So "which to prioritize" is answered by phase: do 02c removal in the current ASC
 
 ## 6. Next steps
 
-1. This report grounds the CR. Refresh the existing CR draft (`projects/asca/technical-notes/jira/tickets/ASCA-XXX-remove-02c-allocationdetail-csv.md`) to match the exact footprint in §2.
+1. This report grounds the CR. Refresh the existing CR draft (`projects/asca/technical-notes/jira/tickets/ASCA-78-remove-02c-allocationdetail-csv.md`) to match the exact footprint in §2.
 2. Create the CR in JIRA (sub-task under ASCA-55) when ready to delegate — after DEV04 verification per the batching plan.
 3. On execution: remove items 1–5, stamp the spec (item 6), re-run `tests/Unit/RevenueAllocation` + `tests/Feature/RevenueAllocation`, and grep `app/ config/ tests/` for `AllocationDetail|RevenueAllocationCsv|allocationDetailFile` = zero.
 
@@ -86,5 +86,5 @@ So "which to prioritize" is answered by phase: do 02c removal in the current ASC
 
 - Source: `research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md`
 - Decision: `projects/asca/documentation/ASCA-ADR-20261020-drop-02c-allocationdetail-csv.md`
-- CR draft: `projects/asca/technical-notes/jira/tickets/ASCA-XXX-remove-02c-allocationdetail-csv.md`
+- CR draft: `projects/asca/technical-notes/jira/tickets/ASCA-78-remove-02c-allocationdetail-csv.md`
 - CIP refund (parallel, ASCI): `research/CIP/REF-CIP-08-Lesson-Bundled-CIP-Refund-Clarification-20261020.md`, `projects/asci/specs/asci-spec-01-cip-integration/requirements.md` (Req 3)

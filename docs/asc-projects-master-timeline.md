@@ -34,9 +34,26 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-06)
+## ⚠️ Status / Actuals (as of 2026-11-10)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-10 (ASCI-19 QA PASS on DEV04; ASCI-22 ticketed; ASCA-90/91 assigned; ASCH start moved to 12/7; last working day before leave)
+
+- **ASCI-19 (CIP refund / conversion fix):** deployed to DEV04 and the batch run on 11-10. **QA PASS (Glenn-san, JIRA 11-10 19:22)** on the September–November CSVs: originals converted (1341 October + November = 71,920 / 3,980; 303197 half-price = 35,960 / 1,990; 1332 / 1824 / 2883 converted); refunds split in November for all five students (full −71,920 / −3,980, half-price −35,960 / −1,990), not netted. Limitation: 303197 is not in the DB log (CSV matches). Left: JIRA status moves and closing ASCI-17 / ASCI-20 / ASCI-21 (same root cause; the ASCI-20 / ASCI-21 QA cases are not named in the comment).
+- **ASCI-22** created (Task under ASCI-15, Throy-san) for the ASCI-19 DEV04 deploy and rerun; updated to run both 2026-10 (report 20261101) and 2026-11 (20261201), because 1341 / 303197 start 10-20 and their October rows are unconverted.
+- **DB-safety:** ASCA-90 assigned to Throy-san, ASCA-91 to Cristoff-san (both To Do).
+- **CAP positive-side gap:** unchanged from 11-09. Retest waits for the CAP team's immediate-REST fix (CAP-382); Kuroda-san will announce the deployment, and the retest gets a ticket then.
+- **ASCH (NEW 2027):** start agreed at **Mon 12/7** (DSM): the CAP/CIP team is fixing immediate REST (CAP-382); 11/30 is a PH holiday; 12/1–12/4 pull the CAP/CIP/CDB changes into DEV04. Test sheet requested from Kuroda-san as early as 11/23. Glenn-san's QA estimate: 3–4 days. Reply drafted (sending not confirmed): QA wait removed; work 4.5–6.5 days; buffer 2.5–4 days; finish about **12/16–12/21** (about 12/15–12/18 if QA prepares data before 12/7). Planned as testing only; a logic change is not included. Details: `projects/asch/technical-notes/research/ASCH-2027/asch-2027-development-estimate-20261029.md` (11-10 update).
+- **Leave 11-11 → 11-23:** Throy-san covers ASCI-19 verification (ASCI-22), ASCI-17 / 20 / 21 closing, ASCA-90, and the CAP retest rerun when announced; Cristoff-san covers ASCA-91.
+
+### Snapshot — 2026-11-09 (CAP gap decided — no Spec 01 change, upstream CAP fix; ASCI-19 fix pushed; DB-safety follow-ups ticketed; ASCH estimate re-answered; 2 working days to leave)
+
+- **CAP positive-side gap — DECIDED (Kuroda-san, 11-09).** No Spec 01 change on the ASC side; keep the V-3 skip and its outcome logging. Cause confirmed: the 即時休会 (immediate REST) action ends the Coaching charge on the execution date but not the App (10022), so the dates differ and the original charges are not paired. The business team confirmed the App should end with the Coaching; the CAP team (Soli-san) is asked to fix immediate REST upstream. After that fix is deployed, QA retests on DEV04 with a new CAP student (the Lead is on leave, so Glenn-san with Throy-san). Report: `projects/asca/technical-notes/investigation/20261109-cap-positive-side-gap-decision/`.
+- **ASCI-19 (CIP refund / conversion fix):** Throy-san pushed the fix (commit `4b4e667a`), matching the ticket; Lead's static review: approve. Not yet merged or deployed to DEV04. ASCI-17 / ASCI-20 / ASCI-21 close after the DEV04 rerun and QA retest.
+- **DB-safety follow-ups ticketed:** **ASCA-90** (ls-db: remove the migration round-trip test and its guard, keep a simplified no-DDL check) and **ASCA-91** (accounting: test-DB guard accepts only in-memory SQLite or `_test`). Both test-only, unassigned, announced to the team for Throy-san / Cristoff-san during the leave.
+- **ASCH (NEW 2027) — estimate re-answered (reply sent to Kuroda-san on 11-09).** Kuroda-san challenged the buffer size and asked for the work split, levers and a finish date. The buffer (about 5–6.5 days) is now grounded on this project's actual DEV04 verification history (QA rechecks, ZPR's 8-day QA cycle, a stale DEV04 DB, a fix not pulled on DEV04). Roles corrected: expected values come from Kuroda-san's requirements / detailed test sheet; QA prepares data and tests; Dev runs the DEV04 commands. Work 4.5–6.5 days (Lead 0.5–1, QA 3–4 to be confirmed by Glenn-san, Dev 1–1.5); mostly sequential. **Start 11/30 → finish about 12/11–12/16; about 12/8–12/10 if the test sheet, the QA test data and ASCI-19 are ready before the start.** Testing only; a logic change (full spec workflow, about 4–5 weeks) and holidays are not included.
+- **Critical window:** Lead leave 11-11 → 11-23. Before then: ASCI-19 PR and merge, Throy-san's ASCI coverage and handover, assign ASCA-90 / ASCA-91. (ASCH reply sent 11-09.)
 
 ### Snapshot — 2026-11-06 (CAP refund fix VERIFIED on DEV04; CIP refund defect found → ASCI-19; CAP positive-side decision pending; ASCH reply on hold; 3 working days to leave)
 
