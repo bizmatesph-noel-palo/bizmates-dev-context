@@ -38,9 +38,9 @@
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
-### Snapshot — 2026-11-10 (ASCI-19 deployed + run on DEV04, waiting on QA; ASCI-22 ticketed; ASCA-90/91 assigned; ASCH start moved to 12/7; last working day before leave)
+### Snapshot — 2026-11-10 (ASCI-19 QA PASS on DEV04; ASCI-22 ticketed; ASCA-90/91 assigned; ASCH start moved to 12/7; last working day before leave)
 
-- **ASCI-19 (CIP refund / conversion fix):** deployed to DEV04 and the batch run on 11-10 (per Lead); report sent to QA; no QA feedback yet. Not confirmed: that the DEV04 server had pulled `4b4e667a` before the run, and whether 2026-10 was run as well as 2026-11. ASCI-19 also fixes QA bugs ASCI-20 / ASCI-21 (same root cause; control students incl. 2668 have no refund and convert). ASCI-17 / 20 / 21 close after QA retest.
+- **ASCI-19 (CIP refund / conversion fix):** deployed to DEV04 and the batch run on 11-10. **QA PASS (Glenn-san, JIRA 11-10 19:22)** on the September–November CSVs: originals converted (1341 October + November = 71,920 / 3,980; 303197 half-price = 35,960 / 1,990; 1332 / 1824 / 2883 converted); refunds split in November for all five students (full −71,920 / −3,980, half-price −35,960 / −1,990), not netted. Limitation: 303197 is not in the DB log (CSV matches). Left: JIRA status moves and closing ASCI-17 / ASCI-20 / ASCI-21 (same root cause; the ASCI-20 / ASCI-21 QA cases are not named in the comment).
 - **ASCI-22** created (Task under ASCI-15, Throy-san) for the ASCI-19 DEV04 deploy and rerun; updated to run both 2026-10 (report 20261101) and 2026-11 (20261201), because 1341 / 303197 start 10-20 and their October rows are unconverted.
 - **DB-safety:** ASCA-90 assigned to Throy-san, ASCA-91 to Cristoff-san (both To Do).
 - **CAP positive-side gap:** unchanged from 11-09. Retest waits for the CAP team's immediate-REST fix (CAP-382); Kuroda-san will announce the deployment, and the retest gets a ticket then.
