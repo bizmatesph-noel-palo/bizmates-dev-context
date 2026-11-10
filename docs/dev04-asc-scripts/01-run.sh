@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # ASC Project — DEV04 run automation — SCRIPT 1 of 2 (the RUN)
-# Run tag: DEV04_ASC_20260611 (hard-coded, per runbook)
+# Run tag: DEV04_ASC_<YYYYMMDD> (defaults to TODAY; override with RUN_TAG=...)
 # NO sudo (run as root inside the accounting-system container).
 #
 # This script ONLY runs the batch and names the files. The copy-to-bizmates.jp
@@ -27,16 +27,18 @@
 #   bash 01-run.sh                 # all months 02-12
 #   MONTHS="02" bash 01-run.sh     # February only
 #
-# Produces files named: YYYYMM01_PRE_(DEV04_ASC_20260611_<HHMMSS>).zip
-#                       YYYYMM01_SEND_(DEV04_ASC_20260611_<HHMMSS>).zip
+# Produces files named: YYYYMM01_PRE_(DEV04_ASC_<YYYYMMDD>_<HHMMSS>).zip
+#                       YYYYMM01_SEND_(DEV04_ASC_<YYYYMMDD>_<HHMMSS>).zip
 # The fixed prefix (YYYYMM01_PRE_ / YYYYMM01_SEND_) is what SCRIPT 2 globs on.
 
 set -euo pipefail
 
 # ----------------------------------------------------------------------------
-# Config (hard-coded run tag per request)
+# Config
 # ----------------------------------------------------------------------------
-RUN_TAG="DEV04_ASC_20260611"
+# Run tag defaults to today's date. Override for a re-run under an older tag:
+#   RUN_TAG="DEV04_ASC_20261103" bash 01-run.sh
+RUN_TAG="${RUN_TAG:-DEV04_ASC_$(date '+%Y%m%d')}"
 MONTHS="${MONTHS:-02 03 04 05 06 07 08 09 10 11 12}"
 YEAR="2026"
 

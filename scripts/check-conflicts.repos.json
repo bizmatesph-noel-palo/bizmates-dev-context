@@ -1,0 +1,10 @@
+{
+  "root": "~/bizmates",
+  "repos": [
+    "MBTI_backend",
+    "MBTI_frontend",
+    "ls-database-migrations",
+    { "name": "bizmates.jp", "branch_map": { "main": "master" } },
+    "accounting_related_system_for_freee"
+  ]
+}

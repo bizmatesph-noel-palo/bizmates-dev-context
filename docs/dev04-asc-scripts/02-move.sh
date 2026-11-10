@@ -150,6 +150,19 @@ captured_label() {
 # ----------------------------------------------------------------------------
 # Write the "Good day" report with the ACTUAL copied filenames
 # ----------------------------------------------------------------------------
+# Execution date shown in the report: taken from the run tag inside the copied zip
+# names (DEV04_ASC_<YYYYMMDD>_...), so it stays correct even if this script runs on
+# a different day than SCRIPT 1. Falls back to today. Override with RUN_DATE=YYYY-MM-DD.
+if [ -z "${RUN_DATE:-}" ]; then
+  first_zip="${COPIED_PRE[0]:-${COPIED_SEND[0]:-}}"
+  tag_date="$(echo "${first_zip}" | grep -oE 'DEV04_ASC_[0-9]{8}' | head -n 1 | grep -oE '[0-9]{8}')"
+  if [ -n "${tag_date}" ]; then
+    RUN_DATE="${tag_date:0:4}-${tag_date:4:2}-${tag_date:6:2}"
+  else
+    RUN_DATE="$(date '+%Y-%m-%d')"
+  fi
+fi
+
 log "Writing report: ${REPORT_FILE}"
 {
   echo "Good day, Team!"
@@ -164,7 +177,7 @@ log "Writing report: ${REPORT_FILE}"
     echo "${YEAR}/${MM}/01 captures the $(captured_label "${MM}")."
   done
   echo ""
-  echo "Below are the links to the files generated during the 2026-06-11 execution:"
+  echo "Below are the links to the files generated during the ${RUN_DATE} execution:"
   echo ""
   for MM in ${MONTHS}; do
     pre_zip=""
