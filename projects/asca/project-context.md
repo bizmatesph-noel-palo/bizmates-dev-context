@@ -6,7 +6,17 @@
 
 ---
 
-## Current State (as of 2026-10-23 — DEV04 verified; 02c removal handed off; ASCI-01 at G1)
+## Current State (as of 2026-11-10 — CAP refund fix verified; DB-safety merged + follow-ups assigned; CAP gap → upstream fix)
+
+> Live status: `docs/asc-projects-task-tracker.md`. The 2026-10-23 / 10-28 notes below are kept as history.
+
+- ✅ **ASCA-81 / ASCA-86 (CAP refund App row):** ASCA-86 merged 2026-11-04; **verified on DEV04 2026-11-06** (QA PASS) — student 471 Coaching −19,241 / App −1,934, student 7185 −38,482 / −3,868; 12 negative App rows for 12 negative Coaching refunds. JIRA closing is admin only.
+- ✅ **DB-safety (ASCA-70 follow-on):** ASCA-82 (accounting) + ASCA-83 (ls-db) merged to ASCA-master and deployed to DEV04 2026-11-05. Follow-ups created 2026-11-09, both To Do: **ASCA-91** (accounting guard accepts only in-memory SQLite or `_test`; `phpunit.xml` not touched) → Cristoff-san; **ASCA-90** (ls-db: remove the round-trip test + its guard, keep a simplified no-DDL check) → Throy-san.
+- **CAP positive-side gap (found by QA 2026-11-06):** decided by Kuroda-san 2026-11-09 — no Spec 01 change; keep the V-3 skip and its logging. Cause: immediate REST (即時休会) ends the Coaching charge but not the App (10022). The CAP team (Soli-san) fixes it upstream (CAP-382); after Kuroda-san announces the deployment, Glenn-san retests on DEV04 with a new CAP student (Throy-san reruns the batch). Retest not ticketed yet. Report: `technical-notes/investigation/20261109-cap-positive-side-gap-decision/`.
+- **Admin closes only:** ASCA-18 (G3) status, ASCA-81, ASCA-87 time logging.
+- **Leave 2026-11-11 → 11-23:** Throy-san covers ASCA-90 and the CAP retest rerun; Cristoff-san covers ASCA-91.
+
+### History — state as of 2026-10-23 (DEV04 verified; 02c removal handed off; ASCI-01 at G1)
 
 **ASCA CAP integration is dev-complete + DEV04-verified; the 02c removal is now merged too.** As of 2026-10-26: **ASCA-78 (02c AllocationDetail CSV removal) is DONE** (Throy, weekend — full allocation unit suite green, 126 tests / 43,662 assertions). **ASCA-79 (CEIL steering note) merged.** A fresh **DEV04 Oct–Nov command run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) is in progress** (Throy) to re-verify batch output on the post-removal code. ASCI-01 requirements **G1 feedback has been received from Kuroda-san** (shared at DSM) — now being ingested. What advanced earlier was **DEV04 deployment + command execution + QA allocation verification**:
 
@@ -57,9 +67,9 @@
 - ✅ **CEIL steering note (ASCA-79) — merged** (Lead).
 - ✅ **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — done** (Throy, reported at the 2026-10-26 DSM): redeployed to DEV04 + re-ran the batch commands to **regenerate the reports for QA after the 02c-removal changes**. Month wording reconciled — the batch processes the *previous* month, so "September and October **data**" produces the "October–November **report**"; same run, data-month vs report-month wording. (Tidy the JIRA status to Done if not already.)
 - ✅ **ASCI-01 G1 feedback received from Kuroda-san** (shared at DSM) — now ours to ingest/process. (Was "submitted 2026-10-23"; feedback has since come back.)
-- ✅ **DB-safety fix (ASCA-70 follow-on) — TICKETS CREATED (2026-10-27).** [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82) (accounting, High, under ASCA-17) + [ASCA-83](https://bizmates.atlassian.net/browse/ASCA-83) (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70. Each has a paste-ready dev-Kiro prompt + grounding report in its Handover section. Source-of-record + handover files: `technical-notes/jira/tickets/ASCA-82-dbsafety-guard-accounting.md` (+ `ASCA-82-dbsafety-accounting-dev-handover-prompt.md`) and `ASCA-83-dbsafety-guard-lsdb.md` (+ `ASCA-83-dbsafety-lsdb-dev-handover-prompt.md`). **Next: assign to a dev.** (The `ASCA-16/17-SUB-TBA-...` scope stubs remain as earlier drafts.)
+- ✅ **DB-safety fix (ASCA-70 follow-on) — TICKETS CREATED (2026-10-27).** [ASCA-82](https://bizmates.atlassian.net/browse/ASCA-82) (accounting, High, under ASCA-17) + [ASCA-83](https://bizmates.atlassian.net/browse/ASCA-83) (ls-db, Medium, under ASCA-16), both unassigned, both "relates to" ASCA-70. Each has a paste-ready dev-Kiro prompt + grounding report in its Handover section. Source-of-record + handover files: `technical-notes/jira/tickets/ASCA-82-dbsafety-guard-accounting.md` (+ `ASCA-82-dbsafety-accounting-dev-handover-prompt.md`) and `ASCA-83-dbsafety-guard-lsdb.md` (+ `ASCA-83-dbsafety-lsdb-dev-handover-prompt.md`). **Next: assign to a dev.** (The `ASCA-16/17-SUB-TBA-...` scope stubs were archived 2026-11-10 — see `archive/README.md`.)
 
-**Next actions (as of 2026-10-28):**
+**Next actions (as of 2026-10-28 — history; superseded by the 2026-11-10 Current State above):**
 > Live task status is tracked in `docs/asc-projects-task-tracker.md` (Remaining checklist + Daily log). Summary below.
 1. ✅ **DONE — ASCI-01 G1 feedback ingested + folded + G1 APPROVED** (Kuroda-san 2026-10-28; REF-CIP-09 rounds 1+2); ASCI epic+stories created (ASCI-8..14). **Still pending:** promote `requirements.md` → code repo `.kiro/specs/` → G2 design/tasks.
 2. ✅ **DONE — DB-safety fix sub-tickets created** (ASCA-82 accounting / ASCA-83 ls-db, unassigned). **Still pending:** assign to a dev → implement.

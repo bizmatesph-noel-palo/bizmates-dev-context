@@ -28,9 +28,14 @@ Deploy the same way as on 2026-11-04: create a new branch from `deployment/dev04
 
 On the DEV04 server, confirm the deployed code contains the ASCI-19 commit `4b4e667a` before running anything. On 2026-11-04 a fix was deployed but not pulled, and the first rerun showed the old result.
 
-### Step 4 - Run the batch
+### Step 4 - Run the batch for October and November
 
-Run the same batch commands as for ASCI-18, for the 2026-11 target month (the report dated 20261201).
+Run the same batch commands as for ASCI-18 for **both** target months:
+
+- 2026-10 (report dated 20261101)
+- 2026-11 (report dated 20261201)
+
+October is needed too: the charges of students 1341 and 303197 start in October (2026-10-20) and were also left unconverted in the October report. If only November was run, run October as well. *(Added 2026-11-10, after creation.)*
 
 ### Step 5 - Check the result
 
@@ -42,6 +47,7 @@ In `202611_03_DailyRateCalculation(20261201).csv`:
 | 303197, 1824 | −35,960 | −1,990 |
 
 - The original charges of these five students are converted (a Coaching and App split, not 75,900 and 0).
+- In `202610_03_DailyRateCalculation(20261101).csv`, the October rows of 1341 and 303197 are converted too (a non-zero App row; today they show App 0 with Coaching Intensive 29,381 and 14,691).
 - Searching the DEV04 log for `[CIP_CONVERSION]` and `[CIP_REFUND]` shows no skip lines for these five students.
 
 ### Step 6 - Hand over to QA
@@ -51,7 +57,7 @@ Post the CSV and the log check as a comment on this ticket, and tell Glenn-san s
 ## How to know it's done
 
 - ASCI-19 is in `feature/ASCI/ASCI-master` and on DEV04 (commit `4b4e667a` confirmed on the server).
-- The batch ran for 2026-11 and the five students match the table in Step 5.
+- The batch ran for 2026-10 and 2026-11, and the five students match Step 5 in both files.
 - The results are posted here and Glenn-san is informed.
 
 ## Do NOT

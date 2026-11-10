@@ -34,9 +34,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-09)
+## ⚠️ Status / Actuals (as of 2026-11-10)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-10 (ASCI-19 deployed + run on DEV04, waiting on QA; ASCI-22 ticketed; ASCA-90/91 assigned; ASCH start moved to 12/7; last working day before leave)
+
+- **ASCI-19 (CIP refund / conversion fix):** deployed to DEV04 and the batch run on 11-10 (per Lead); report sent to QA; no QA feedback yet. Not confirmed: that the DEV04 server had pulled `4b4e667a` before the run, and whether 2026-10 was run as well as 2026-11. ASCI-19 also fixes QA bugs ASCI-20 / ASCI-21 (same root cause; control students incl. 2668 have no refund and convert). ASCI-17 / 20 / 21 close after QA retest.
+- **ASCI-22** created (Task under ASCI-15, Throy-san) for the ASCI-19 DEV04 deploy and rerun; updated to run both 2026-10 (report 20261101) and 2026-11 (20261201), because 1341 / 303197 start 10-20 and their October rows are unconverted.
+- **DB-safety:** ASCA-90 assigned to Throy-san, ASCA-91 to Cristoff-san (both To Do).
+- **CAP positive-side gap:** unchanged from 11-09. Retest waits for the CAP team's immediate-REST fix (CAP-382); Kuroda-san will announce the deployment, and the retest gets a ticket then.
+- **ASCH (NEW 2027):** start agreed at **Mon 12/7** (DSM): the CAP/CIP team is fixing immediate REST (CAP-382); 11/30 is a PH holiday; 12/1–12/4 pull the CAP/CIP/CDB changes into DEV04. Test sheet requested from Kuroda-san as early as 11/23. Glenn-san's QA estimate: 3–4 days. Reply drafted (sending not confirmed): QA wait removed; work 4.5–6.5 days; buffer 2.5–4 days; finish about **12/16–12/21** (about 12/15–12/18 if QA prepares data before 12/7). Planned as testing only; a logic change is not included. Details: `projects/asch/technical-notes/research/ASCH-2027/asch-2027-development-estimate-20261029.md` (11-10 update).
+- **Leave 11-11 → 11-23:** Throy-san covers ASCI-19 verification (ASCI-22), ASCI-17 / 20 / 21 closing, ASCA-90, and the CAP retest rerun when announced; Cristoff-san covers ASCA-91.
 
 ### Snapshot — 2026-11-09 (CAP gap decided — no Spec 01 change, upstream CAP fix; ASCI-19 fix pushed; DB-safety follow-ups ticketed; ASCH estimate re-answered; 2 working days to leave)
 
