@@ -1,7 +1,9 @@
 # asch — Project Context
 
+> 📌 **NEW ASCH (2027) — note added 2026-11-10.** This file describes the **cancelled 2026 ASCH (OLD ASCH)**. The NEW ASCH (2027) reuses the name only and is a separate, small test-and-verify project. Its docs live in `technical-notes/research/ASCH-2027/`: `REF-ASCH2027-02-Requirements-20261104.md` (authoritative requirements; REF-01 superseded), `REF-ASCH2027-03` (CDB questions), and `asch-2027-development-estimate-20261029.md` (estimate; latest update 2026-11-10 — start 12/7, finish about 12/16–12/21). Live status: `docs/asc-projects-task-tracker.md`. Restructuring the ASCH folder (archive OLD ASCH material, settle the NEW ASCH home) is still deferred.
+
 > ⚠️ **CANCELLED (2026-08-07):** The ASCH (Honki Set proration) project was cancelled. The team has pivoted to the **ASC Allocation Framework (ASC-CAP + ASC-CIP)** — a combined framework using shared `asc_alloc_*` tables with `project_code` column. See:
-> - `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` — current implementation plan (Scenario D)
+> - `archive/projects/asca/documentation/asc-alloc-scenario-d-injection-timeline-20260811.md` — Scenario D plan (archived 2026-09-23; superseded by the master timeline)
 > - `docs/asc-projects-master-timeline.md` — master timeline
 > - `technical-notes/research/CAP/REF-CAP-05-Upstream-Pricing-Discussion-20260812.md` — confirmed pricing & product_id
 > - `technical-notes/research/CAP/REF-CAP-06-Upstream-Price-Mechanism-Draft-20260812.md` — CAP plan_ids 1016–1027
@@ -9,7 +11,7 @@
 >
 > **Terminology:**
 > - **CAP** (Coaching and App Plan) = upstream project in MBTI_backend creating new plans 1016–1027
-> - **CIP** (Coaching Intensive Plan) = upstream project in MBTI_backend creating new Coaching Intensive product (10022) with new plans 1028–1032
+> - **CIP** (Coaching Intensive Plan) = upstream project in MBTI_backend creating new Coaching Intensive product (10025; App is 10022) with new plans 1028–1032
 > - **ASC-CAP / ASC-CIP** = our accounting-side projects that allocate revenue for those charges
 >
 > Execution order: **ASC-CAP first** (builds foundation), **ASC-CIP second** (reuses it).  

@@ -12,6 +12,9 @@ Thumbs.db
 # Exclude kiro settings
 .kiro/settings/*.json
 
+# Local MCP config copy (machine-specific paths; duplicate of .kiro/settings/mcp.json)
+.ai/mcp/
+
 # Secrets — MCP env files (tokens live here, never commit)
 *.env
 .env

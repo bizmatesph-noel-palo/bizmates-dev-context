@@ -59,4 +59,4 @@ Rename/move/delete only — **no behavior change to the allocation engine, 02a/0
 - Source: `research/CAP/REF-CAP-16-ASCA-Spec02c-Drop-AllocationDetail-CSV-20261019.md`
 - Prior 02c sign-off (superseded): `research/CAP/REF-CAP-15-ASCA-Spec02c-SignOff-20261013.md`, `research/CAP/REF-CAP-14-ASCA-Spec02c-Review-Round3-20261013.md`
 - Decommission precedent: `projects/asca/documentation/ASCA-ADR-20261005-datacorrection-decommission.md`
-- Removal CR ticket: `projects/asca/technical-notes/jira/tickets/ASCA-XXX-remove-02c-allocationdetail-csv.md`
+- Removal CR ticket: `projects/asca/technical-notes/jira/tickets/ASCA-78-remove-02c-allocationdetail-csv.md`

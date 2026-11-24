@@ -1,3 +1,5 @@
+> **Status (2026-11-05):** Findings still valid. The *fix recommendation* here (add structural guards) is now superseded by the simpler root-cause fix — remove the over-engineered migration round-trip test. See `../20261105-roundtrip-test-overengineering/REPORT-00-roundtrip-test-root-cause.md`. This report is retained as the original risk-discovery record (not archived).
+
 # Unit Test + Seeder DB-Safety Investigation — Brief (20261020)
 
 ## Document Info

@@ -62,7 +62,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 | [ASCA-40](https://bizmates.atlassian.net/browse/ASCA-40) | [Spec 02a] — Coding | Dev (Throy) | — | To Do |
 | [ASCA-41](https://bizmates.atlassian.net/browse/ASCA-41) | [Spec 02a] — Code Review | Lead (Noel) | G3 | To Do |
 | [ASCA-42](https://bizmates.atlassian.net/browse/ASCA-42) | [Spec 02a] — Dev/Manual Testing | Lead (Noel) | — | To Do |
-| [ASCA-43](https://bizmates.atlassian.net/browse/ASCA-43) | [Spec 02a] — QA Testing | QA (Miko) | — | To Do |
+| [ASCA-43](https://bizmates.atlassian.net/browse/ASCA-43) | [Spec 02a] — QA Testing | QA (Glenn) | — | To Do |
 
 **Notes:** G1 signed off. The **design surfaced three Spec 01 extensions** (per-bundle failure isolation, REF-CAP-13 #2): (1) `COMPLETED_WITH_ERRORS` run status + `finalizeWithErrors()`, (2) `log_alloc_bundle_outcomes` table, (3) reference-price `effective_from` → 2026-12-01. **Kuroda-san approved the change-request on 2026-10-13** — see the Spec 01 CR section. Round-3 (REF-CAP-14 #1) adds that the view/V-5/supersede must treat completed-with-errors as an active Final; this lands in the same run-status extension and must be stated in 02a (Req 4) and 02c. **Also from Round-3 (REF-CAP-14 #2):** CIP must write **no** outcome row and never appear in the CSV — adjust 02a Req 2.5 (confirm whether the engine filters CIP before bundling). Open item O-A (App Freee-mapping rows) to verify before go-live — data, not code.
 
@@ -80,7 +80,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 | [ASCA-47](https://bizmates.atlassian.net/browse/ASCA-47) | [Spec 02b] — Coding | Dev (Throy) | — | To Do |
 | [ASCA-48](https://bizmates.atlassian.net/browse/ASCA-48) | [Spec 02b] — Code Review | Lead (Noel) | G3 | To Do |
 | [ASCA-49](https://bizmates.atlassian.net/browse/ASCA-49) | [Spec 02b] — Dev/Manual Testing | Lead (Noel) | — | To Do |
-| [ASCA-50](https://bizmates.atlassian.net/browse/ASCA-50) | [Spec 02b] — QA Testing | QA (Miko) | — | To Do |
+| [ASCA-50](https://bizmates.atlassian.net/browse/ASCA-50) | [Spec 02b] — QA Testing | QA (Glenn) | — | To Do |
 
 **Notes:** G1 signed off (Round-2 edits applied — cooling-off = 90% refund, overlap-produces-no-refund removed, numeric acceptance cases added). Risk-carrying sub-spec. **CIP-refund home still open:** REF-CIP-07 resolved identification (shareholder via `trn_receipt_locked_charge`, else fixed ratio `App = FLOOR(refund × 3,980 / 75,900)`), but whether CIP-refund handling lives here (currently CAP-only), in a new sub-spec, or in ASCI is **on hold** pending the Lead/PM scope decision. Known dependency to record: `trn_receipt_locked_charge` was built to hide charges from receipts — detection breaks if other flows start writing to it.
 
@@ -100,7 +100,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 | [ASCA-55](https://bizmates.atlassian.net/browse/ASCA-55) | [Spec 02c] — Coding | Dev (Throy) | — |
 | [ASCA-56](https://bizmates.atlassian.net/browse/ASCA-56) | [Spec 02c] — Code Review | Lead (Noel) | G3 |
 | [ASCA-57](https://bizmates.atlassian.net/browse/ASCA-57) | [Spec 02c] — Dev/Manual Testing | Lead (Noel) | — |
-| [ASCA-58](https://bizmates.atlassian.net/browse/ASCA-58) | [Spec 02c] — QA Testing | QA (Miko) | — |
+| [ASCA-58](https://bizmates.atlassian.net/browse/ASCA-58) | [Spec 02c] — QA Testing | QA (Glenn) | — |
 
 > **Note on keys:** the earlier draft proposed ASCA-51–57, but **ASCA-51 was already taken** by an unrelated ticket ("Script creation for Student Attendance for Testing"), so JIRA assigned the epic ASCA-52 and stories ASCA-53–58.
 
@@ -128,7 +128,7 @@ Track the JIRA tickets for ASCA Spec 02 (CAP Integration), split into 4 sub-spec
 | [ASCA-62](https://bizmates.atlassian.net/browse/ASCA-62) | [Spec 02d] — Coding | Dev (Throy) | — |
 | [ASCA-63](https://bizmates.atlassian.net/browse/ASCA-63) | [Spec 02d] — Code Review | Lead (Noel) | G3 |
 | [ASCA-64](https://bizmates.atlassian.net/browse/ASCA-64) | [Spec 02d] — Dev/Manual Testing | Lead (Noel) | — |
-| [ASCA-65](https://bizmates.atlassian.net/browse/ASCA-65) | [Spec 02d] — QA Testing | QA (Miko) | — |
+| [ASCA-65](https://bizmates.atlassian.net/browse/ASCA-65) | [Spec 02d] — QA Testing | QA (Glenn) | — |
 
 **Notes:** Created with the full 6-story set to match the 02a/02b/02c shape. Low priority — schedule after 02a/02b/02c. No dependency on 02a. G1 scope already confirmed (repurposed scope agreed by Kuroda-san 2026-10-05) — the Requirements story (ASCA-60) is largely a formality. If the Lead prefers to collapse the testing/review stories for such a small change, close the unused ones rather than leaving them open.
 
