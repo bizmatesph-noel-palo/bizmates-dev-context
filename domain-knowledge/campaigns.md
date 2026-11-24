@@ -1,6 +1,6 @@
 # Campaigns Overview
 
-**Last updated:** 2026-07-31
+**Last updated:** 2026-11-24 (Honki Set: OLD ASCH marked cancelled/history; Honki 2027 (NEW ASCH) section added)
 
 ---
 
@@ -301,7 +301,19 @@ Lesson tickets can be bought at a discounted price up to a certain limit (e.g., 
 
 ## Honki Set (本気セット)
 
-**Status:** Campaign active since Jan 2026 (implemented by HCR project in MBTI_backend). Revenue proration (ASCH) in design phase within accounting system.
+**Status:** Campaign active since Jan 2026 (implemented by HCR project in MBTI_backend). The 2026 revenue-proration project (**OLD ASCH**) was **cancelled on 2026-08-07** — its design (pooled L/M proration, adjustment journals, CDB eligibility read) was never built. The **2027 Honki campaign** is covered by the **NEW ASCH (2027)**, which adds no ASC code — see "Honki 2027 (NEW ASCH)" below. *(Status updated 2026-11-24.)*
+
+### Honki 2027 (NEW ASCH) — current
+
+Source: `projects/asch/technical-notes/research/ASCH-2027/REF-ASCH2027-02-Requirements-20261104.md` (authoritative) + Kuroda-san's provisional calculation patterns (2026-11-23). Live status: `docs/asc-projects-task-tracker.md`.
+
+- **ASC does not read CDB.** The half-price discount arrives already baked into `paid_price`; ASC books it through the existing CAP allocation (ASCA) and CIP conversion (ASCI). The OLD ASCH `trn_campaign_discount_eligibility` read contract below does **not** apply to 2027.
+- **Products:** Coaching [10015, 10025], App [10012, 10022] (App 10021 not used).
+- **Half-price month examples:** CAP Solo C30 (1017) 42,350 → 21,175; CAP 1022 57,200 → 28,600; CIP Solo (1028) 75,900 → 37,950, converted by ASCI to Coaching 35,960 / App 1,990. Half-price refunds split on the same basis (e.g. full refund −35,960 / −1,990).
+- **First-month and 6th-month 50%** reach ASC as discounted `paid_price`; no campaign or month detection in ASC.
+- **Scope:** testing only (requirements §6 + the 2026-10-29 code check). Test patterns P1–P8 (requirements page) and P9–P12 (provisional sheet): 15-lesson half-price plan, immediate REST + full refund on the half-price first charge, B2C/B2E → B2B in the half-price first month, half-price refund executed the next month. Testing starts 2026-12-07.
+- **Upstream dependency:** CDB must issue charges on App 10022 (not 10021) and Coaching Intensive 10025, and read the CAP/CIP half-price tier (Soli-san).
+- **B2B note (P11):** B2B CAP/CIP charges are not allocated until the B2B CAP/CIP extension is released (planned week of 2027-01-12) — see `account-types.md`.
 
 ### What It Is
 
@@ -354,7 +366,8 @@ The campaign is **not a separate product** in the system. Students subscribe to 
 The campaign runs quarterly. Known periods:
 - Jan 2026 (first round — no proration was applied)
 - Apr 2026 (second round — no proration applied; Freee manually adjusted by accounting)
-- 2026/7/1 10:00 – 2026/7/27 23:59 (current round — proration system being built)
+- 2026/7/1 10:00 – 2026/7/27 23:59 (third round — the OLD ASCH proration for it was cancelled 2026-08-07)
+- 2027 campaign — covered by the NEW ASCH (2027) (see above)
 
 Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324. A July round (referenced as id 334) is noted in earlier docs, but `config/utm_sources.php` currently lists only `324` (`honki_set_campaign_id => 324`, `honki_set_campaign_ids => [324]`) — ⚠️ **verify 334 against `mst_first_month_enrollment_discount_schedule` before relying on it.**
 
@@ -381,7 +394,9 @@ Campaign IDs in `mst_first_month_enrollment_discount_schedule`: April = 324. A J
 
 ### Check: How to Verify
 
-**Primary source (planned):** CDB project's `trn_campaign_discount_eligibility` table — one row per student × campaign × product, carrying `student_id`, `product_id`, `plan_id`, `initial_charge_id`, `discount_flag`, `discount_eligibility_date`. ASCH snapshots at batch run start.
+> ⚠️ **OLD ASCH (cancelled 2026-08-07).** The CDB-read and fallback plan in this subsection, and the "Accounting Impact (ASCH Project)" formula below, belong to the cancelled 2026 design and are kept as history. For 2027 see "Honki 2027 (NEW ASCH)" above. The runtime campaign-period facts (config 324, `HonkiSetEligibilityService`) are MBTI_backend facts and still apply.
+
+**Primary source (planned, OLD ASCH):** CDB project's `trn_campaign_discount_eligibility` table — one row per student × campaign × product, carrying `student_id`, `product_id`, `plan_id`, `initial_charge_id`, `discount_flag`, `discount_eligibility_date`. ASCH snapshots at batch run start.
 
 **Current state (runtime):** Honki Set campaign period is identified by config ID (`utm_sources.honki_set_campaign_id` = 324) pointing to `mst_first_month_enrollment_discount_schedule`. No dedicated persisted eligibility table exists yet.
 
@@ -401,7 +416,9 @@ Eligibility logic: `HonkiSetEligibilityService` (5-CTE runtime SQL), called from
 
 Banner assets managed via `mst_student_banner` (seeder: `InsertBannerForHonkiCPSeeder` in ls-database-migrations).
 
-### Accounting Impact (ASCH Project)
+### Accounting Impact (OLD ASCH Project — cancelled 2026-08-07, history only)
+
+> Not built and not used for 2027. The 2027 accounting effect is the discounted `paid_price` going through the CAP allocation (ASCA) and the CIP conversion (ASCI).
 
 The total amount paid by the student must be split (prorated) across all 3 products based on list prices for JSOC-compliant revenue recognition:
 
@@ -439,14 +456,15 @@ Where:
 - `database/seeders/Bizmates/InsertBannerForHonkiCPSeeder.php` — banner seeder for campaign
 
 **accounting_related_system_for_freee:**
-- ASCH subsystem (in design phase — not yet implemented)
+- No ASCH subsystem (OLD ASCH cancelled; NEW ASCH 2027 adds no code). 2027 Honki amounts go through the CAP allocation (`RevenueAllocation`, ASCA) and the CIP conversion and refund split (ASCI; e.g. `CipChargeConverter`, `CipBundlePairing`) on `feature/ASCA/ASCA-master` / `feature/ASCI/ASCI-master`.
 
 ### Related Projects
 
 - **HCR (Honki Customer Retention)** — the MBTI_backend feature that implements the campaign eligibility and frontend flow
-- **ASCH (ASC Honki Set)** — the accounting system extension for revenue proration (design phase)
-- **CDB (Campaign Discount Batch)** — daily batch that persists eligibility to `trn_campaign_discount_eligibility`
-- **CAP (Coaching App Plan)** — bundles App with Coaching plans permanently (low overlap with ASCH)
+- **OLD ASCH (ASC Honki Set, 2026)** — cancelled 2026-08-07
+- **NEW ASCH (2027)** — testing-only verification of the 2027 Honki amounts on ASC (no new code)
+- **CDB (Campaign Discount Batch)** — daily batch that persists eligibility to `trn_campaign_discount_eligibility`; ASC does not read it in 2027
+- **CAP (Coaching App Plan) / CIP (Coaching Intensive Plan)** — the bundles whose discounted charges the 2027 Honki campaign uses (ASCA / ASCI)
 
 ---
 
@@ -461,4 +479,4 @@ Where:
 | B2B2C | `mst_campaign` | N/A |
 | Focus Course | `mst_focus_course_campaign` | `trn_student_free_product_credits` |
 | Lesson Ticket | `mst_lesson_ticket_campaign` | N/A |
-| Honki Set | `mst_first_month_enrollment_discount_schedule` (period; runtime eligibility) | `trn_campaign_discount_eligibility` (CDB — planned) |
+| Honki Set | `mst_first_month_enrollment_discount_schedule` (period; runtime eligibility) | `trn_campaign_discount_eligibility` (CDB; not read by ASC in 2027) |
