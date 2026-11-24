@@ -21,7 +21,7 @@
 
 ## Remaining — live checklist
 
-> **Update 2026-11-23 (Lead back 11-24):** B2C/E UAT done; CAP retest passed on DEV04 (CAP-382 QA (Passed), 11-20). Open: **ASCI-25** (CIP-218 + CIP-220 → dev04, To Do) then the CIP retest; **B2B CAP/CIP** extension (Cristoff-san, Throy-san oversees; Scope A, 20 pd, release week of Jan 12, 2027; G1 needs the Lead); **ASCH** test sheet received 11-23 (provisional), testing from 12/7, no Kiro spec planned; dev04 not synced since 11-13. See the 11-23 log.
+> **Update 2026-11-23 (Lead back 11-24):** B2C/E UAT done; CAP retest passed on DEV04 (CAP-382 QA (Passed), 11-20). Open: ~~ASCI-25~~ (**Done 11-23, per JIRA; CIP-218 in `deployment/dev04` per git, 11-24**) → the CIP retest; **B2B CAP/CIP** extension (Cristoff-san, Throy-san oversees; Scope A, 20 pd, release week of Jan 12, 2027; G1 needs the Lead); **ASCH** test sheet received 11-23 (provisional), testing from 12/7, no Kiro spec planned; dev04 not synced since 11-13. See the 11-23 log.
 >
 > **Update 2026-11-11 (Throy-san covering, Lead on leave until 11-23):** JIRA (checked via API) shows ASCI-17 / 19 / 20 / 21 / 22 and ASCI-12 / ASCA-18 / ASCA-86 / ASCA-87 / ASCA-90 / ASCI-18 **Done**. Still open in JIRA: ASCA-81 and ASCA-91 (In Progress, work reported done), ASCI-13 (To Do, unassigned), ASCI-14 (To Do, Glenn-san). New: **ASCI-23** "DEV04 - 20261111 command execution" (Throy-san, To Do). ASCI-23 commands were run; Glenn-san is testing. Owed: reply to Glenn-san on ASCH vs HCI. Waiting on: CAP-382 deploy then the CAP retest; Glenn-san's regression result; Kuroda-san's ASCH test sheet (by 11/23).
 >
@@ -105,6 +105,12 @@
 ---
 
 ## Daily log (append-only)
+
+### 2026-11-24
+- **Lead back from leave (11-11 → 11-23).** SOD run (read-only), resumed from Throy-san's 11-11 / 11-12 / 11-13 / 11-23 entries.
+- **JIRA check (read-only, 11-24):** **ASCI-25 Done** (Cristoff-san, updated 11-23 17:57) — the 11-23 entries still say To Do. CIP-218 and CIP-220 are STG (QA PASSED). Still open: ASCA-81 (In Progress, Glenn-san, last updated 11-06), ASCI-13 (To Do, unassigned), ASCI-14 (To Do, Glenn-san, updated 11-23). No B2B tickets in ASCA / ASCI yet.
+- **Git check (bizmates.jp, 11-24):** `origin/deployment/dev04` tip `071738dcfb` "Merge pull request #21310 from bizmatesinc/feature/dev04/ASCI-25" (Cristoff-san, 11-23 16:14); CIP-218 merge `489f4b0` is in dev04. CIP-220 not confirmed (no commit message names it; not checked by file). Not verified: that the DEV04 server pulled it. Next: CIP retest (Throy-san reruns the batch, Glenn-san retests); this also unblocks ASCH P10b / P10d / P11b.
+- **Patrick-san asked whether Throy-san's 11-23 project update (private message, ASCA / ASCI / ASCH) still holds.** Reply drafted: holds, except ASCI-25 is now Done.
 
 ### 2026-11-23
 - **SOD (Throy-san, back from leave; Lead back 11-24).** Gap 11-16 → 11-20 (Throy-san on leave). The week below is reconstructed from Slack messages shared by Throy-san (most had no dates; dates marked "~" are inferred from JIRA timestamps, file names and screenshot dates) plus a read-only JIRA / git / Confluence check on 11-23.
