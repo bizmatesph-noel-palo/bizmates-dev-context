@@ -34,9 +34,20 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-10)
+## ⚠️ Status / Actuals (as of 2026-11-24)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-24 (Lead back; CAP retest passed; CIP-218 on dev04; B2C/E UAT done; B2B CAP/CIP extension added; ASCH test sheet received)
+
+- **ASCA (CAP):** CAP-382 (immediate REST also ends the App) merged into `deployment/dev04` via ASCI-24 (Cristoff-san, 11-13); **Glenn-san's ASCA retest passed on DEV04 (11-20), CAP-382 → QA (Passed)**. JIRA Done: ASCA-18, 86, 87, 90, 91, 93 (master/main synced into dev04 on 11-13). Still open: ASCA-81 (In Progress, admin). dev04 not re-synced since 11-13 (production releases merged into master / main on 11-18).
+- **ASCI (CIP):** JIRA Done: ASCI-12, 17, 19, 20, 21, 22, 23 (11-11 rerun, CSVs match the ASCI-19 values), 24, **25** (CIP-base merged into `deployment/dev04`, PR #21310, Cristoff-san, 11-23; CIP-218 `489f4b0` in dev04 per git; CIP-220 not confirmed). CIP-218 / CIP-220 STG (QA PASSED). **Next: CIP retest** (Throy-san reruns, Glenn-san retests). Still open: ASCI-13 (unassigned), ASCI-14 (Glenn-san).
+- **B2C/E UAT:** done by the business side (~11-19/20) on Cristoff-san's 11-17 all-months DEV04 rerun; Glenn-san created the missing 1-1 / 1-3 / 3-2 cases. Five students with App ¥0 raised by Kuroda-san (2886, 303174, 471, 7185, 8208) — Kiro's read: test-data pairing, not the formula; not confirmed on DEV04; reply not sent.
+- **NEW — B2B CAP/CIP allocation extension.** B2B CAP/CIP is not detected (detection gates on `plan_id` 1016–1032). Accounting: B2B CAP/CIP not sold until released. Agreed with Kuroda-san: `plan_id ≥ 20000000` + product combination, App-present check in SQL, Scope A (no B2B refund split, warning log). Estimate **20 pd** (Cristoff-san, Confluence v6). **Schedule: G1 11/24–12/1, G2 12/2–12/4, dev 12/7–12/18, G3 + DEV04 12/21–12/23, QA 1/5–1/8, separate release week of 1/12/2027.** Owner Cristoff-san; Throy-san oversees until the Lead is back and helps on CIP. **Lead to decide this week:** delta spec vs change requests (B2B changes the plan_id requirements in Spec 01, 02a, 02b, ASCI-01), JIRA home, branch plan. Staging student-replacement test (R15) pending. Not part of the 12/17 ASCA / ASCI deadline.
+- **ASCH (NEW 2027):** Kuroda-san's provisional calculation patterns received 11-23 (P2, P4–P7 and new P9–P12; P1 / P3 / P8 on the requirements page). His three notes checked against the code — all match, no new logic. Testing only, start **12/7**; Throy-san test design and expected values, Glenn-san DEV04 data and QA. The 11-10 estimate (finish about 12/16–12/21) covered P1–P8 only; P9–P12 not yet estimated. CIP cases P10b / P10d / P11b were waiting on ASCI-25 (now Done).
+- **Ops:** DEVOPS-7251 — SendJournal (Final) moves to 18:00 JST on the 2nd business day from 2026-12-02; deployed to production 11-13.
+- **Calendar:** PH 12/3–12/4 team building, 12/8, 12/24–25, 12/30–31 (per Patrick-san). The 12/1–12/4 DEV04 pull window overlaps 12/3–12/4.
+- **Assignments (Kuroda-san's proposal, Patrick-san 11-23):** Cristoff-san B2B; Throy-san ASCH + B2B CIP help; Lead specs / reviews; Glenn-san QA for both.
 
 ### Snapshot — 2026-11-10 (ASCI-19 QA PASS on DEV04; ASCI-22 ticketed; ASCA-90/91 assigned; ASCH start moved to 12/7; last working day before leave)
 
