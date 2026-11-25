@@ -53,7 +53,7 @@
 - [x] **ASCI-22** — ✅ **JIRA status Done (verified via API 2026-11-11, updated 11:12).** Earlier note: **deployed and batch run on DEV04 11-10; QA PASS on ASCI-19 (Glenn-san, 11-10 19:22). The converted October rows show October was run and the fix was on DEV04. Left: Step 6 (ASCI-20 / ASCI-21 retest and close) and the JIRA status.** "DEV04 - 20261110 ASCI-19 deployment and command execution", Task under ASCI-15, Medium, **assigned to Throy-san**, created 2026-11-10 (in the handover huddle, reviewed by the Lead). Steps: merge ASCI-19 after Lead approval → deploy to DEV04 (same as 11-04) → confirm commit `4b4e667a` is on the DEV04 server → run the ASCI-18 batch commands for 2026-10 and 2026-11 (October added 11-10) → check the 5 CIP students (full −71,920 / −3,980, half-price −35,960 / −1,990; originals converted; no skip lines) → post results, hand to Glenn-san for the ASCI-20 / ASCI-21 retest. Local file: `projects/asci/technical-notes/jira/tickets/ASCI-22-dev04-20261110-asci19-deployment-and-command-execution.md`.
 - [x] **LEAD spec-doc fix (ASCI)** — ✅ DONE + committed (2026-11-03/04, Lead). ASCI Req 2.7 + design Component 2 + tasks T2 now pair on `start_date` only (no `end_date`), with ASCA-81 rationale (shared `CipBundlePairing` serves both conversion and refund).
 - [ ] Human check: confirm **CIP-179** released to the target env (DB query).
-- [ ] **CIP retest on DEV04** — CIP-218 (immediate REST also ends the App for CIP) is in `deployment/dev04` via ASCI-25 (PR #21310, 11-23). Throy-san reruns the batch; Glenn-san retests with a new CIP student (immediate REST + refund). Also unblocks ASCH P10b / P10d / P11b.
+- [~] **CIP retest on DEV04** — **Update 11-25: started — ASCI-26 "DEV04 - 20261125 CIP retest command execution" (Throy-san, In Progress); result pending.** CIP-218 (immediate REST also ends the App for CIP) is in `deployment/dev04` via ASCI-25 (PR #21310, 11-23). Throy-san reruns the batch; Glenn-san retests with a new CIP student (immediate REST + refund). Also unblocks ASCH P10b / P10d / P11b.
 - [x] Human check: Accounting (**Wada-san**) blesses the −181 half-price tax-exemption figure. ✅ Closed: Accounting approved it on 2026-10-23 (per Kuroda-san's 2026-11-04 requirements page).
 - [x] Design-phase notes (REF-CIP-09 Comment 4 + 5) **resolved in `design.md`**: missing-`log_refund_history`-link handling (→ CipRefundAllocator: no split, record + warn); cumulative App-refund cap ≤ original App booking (→ clamp, remainder to Coaching); non-divisible ¥50,000 test (→ Task 8.1); where CIP records conversion skip reasons (→ `CipSkipLog` batch log line, no run table — keeps the no-engine invariant).
 ### Cross-cutting
@@ -81,6 +81,12 @@
 ---
 
 ## Daily log (append-only)
+
+### 2026-11-25
+- **SOD (Lead).** No gap; resumed from the 11-24 EOD (recorded 11-25).
+- **JIRA check (read-only, 11-25 morning):** **ASCI-26 created** — "DEV04 - 20261125 CIP retest command execution", Throy-san, **In Progress** (updated 10:55): the CIP retest has started. CAP-382 (QA (Passed)), CIP-218 and CIP-220 (STG (QA PASSED)) were updated on 11-24 evening, statuses unchanged. No B2B tickets in ASCA / ASCI yet.
+- **Unverified at SOD:** decisions from the 11-24 team meeting (minutes to be shared by the Lead — may change the B2B spec approach, who drafts G1, the ASCH plan); ASCI-26 scope (months rerun, test student) and result; whether the replies to Kuroda-san (5 App ¥0 students, his three ASCH notes) were sent.
+- **Today's priorities:** (1) record the 11-24 meeting minutes and update the plan; (2) B2B G1 — settle the spec approach and start the G1 draft (deadline 12/1; 11/30 PH holiday); (3) follow the CIP retest (ASCI-26: Throy-san's run, Glenn-san's retest); (4) replies to Kuroda-san, if not sent; (5) reference-price `effective_from` check and the 12/17 ASCA / ASCI production release plan (who deploys, when, how B2B stays out — not recorded). Lower: ASCH P9–P12 estimate; the 12/1–12/4 squeeze (12/3–12/4 team building). JIRA status-only updates are trivial.
 
 ### 2026-11-24
 - **Lead back from leave (11-11 → 11-23).** SOD run (read-only), resumed from Throy-san's 11-11 / 11-12 / 11-13 / 11-23 entries.
