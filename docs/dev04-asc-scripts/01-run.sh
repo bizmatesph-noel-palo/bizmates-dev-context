@@ -26,6 +26,10 @@
 # Run from the Laravel app root (where artisan + storage/ live):
 #   bash 01-run.sh                 # all months 02-12
 #   MONTHS="02" bash 01-run.sh     # February only
+#   YEAR=2027 MONTHS="01 02 03" ARCHIVE=0 bash 01-run.sh
+#                                  # 2027 exeDates (01 = December 2026 data,
+#                                  # 02 = January 2027 data, ...); ARCHIVE=0
+#                                  # keeps the zips from the earlier runs
 #
 # Produces files named: YYYYMM01_PRE_(DEV04_ASC_<YYYYMMDD>_<HHMMSS>).zip
 #                       YYYYMM01_SEND_(DEV04_ASC_<YYYYMMDD>_<HHMMSS>).zip
@@ -40,7 +44,8 @@ set -euo pipefail
 #   RUN_TAG="DEV04_ASC_20261103" bash 01-run.sh
 RUN_TAG="${RUN_TAG:-DEV04_ASC_$(date '+%Y%m%d')}"
 MONTHS="${MONTHS:-02 03 04 05 06 07 08 09 10 11 12}"
-YEAR="2026"
+# Year of the execution dates. Override for next year: YEAR=2027 ...
+YEAR="${YEAR:-2026}"
 
 # ARCHIVE=1 (default): sweep existing *.log/*.zip into archives/ before running.
 # ARCHIVE=0: skip the sweep so a second run ACCUMULATES with earlier months'

@@ -25,6 +25,8 @@
 # Override only if your layout differs:
 #   SRC_PUBLIC=/path/storage/app/public DST_PUBLIC=/path/public bash 02-move.sh
 #   MONTHS="02" bash 02-move.sh     # move February only
+#   YEAR=2027 MONTHS="01 02 03" bash 02-move.sh   # 2027 exeDates (use the same
+#                                                  # YEAR / MONTHS as 01-run.sh)
 
 set -uo pipefail   # NOTE: no -e; a per-month skip must not abort the whole move.
 
@@ -32,7 +34,8 @@ set -uo pipefail   # NOTE: no -e; a per-month skip must not abort the whole move
 # Config
 # ----------------------------------------------------------------------------
 MONTHS="${MONTHS:-02 03 04 05 06 07 08 09 10 11 12}"
-YEAR="2026"
+# Year of the execution dates. Override for next year: YEAR=2027 ...
+YEAR="${YEAR:-2026}"
 
 # Source = where SCRIPT 1 wrote the renamed zips (accounting app storage).
 # Destination = bizmates.jp public download dir. Both correct for DEV04.
@@ -128,23 +131,17 @@ for MM in ${MONTHS}; do
 done
 
 # ----------------------------------------------------------------------------
-# Month-number -> captured-month label (exeDate captures the PREVIOUS month)
+# Month-number -> captured-month label (exeDate captures the PREVIOUS month).
+# Computed from YEAR + MM, so it works for any year (01 = December of YEAR-1).
+# e.g. YEAR=2026 MM=02 -> "January data (2026/01/01 to 2026/01/31)"
+#      YEAR=2027 MM=01 -> "December data (2026/12/01 to 2026/12/31)"
 # ----------------------------------------------------------------------------
 captured_label() {
-  case "$1" in
-    02) echo "January data (2026/01/01 to 2026/01/31)";;
-    03) echo "February data (2026/02/01 to 2026/02/28)";;
-    04) echo "March data (2026/03/01 to 2026/03/31)";;
-    05) echo "April data (2026/04/01 to 2026/04/30)";;
-    06) echo "May data (2026/05/01 to 2026/05/31)";;
-    07) echo "June data (2026/06/01 to 2026/06/30)";;
-    08) echo "July data (2026/07/01 to 2026/07/31)";;
-    09) echo "August data (2026/08/01 to 2026/08/31)";;
-    10) echo "September data (2026/09/01 to 2026/09/30)";;
-    11) echo "October data (2026/10/01 to 2026/10/31)";;
-    12) echo "November data (2026/11/01 to 2026/11/30)";;
-    *)  echo "unknown month ${1}";;
-  esac
+  local mm="$1" last name
+  last="$(LC_ALL=C date -d "${YEAR}-${mm}-01 -1 day" '+%Y/%m/%d' 2>/dev/null)" \
+    || { echo "unknown month ${mm}"; return; }
+  name="$(LC_ALL=C date -d "${YEAR}-${mm}-01 -1 day" '+%B')"
+  echo "${name} data (${last:0:8}01 to ${last})"
 }
 
 # ----------------------------------------------------------------------------
