@@ -15,7 +15,7 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | Project Code | JIRA | Code Repo(s) | Artifacts Directory | Status | Deadline |
 |---|---|---|---|---|---|
 | ASC | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) | `accounting_related_system_for_freee` | `projects/ascm/` | ✅ Deployed (Jun 2026) | — |
-| OLD ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` (legacy) | ❌ Cancelled (2026-08-07) | — |
+| OLD ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asch/` (legacy) | ❌ Canceled (2026-08-07) | — |
 | ASCH (NEW 2027) | — (home TBD) | rides ASCA + ASCI | `projects/asch/technical-notes/research/ASCH-2027/` (provisional) | Active — assessment/estimate phase | 2027 campaign |
 | ASCA | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asca/` | Active — builds shared foundation | 2026/12/17 |
 | ASCI | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) | `accounting_related_system_for_freee`, `ls-database-migrations` | `projects/asci/` | Active — reuses ASCA foundation | 2026/12/17 |
@@ -33,7 +33,7 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 
 | Project | Lead | Sub-Lead | Developer(s) | Status |
 |---|---|---|---|---|
-| ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ❌ Cancelled (2026-08-07) |
+| ASCH | Noel Palo | — | Throy Embudo, Cristoff Danganan | ❌ Canceled (2026-08-07) |
 | ASCA (ASC for CAP) | Noel Palo | — | Throy Embudo, Cristoff Danganan | ✅ Active (builds foundation) |
 | ASCI (ASC for CIP) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Active (reuses ASCA foundation) |
 | CDB (upstream) | Paolo | — | Efren | ✅ Active |
@@ -41,7 +41,7 @@ It contains project-specific knowledge, test cases, investigation reports, JIRA 
 | CIP (upstream) | Jefferson Gernale | — | Haggai Rei Cacacho | Active (Jasser-san's team) |
 
 **Planned timeline:**
-- ASCH: ❌ Cancelled (2026-08-07)
+- ASCH: ❌ Canceled (2026-08-07)
 - ASCA (ASC for CAP): starts ~September, deadline Dec 17 (builds shared foundation)
 - ASCI (ASC for CIP): starts after ASCA, deadline Dec 17 (reuses foundation)
 - CAP/CIP upstream (Jasser-san's teams): production late Nov / early Dec
@@ -146,6 +146,12 @@ Disambiguation rules:
 - Exceptions: Test cases use `TCNNN.md` / `TCNNN-A.md` format
 - Exceptions: `README.md`
 - Numbered prefixes: `NN-` for ordered sequences (e.g., `01-system-overview.md`)
+
+## Writing Conventions
+
+- **Use American English** in every doc written in this workspace (e.g. canceled / canceling, color, behavior, organize, center, analyze, license as a noun and verb). "Cancellation" keeps the double l (American spelling too).
+- **Do not change** code identifiers, DB columns / values, file paths, or quoted / verbatim text from stakeholders (keep the original spelling there, e.g. `cancelled_at`).
+- `archive/` holds historical copies — leave their spelling as it is.
 
 ## JIRA (Atlassian MCP)
 
