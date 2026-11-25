@@ -85,7 +85,7 @@ The ASCH project adds a **revenue proration batch** to the existing accounting s
 ### 3.1 Eligibility
 
 **Who qualifies:**
-- Students who have **never taken Coaching 30-min** (or cancelled it — cancellation makes them eligible again)
+- Students who have **never taken Coaching 30-min** (or canceled it — cancellation makes them eligible again)
 - Must sign up for Coaching 30-min AND have/sign up for Lesson (Daily 1 / Daily 2 / Monthly 15) during campaign period
 
 **Eligible segments:**
@@ -253,7 +253,7 @@ Same timing as existing ASC batches.
 | 10 | Retroactive correction (Jan/Apr 2026) — in scope? | Accounting / Segawa-san | **[estimate if in scope]** | Default: out of scope |
 | 11 | Honki Set member identification — persisted table/log exists? | Dev | **[estimate]** Intake logic depends on this | `is_honki_eligible` (CPF-56 / PR #5531) exists in MBTI_backend GraphQL. Kuroda asks: can we build identification on `mst_honki_set` + `HonkiSetService` waterfall (or HCR 5-CTE query)? What does actual `mst_honki_set` data look like for current campaign? |
 | 12 | First-month Lesson discount — "new contracts only" still being confirmed | Marketing | | Affects which students get Lesson 50% off |
-| 13 | CS operation for App cancellation flow | CS / Marketing | | When Coaching cancelled, how is App removed? |
+| 13 | CS operation for App cancellation flow | CS / Marketing | | When Coaching canceled, how is App removed? |
 | 14 | DDL location — `document/sql` in ASC repo vs `ls-database-migrations` repo | Dev | | Kuroda assumed `document/sql`. Dev team to advise current practice. |
 
 ### 8.2 Questions Resolved (from Spec + Kuroda's Response)

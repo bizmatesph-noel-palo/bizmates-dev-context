@@ -124,9 +124,9 @@ The injection surface this design targets was **reshaped by the ASCM refactor (D
 
 ## 2. Project Context
 
-### What Was Cancelled
+### What Was Canceled
 
-**ASCH (ASC Honki Set)** — cancelled 2026-08-07. Was going to prorate Honki Set bundled payments across 3 products (Lesson, Coaching, App). The architecture research and engineering standards from ASCH are reused in this framework.
+**ASCH (ASC Honki Set)** — canceled 2026-08-07. Was going to prorate Honki Set bundled payments across 3 products (Lesson, Coaching, App). The architecture research and engineering standards from ASCH are reused in this framework.
 
 ### What We're Building
 

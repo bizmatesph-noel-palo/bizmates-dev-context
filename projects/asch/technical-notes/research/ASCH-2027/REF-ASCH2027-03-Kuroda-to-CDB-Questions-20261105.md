@@ -11,7 +11,7 @@
 | **Captured by** | Noel Palo, Lead · assisted by Kiro |
 | **Related** | `REF-ASCH2027-02-Requirements-20261104.md` (§8 #3 CDB catalog) · `REF-CDB-02-ASCH-Alignment-Gaps-20260727.md` (OLD ASCH dependency) |
 
-> **Naming:** "ASCH" = the NEW 2027 ASCH. The cancelled 2026 project is "OLD ASCH".
+> **Naming:** "ASCH" = the NEW 2027 ASCH. The canceled 2026 project is "OLD ASCH".
 
 ---
 

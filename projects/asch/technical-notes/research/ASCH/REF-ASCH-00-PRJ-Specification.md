@@ -27,7 +27,7 @@ The existing revenue aggregation system (ASC) **will not be modified**. ASCH is 
 
 ### 2.1 Eligible Students
 
-Students who have **never taken Coaching 30-min** in the past and are not taking it now (a student who cancelled it before becomes eligible again).
+Students who have **never taken Coaching 30-min** in the past and are not taking it now (a student who canceled it before becomes eligible again).
 
 They must, during the campaign period:
 - (a) sign up for the Coaching 30-min plan, AND
@@ -69,7 +69,7 @@ They must, during the campaign period:
 - The regular monthly Lesson discount (5% / 10%) still applies each month.
 - But in month 1 and month 6, **only the 50% discount applies** (not stacked).
 
-**Cancelling Coaching 30-min mid-way (including changing to 15-min):**
+**Canceling Coaching 30-min mid-way (including changing to 15-min):**
 - The App membership is also removed from the month after the cancellation.
 
 **Re-start after mid-way cancellation:**
@@ -222,7 +222,7 @@ Items that block or may change the estimate are marked **[estimate impact]**.
 | 10 | Retroactive correction for Jan 2026 / Apr 2026 campaigns — proration was not booked for the past campaign rounds. Default: out of scope (a revision run can handle it later if needed). | Accounting / Segawa-san | **[estimate impact if in scope]** |
 | 11 | How to identify Honki Set members — `is_honki_eligible` (CPF-56 / PR #5531) exists in MBTI_backend GraphQL; we need to confirm whether there is a persisted table/log that records the actual enrollment. | Dev | **[estimate impact]** intake logic depends on this |
 | 12 | First-month Lesson discount detail — marketing note says Lesson 50% off applies "only to new Lesson contracts" and is still marked as "to be confirmed" on the marketing sheet. | Marketing | |
-| 13 | CS operation for App cancellation — when Coaching 30-min is cancelled, App removal operation flow is still being confirmed with CS. | CS / Marketing | |
+| 13 | CS operation for App cancellation — when Coaching 30-min is canceled, App removal operation flow is still being confirmed with CS. | CS / Marketing | |
 
 ---
 

@@ -5,7 +5,7 @@
 | | |
 |---|---|
 | **Document type** | Domain Knowledge (system reference) |
-| **Date** | 2026-08-14 (Created) · 2026-08-28 (product_id changes) · 2026-10-15 (synced to actual dev04 CAP/CIP seeders: product_type O-10 resolved, reference prices corrected to tax-excl, CIP no-engine per REF-CIP-05) |
+| **Date** | 2026-08-14 (Created) · 2026-08-28 (product_id changes) · 2026-10-15 (synced to actual dev04 CAP/CIP seeders: product_type O-10 resolved, reference prices corrected to tax-excl, CIP no-engine per REF-CIP-05) · 2026-11-24 (CIP conversion + pairing described; B2B CAP/CIP detection row; immediate-REST pairing rule; `effective_from` flagged) |
 | **Author** | Noel Palo |
 | **Assisted by** | Kiro |
 | **Status** | Active |
@@ -190,7 +190,7 @@ New plans bundling Coaching + App. App charges at ¥0 (companion). **ASC allocat
 
 ### CIP Plans (plan_id 1028–1032) — Coaching Intensive + App Bundles
 
-New premium coaching product. **NOT engine-allocated (REF-CIP-05, 2026-09-17).** CIP revenue is split by issuing separate, already-priced charges that flow through the existing daily pro-ration — no allocation formula, no reference-price lookup, no run/anchor tracking. (This is ASCI scope; ASCA Foundation is unaffected.)
+New premium coaching product. **NOT engine-allocated (REF-CIP-05, 2026-09-17)** — no allocation formula, no reference-price lookup, no run/anchor tracking. **How CIP is booked (ASCI-01, G1 2026-10-28; on DEV04, QA passed 2026-11-10):** on the site the Coaching Intensive charge carries the whole Coaching + App amount (¥75,900) and the App 10022 charge is ¥0. The ASC batch **converts** it before day-proration to Coaching ¥71,920 / App ¥3,980 (App = `FLOOR(site × 3,980 / 75,900)`; half-price month 37,950 → 35,960 / 1,990). Pairing (`CipBundlePairing`) matches the App companion on `start_date` only and ignores refund (negative) charges (ASCI-17 / ASCI-19). A CIP refund booked as one negative on the Coaching Intensive charge is split into Coaching and App by the month's booked ratio (full −71,920 / −3,980; half-price −35,960 / −1,990), in the execution month. Lesson is a separate charge, untouched. The code is on `feature/ASCI/ASCI-master` (not yet `main`).
 
 > package_price below is **tax-inclusive** (consistent with the `coaching-intensive-plan-seeder` `mst_plan` catalog and REF-CIP-04), not tax-exclusive as an earlier revision stated.
 
@@ -203,7 +203,7 @@ New premium coaching product. **NOT engine-allocated (REF-CIP-05, 2026-09-17).**
 | 1032 | 4L + FVP + Coaching Intensive | ¥117,150 | 4 + 10011 + 10025 + 10022 | Intensive | ¥0 |
 
 > **Updated 2026-08-24 (REF-CIP-04):** Coaching Intensive product_id = **10025** (was 10022). App = **10022** (was 10021). Solo (1028) ¥75,900 tax-incl.
-> **⚠️ SUPERSEDED — CIP no longer uses the allocation engine (REF-CIP-05, 2026-09-17).** The earlier "O-8 → 2-way split" and its "R-16 → 3-way" reversal are both withdrawn. CIP now books separate, already-priced charges: App ¥3,980 (tax-incl, its real list price), Coaching Intensive ¥71,920 (tax-incl, from a new `mst_new_price_listing` price_flag 3 record = ¥65,382 tax-excl), and Online Lesson at its own standalone price — each pro-rated independently by the existing daily-rate logic. No allocation formula is applied to CIP.
+> **⚠️ SUPERSEDED — CIP no longer uses the allocation engine (REF-CIP-05, 2026-09-17).** The earlier "O-8 → 2-way split" and its "R-16 → 3-way" reversal are both withdrawn. CIP books App ¥3,980 (tax-incl, its real list price), Coaching Intensive ¥71,920 (tax-incl, from a new `mst_new_price_listing` price_flag 3 record = ¥65,382 tax-excl), and Online Lesson at its own standalone price — each pro-rated independently by the existing daily-rate logic. No allocation formula is applied to CIP. *(Since G1 2026-10-28 the 71,920 / 3,980 amounts come from the batch-side conversion described above, because the site charges carry 75,900 / ¥0.)*
 
 **Upstream project:** CIP (Coaching Intensive Plan)  
 **ASC project:** ASCI (no allocation engine — REF-CIP-05)  
@@ -249,7 +249,7 @@ Zipan is a Japanese-language training service. All products are lesson-based (pr
 
 Only **CAP (ASCA)** charges go through the allocation engine. **CIP (ASCI) does not** — it books separate already-priced charges (REF-CIP-05), so it has no reference-price weights.
 
-Reference prices (L) are **tax-exclusive**, from `mst_new_price_listing`, seeded into `mst_alloc_reference_prices` (accounting repo `ReferencePriceSeeder`, `effective_from = 2026-12-01`):
+Reference prices (L) are **tax-exclusive**, from `mst_new_price_listing`, seeded into `mst_alloc_reference_prices` (accounting repo `ReferencePriceSeeder`; `effective_from` set to 2026-12-01 by ASCA-67 — ⚠️ **to verify (2026-11-23 finding):** Spec 01 Req 4.7 and the seeder read `2027-01-01`, 02a Req 2.6 reads `2026-12-01`):
 
 | Project | Product | product_id | L (tax-excl) | price_flag source | Used as |
 |---|---|---|---|---|---|
@@ -280,7 +280,8 @@ Formula (CAP only): `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coach
 | Monthly plans | `BizmatesMonthlyPlanEnum::exists($productId)` | CommonUtil line 401 (skip in daily rate) |
 | Zipan monthly | `ZipanMonthlyPlanEnum::exists($productId)` | ZipanUtil (skip in daily rate) |
 | CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` (plans 1016–1027) + App anchor `product_id = 10022` | RevenueAllocationService (CAP only) |
-| CIP bundles | **Not engine-detected (REF-CIP-05)** — CIP books separate already-priced charges; no allocation detection | n/a (ASCI; existing daily-rate pro-ration) |
+| CIP bundles | **Not engine-detected (REF-CIP-05).** ASCI pairs the Coaching Intensive 10025 + App 10022 charges of plans 1028–1032 (`CipBundlePairing`, `start_date` only, refunds excluded) for the conversion and refund split | ASCI (`CommonUtil::createDailyRateCalculation()` path) |
+| B2B CAP / CIP | **Not detected today** — detection gates on plan_id 1016–1032; B2B uses company plan_ids (≥ 20000000). Planned rule: plan_id ≥ 20000000 + product combination + App present | B2B CAP/CIP extension (release planned week of 2027-01-11, tentative) — see `account-types.md` |
 | Excluded from proration | `NotDailyCalculationProductType` config (product_type 8) | CommonUtil (full amount at start_date) |
 
 ---
@@ -290,6 +291,8 @@ Formula (CAP only): `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coach
 1. **product_id determines the ASC pipeline** — not plan_id. Monthly plan enum checks product_id. Allocation detects by App product_id 10022 (changed from 10021 on 2026-08-19).
 2. **plan_id determines bundle membership** — for distinguishing CAP vs CIP vs existing coaching.
 3. **Zipan never has coaching or App** — CAP/CIP allocation is Bizmates-only.
+3a. **Bundle pairing depends on matching dates.** CAP pairs Coaching + App on `start_date` + `end_date` (refunds on `start_date` only, ASCA-86); CIP pairs on `start_date` only. A bundle whose App dates differ is skipped (V-3) and books App ¥0. **Immediate REST (即時休会)** now ends the App 10022 charge on the same day as the Coaching — CAP-382 (CAP; ASCA retest passed on DEV04 2026-11-20) and CIP-218 (CIP; merged to DEV04 2026-11-23, retest pending). Cases created by immediate REST before these fixes stay unpaired.
+3b. **A charge is prorated once, by the batch of its payment month** (`TrnCharge::getTrnChargeList` selects by `paid_at`); a refund is one lump in its execution month.
 4. **¥0 companions (FVP, App) still create log rows** — they're not filtered out by any price check in getTrnChargeList() or getContractDateInfoList().
 5. **Monthly plan products (16–29) are EXCLUDED from daily rate** — they go through the separate MonthlyRateCalculationLogic CTE pipeline.
 6. **package_price inconsistency** — some plans store tax-exclusive (plan 71: ¥18,000), some store tax-inclusive (plan 94: ¥39,600, CAP plans). Always verify per plan.

@@ -27,7 +27,7 @@ This is a change-request REMOVAL of already-merged code — not a new spec (mirr
 ## Context
 
 - 02c was reviewed (REF-CAP-14), signed off (REF-CAP-15), coded, and merged to `feature/ASCA/ASCA-master`.
-- Direction change arrived after merge, so this removes merged code rather than cancelling unstarted work.
+- Direction change arrived after merge, so this removes merged code rather than canceling unstarted work.
 - KEEP (confirmed by Kuroda-san): `log_alloc_bundle_outcomes` (ASCA-66) and the run-status extension (ASCA-68). Do NOT touch those.
 
 ## Scope — accounting repo (`accounting_related_system_for_freee`)

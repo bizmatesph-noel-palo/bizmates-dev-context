@@ -190,7 +190,7 @@ Extend the proration engine to handle early bundle termination and contract type
 
 **Scope:**
 - Coaching rest detection (no new Coaching charge after current one ends)
-- App removal when Coaching cancelled (App follows Coaching lifecycle)
+- App removal when Coaching canceled (App follows Coaching lifecycle)
 - Lesson reverts to non-bundled after termination (P = N, adjustment = 0)
 - Month-6 discount permanently lost on cancellation
 - B2E → B2B contract type switch detection

@@ -242,7 +242,7 @@ Investigation revealed that the CTE counts ALL evaluation records joined to a ti
 
 **Pattern 1 (charge 3033180 — Bizmates):** Multiple evaluations per ticket, all with `result = 1`. Possibly re-evaluations or multiple lesson types per ticket.
 
-**Pattern 2 (charge 12997 — Zipan):** Multiple evaluations per ticket with mixed `result` values (1 and 0). The `result = 0` records appear to be failed/cancelled evaluations that should not count as lessons taken.
+**Pattern 2 (charge 12997 — Zipan):** Multiple evaluations per ticket with mixed `result` values (1 and 0). The `result = 0` records appear to be failed/canceled evaluations that should not count as lessons taken.
 
 The CTE counts evaluations via `SUM(CASE WHEN ... THEN 1 ELSE 0 END)` — each evaluation row joined to a ticket counts as one lesson regardless of `result` value. This produces `lessons_taken` > actual ticket count.
 

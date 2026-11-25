@@ -4,7 +4,7 @@ inclusion: auto
 
 # Glossary
 
-> **Scope:** Vocabulary for the **ASC Allocation Framework** (ASCA / ASCI). Where a term differs from the older ASCH design, this glossary uses the ASCA meaning — ASCH was cancelled and its two-stage proration model does NOT apply here.
+> **Scope:** Vocabulary for the **ASC Allocation Framework** (ASCA / ASCI). Where a term differs from the older ASCH design, this glossary uses the ASCA meaning — ASCH was canceled and its two-stage proration model does NOT apply here.
 
 ## Project Codes
 
@@ -12,7 +12,7 @@ inclusion: auto
 |---|---|---|
 | ASC | Accounting System Changes | Umbrella JIRA project for changes to this system. "ASC" is also the JIRA code for ASCM (the original project). |
 | ASCM | ASC — Monthly plans | Added monthly rate calculation (recursive CTE). Deployed June 2026. |
-| ASCH | ASC — Honki Set | **Cancelled 2026-08-07.** Would have prorated Honki Set bundles 3 ways. Research/engineering standards reused; its allocation formula is NOT used. |
+| ASCH | ASC — Honki Set | **Canceled 2026-08-07.** Would have prorated Honki Set bundles 3 ways. Research/engineering standards reused; its allocation formula is NOT used. |
 | **ASCA** | **ASC for CAP** | **Our project.** Allocates CAP coaching-charge revenue between Coaching and App. Builds the shared allocation framework. Bizmates-only. Deadline 2026/12/17, first prod run 2027/01/01. |
 | **ASCI** | **ASC for CIP** | **Our project.** Allocates CIP coaching-charge revenue. Reuses ASCA's foundation. **⚠️ No longer config-only** — R-16 (2026-09-08) makes CIP 1029–1032 3-way, so ASCI needs 3-way split logic (engine change), not just a config/enum addition. Only 1028 is 2-way. |
 | CAP | Coaching and App Plan | **Upstream project** (MBTI_backend, Keith's team). Creates new bundled plans **1016–1027** (Coaching + App). |

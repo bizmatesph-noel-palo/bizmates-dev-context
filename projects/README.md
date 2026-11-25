@@ -5,7 +5,7 @@ Each subdirectory is one JIRA project. Artifacts (tickets, test cases, documenta
 | Directory | JIRA Code | Status |
 |---|---|---|
 | `ascm/` | ASC | ✅ Completed (Jun 2026) |
-| `asch/` | ASCH | ❌ Cancelled (Aug 2026) |
+| `asch/` | ASCH | ❌ Canceled (Aug 2026) |
 | `asca/` | ASCA | Active — ASC for CAP |
 | `asci/` | ASCI | Active — ASC for CIP |
 

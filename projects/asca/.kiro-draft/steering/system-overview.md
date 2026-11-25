@@ -20,7 +20,7 @@ The system processes real money — its output directly feeds into the company's
 
 The system originally processed ALL charges using a single daily pro-rata formula. The **ASCM project** (Accounting System Changes — Monthly plans) added a separate consumption-based calculation pipeline for monthly lesson plans. That pipeline is now deployed and stable.
 
-The **ASCH project** (Honki Set) was **cancelled 2026-08-07** before implementation. Its research and engineering standards are reused, but its design (separate command, own journals) does NOT apply here.
+The **ASCH project** (Honki Set) was **canceled 2026-08-07** before implementation. Its research and engineering standards are reused, but its design (separate command, own journals) does NOT apply here.
 
 The **ASC Allocation Framework** (ASCA / ASCI) is the active work. It splits Coaching charge revenue between the Coaching and App products so Freee journals reflect the correct per-product revenue. Unlike ASCH, it does **not** add a new command or send its own journals — it **injects** into the existing daily-rate batch and **overwrites** the log-table amounts in place (Scenario D + Option 1). Two projects share one framework: **ASCA (CAP**, plans 1016–1027, builds the foundation) and **ASCI (CIP**, plans 1028–1032, reuses it). Bizmates-only. Deadline 2026/12/17, first production run 2027/01/01.
 

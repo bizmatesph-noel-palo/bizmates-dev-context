@@ -1,17 +1,19 @@
 # REF-ASCH2027-02 — NEW ASCH (2027) Requirements, Kuroda-san's re-created Confluence page (2026-11-04)
 
+> ⚠️ **OUT OF DATE (noted 2026-11-25).** Kuroda-san updated the Confluence page on 2026-11-24 (§4.1 Lesson half price, §4.6 proration timing for shortened contracts, §4.7 B2B overlap, §7 linked to the calculation-pattern file) — https://bizmates.atlassian.net/wiki/x/AwDSIgE. This capture reflects the 2026-11-04 version and is not yet re-captured; use the Confluence page for §4.1 / §4.6 / §4.7 / §7. From his Slack note (11-24): half-price Lesson = tier 2 price, exactly half (daily 1 = 7,425, daily 2 = 10,725, 15 lessons/month = 7,425, tax incl.).
+
 ## Document Info
 
 | | |
 |---|---|
 | **Document type** | Research reference (upstream requirements capture) |
-| **Status** | Active — supersedes REF-ASCH2027-01 as the current requirements source |
+| **Status** | Active — supersedes REF-ASCH2027-01 as the current requirements source (⚠️ out of date vs the 2026-11-24 Confluence update — see banner) |
 | **Date** | 2026-11-05 (captured) · source page last updated 2026-11-04 10:51 |
 | **Source** | Hayato Kuroda (PdM), Confluence "ASCH 2027 — Revenue Booking for the 2027 Honki Campaign: Requirements" + his Slack comment |
 | **Captured by** | Noel Palo, Lead · assisted by Kiro |
 | **Supersedes** | `REF-ASCH2027-01-Requirements-20261023.md` (prior page; several open items now closed — see §Diff) |
 
-> **Naming:** "ASCH" here = the **NEW 2027 ASCH**. The cancelled 2026 project is "OLD ASCH".
+> **Naming:** "ASCH" here = the **NEW 2027 ASCH**. The canceled 2026 project is "OLD ASCH".
 
 ---
 

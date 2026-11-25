@@ -61,7 +61,7 @@
 * **Eligibility Window:** 6 months from trigger purchase date
 * **Cashback Condition:** Maintain continuous subscription (both Online Lesson AND Coaching) for 6 months
 * **Continuous:** No gap > 1 day between consecutive charge periods
-* **Forfeiture:** Cancelling either Online Lesson or Coaching before 6 months forfeits the cashback
+* **Forfeiture:** Canceling either Online Lesson or Coaching before 6 months forfeits the cashback
 * **Exclusions:** B2B students (`contract_type=1`) and non-Japan students (`country_id≠86`) are excluded
 * **Renewal Detection:** Charges where a prior charge's `end_date = start_date - 1 day` are renewals (not new purchases)
 

@@ -10,13 +10,13 @@
 | **Date** | 2026-10-29 (Captured) — source last updated 2026-10-23 |
 | **Author (source)** | Hayato Kuroda (PM) |
 | **Captured by** | Noel Palo (Kiro-assisted) |
-| **Status** | Active — source draft. Kuroda-san's **[DRAFT]** requirements for the NEW 2027 ASCH. |
+| **Status** | **Superseded (2026-11-05)** by `REF-ASCH2027-02-Requirements-20261104.md` — kept as history. Was: source draft of Kuroda-san's **[DRAFT]** requirements for the NEW 2027 ASCH (page of 2026-10-23). |
 | **Source channel** | Confluence — "[DRAFT] ASCH 2027 — Revenue Booking for the 2027 Honki Campaign: Requirements" |
 | **Audience** | Dev team (Noel, Throy, Cristoff), QA (Glenn), SDM (Patrick-san), Accounting |
 
-> ⚠️ **NEW project, not the cancelled 2026 ASCH.** The name is reused; the architecture is fundamentally different (see the Cross-Reference section below). This is a **verbatim capture** of Kuroda-san's draft; our interpretation/overlap analysis lives in the clearly-marked Cross-Reference section and in `projects/`, not here.
+> ⚠️ **NEW project, not the canceled 2026 ASCH.** The name is reused; the architecture is fundamentally different (see the Cross-Reference section below). This is a **verbatim capture** of Kuroda-san's draft; our interpretation/overlap analysis lives in the clearly-marked Cross-Reference section and in `projects/`, not here.
 >
-> ⚠️ **Placement note (PROVISIONAL — restructure deferred, Lead 2026-10-29):** this doc currently sits under the **cancelled 2026** ASCH project tree (`projects/asch/technical-notes/research/ASCH-2027/`), which is misleading. A plain `projects/asch-2027/` is **rejected** (it would imply the 2026 ASCH shipped). Agreed approach, to execute later: **archive the obsolete 2026 ASCH docs** (pooled-proration engine, 9-table schema, adjustment-journal/CSV — all superseded) and **retain only what the 2027 ASCH needs**, then settle the structure and move this file. Tracked in `docs/asc-projects-task-tracker.md` (Cross-cutting). Until then, this path stands.
+> ⚠️ **Placement note (PROVISIONAL — restructure deferred, Lead 2026-10-29):** this doc currently sits under the **canceled 2026** ASCH project tree (`projects/asch/technical-notes/research/ASCH-2027/`), which is misleading. A plain `projects/asch-2027/` is **rejected** (it would imply the 2026 ASCH shipped). Agreed approach, to execute later: **archive the obsolete 2026 ASCH docs** (pooled-proration engine, 9-table schema, adjustment-journal/CSV — all superseded) and **retain only what the 2027 ASCH needs**, then settle the structure and move this file. Tracked in `docs/asc-projects-task-tracker.md` (Cross-cutting). Until then, this path stands.
 
 ---
 
@@ -128,9 +128,9 @@ Detailed sheet extends the existing CAP sample (P3, first month 50%) and CIP pat
 
 > Interpretation, overlap analysis, and impact. None of this is Kuroda-san's text.
 
-### Headline: the 2027 ASCH is a near-no-op, architecturally unrelated to the cancelled 2026 ASCH
+### Headline: the 2027 ASCH is a near-no-op, architecturally unrelated to the canceled 2026 ASCH
 
-| Dimension | Cancelled 2026 ASCH | NEW 2027 ASCH |
+| Dimension | Canceled 2026 ASCH | NEW 2027 ASCH |
 |---|---|---|
 | Core idea | Heavyweight **adjustment-journal engine**: read ASC output N, prorate a pooled Lesson+Coaching+App bundle, send P−N adjustment journals to Freee | **Almost no ASC logic.** Discount is already in the charge's paid amount; ASC books it with existing/ASCA/ASCI logic |
 | Allocation | **Pooled 3-product** proration (ΣM × basis/Σbasis), O-carryover, L-vs-M basis rule | **No pooling.** Lesson booked alone (§4.1); CAP → ASCA 2-way; CIP → ASCI ratio split |
@@ -141,11 +141,11 @@ Detailed sheet extends the existing CAP sample (P3, first month 50%) and CIP pat
 | CIP pricing | ¥88,000 / engine 3-way (old) | **Residual 71,920 + App 3,980, ratio split, no engine** (REF-CIP-05/09) |
 | Net ASC work | Build a whole subsystem | **Test CAP; ensure CIP (ASCI) half-month conversion + refund split work; write the 8 test patterns** |
 
-**So "overlap vs the cancelled 2026 ASCH" = almost none of the old design survives.** The 2027 ASCH does **not** resurrect the `asch_*` tables, the pooled proration, the adjustment-journal engine, or the ASC-side Honki identification. It rides CAP (ASCA, done) and CIP (ASCI, in build) which already allocate on the discounted paid amount. The §4.1 line is explicit: "This replaces the previous ASCH design, which pooled Lesson + Coaching + App and split them together."
+**So "overlap vs the canceled 2026 ASCH" = almost none of the old design survives.** The 2027 ASCH does **not** resurrect the `asch_*` tables, the pooled proration, the adjustment-journal engine, or the ASC-side Honki identification. It rides CAP (ASCA, done) and CIP (ASCI, in build) which already allocate on the discounted paid amount. The §4.1 line is explicit: "This replaces the previous ASCH design, which pooled Lesson + Coaching + App and split them together."
 
 ### Reuse / dependency clarification (two lineages — do not conflate)
 
-"Overlap vs the cancelled 2026 ASCH = almost none" refers only to the **old ASCH's own design artifacts** (the `asch_*` tables, the pooled 3-product proration, the adjustment-journal engine). That specific machinery is dead — §4.1 replaces it with "Lesson booked alone." It does NOT mean the 2027 ASCH is standalone.
+"Overlap vs the canceled 2026 ASCH = almost none" refers only to the **old ASCH's own design artifacts** (the `asch_*` tables, the pooled 3-product proration, the adjustment-journal engine). That specific machinery is dead — §4.1 replaces it with "Lesson booked alone." It does NOT mean the 2027 ASCH is standalone.
 
 On the contrary, the 2027 ASCH has **total runtime dependency on ASCA + ASCI** — it builds no engine, DB, or services of its own precisely because it reuses theirs:
 
@@ -155,9 +155,9 @@ On the contrary, the 2027 ASCH has **total runtime dependency on ASCA + ASCI** �
 | CIP (Coaching Intensive + App) | **ASCI Spec 01** — the site→booking conversion (Req 2) + the refund split (Req 4), which themselves reuse ASCA 02b's `log_refund_history` linkage + new-App-row mechanism |
 | Lesson | existing ASC daily-rate path |
 
-And separately, a **design-heritage** lineage: ASCA/ASCI themselves reused the *research + engineering standards* from the cancelled 2026 ASCH (per the ASC allocation technical design: "the architecture research and engineering standards from ASCH are reused in this framework"). So the ASCH thinking lives on **inside ASCA/ASCI**, which the 2027 ASCH then rides.
+And separately, a **design-heritage** lineage: ASCA/ASCI themselves reused the *research + engineering standards* from the canceled 2026 ASCH (per the ASC allocation technical design: "the architecture research and engineering standards from ASCH are reused in this framework"). So the ASCH thinking lives on **inside ASCA/ASCI**, which the 2027 ASCH then rides.
 
-**Precise statement:** the 2027 ASCH reuses **everything** from ASCA/ASCI (engine, DB, services) and **almost nothing** from the cancelled 2026 ASCH's own design. The two "almost none" vs "everything" claims are about different things — the old ASCH's bespoke machinery vs. the ASCA/ASCI machinery — and must not be blurred.
+**Precise statement:** the 2027 ASCH reuses **everything** from ASCA/ASCI (engine, DB, services) and **almost nothing** from the canceled 2026 ASCH's own design. The two "almost none" vs "everything" claims are about different things — the old ASCH's bespoke machinery vs. the ASCA/ASCI machinery — and must not be blurred.
 
 ### The critical finding: 2027 ASCH's CIP work is ALREADY inside ASCI Spec 01
 
@@ -175,7 +175,7 @@ And separately, a **design-heritage** lineage: ASCA/ASCI themselves reused the *
 
 ### CDB dependency — now concrete (resolves the tracker's provisional note)
 
-- 2027 ASCH confirms **ASC does NOT read CDB** (§2, §3) — the discount arrives already baked into `paid_price`. So the tracker's "ASCH reads `trn_campaign_discount_eligibility`" assumption (inherited from the *cancelled* ASCH's REF-CDB-02 Gap #5) is **superseded for the 2027 ASCH** — the honki-student identification burden is gone from the ASC side.
+- 2027 ASCH confirms **ASC does NOT read CDB** (§2, §3) — the discount arrives already baked into `paid_price`. So the tracker's "ASCH reads `trn_campaign_discount_eligibility`" assumption (inherited from the *canceled* ASCH's REF-CDB-02 Gap #5) is **superseded for the 2027 ASCH** — the honki-student identification burden is gone from the ASC side.
 - BUT CDB still has a 2027 gap that affects us indirectly: **Open Item 3** — CDB's catalog still expects App **10021**, must be updated to **10022**, plus CIP 10025 and the half-price `price_flag=4` tier. Owner Soli-san (CDB). If CDB issues charges against the wrong App product_id, the charges ASC books would be wrong at the source. **This is the real CDB recheck for 2027** — not a schema-read contract (we don't read it), but a charge-correctness dependency.
 - `discount_grant_status` enum here (-1/0/1/2) differs in naming from REF-CDB-02's `discount_flag` (1/2). Worth confirming CDB's current column with Soli-san, but since ASC doesn't read it, it's informational for us, not blocking.
 
@@ -190,8 +190,8 @@ And separately, a **design-heritage** lineage: ASCA/ASCI themselves reused the *
 ### Related documents
 - `projects/asci/specs/asci-spec-01-cip-integration/` — where the 2027 ASCH's CIP asks already live (Req 2 conversion, Req 4 refund split).
 - `research/CIP/REF-CIP-09-...` — Kuroda-san's ASCI G1 feedback that already folded in Open Items 1–2.
-- `research/CDB/REF-CDB-02-...` — the cancelled ASCH's CDB cross-check (now largely superseded for ASC: 2027 ASC does not read CDB).
-- `projects/asch/project-context.md` — the CANCELLED 2026 ASCH (architecture that the 2027 version does NOT reuse).
+- `research/CDB/REF-CDB-02-...` — the canceled ASCH's CDB cross-check (now largely superseded for ASC: 2027 ASC does not read CDB).
+- `projects/asch/project-context.md` — the CANCELED 2026 ASCH (architecture that the 2027 version does NOT reuse).
 - `domain-knowledge/campaigns.md` — Honki Set campaign shape.
 
 ---

@@ -1,6 +1,6 @@
 # Account Types (Contract Types)
 
-**Last updated:** 2026-08-03
+**Last updated:** 2026-11-24 (B2B / B2B2C plan ranges + B2B CAP/CIP allocation status; OLD ASCH section marked history)
 
 ---
 
@@ -288,11 +288,39 @@ Both log tables share the same structure:
 
 ---
 
-### ASCH Impact: Contract Type Changes During Honki Set
+### OLD ASCH Impact: Contract Type Changes During Honki Set (canceled 2026-08-07 — history only)
 
-Contract type transitions affect ASCH revenue proration:
+> The OLD ASCH proration was never built. For the 2027 Honki campaign (NEW ASCH, testing only), a contract change shows up only through the charges themselves — e.g. pattern P11 (B2C/B2E → B2B in the half-price first month; per Kuroda-san's provisional sheet the overlap is a prorated refund, FLOOR(daily price) × overlap days, e.g. 7,425 / 31 = 239 × 21 = 5,019; the B2B charge is not allocated until the B2B CAP/CIP extension below is released).
+
+Contract type transitions affected the planned OLD ASCH revenue proration:
 - **B2E → B2B switch** (Pattern 7): Future-only reversion, past prorated discounts kept. Student excluded from future ASCH runs.
 - **Charge-level contract_type**: ASCH reads `trn_charge.contract_type` per charge, not `trn_student.contract_type`, because individual charges retain the contract type they were created under.
 - **department_id on refund**: When B2E→B2C happens, existing charges get `department_id = 0`, affecting Freee journal `mst_rule_for_journals` lookup.
 
 **Source:** REF-ASCH-06 §3 (Eligibility-Loss Handling)
+
+---
+
+## B2B / B2B2C Plans and the CAP / CIP Allocation (added 2026-11-24)
+
+**Plan ranges (Bizmates prod, per Cristoff-san's B2B investigation, Confluence v6, 2026-11-20):**
+
+| Range | Who | Notes |
+|---|---|---|
+| 1016–1027 | CAP (standard plans) | ASCA allocation detects these |
+| 1028–1032 | CIP (standard plans) | ASCI conversion / refund split detects these |
+| 20000001–20024537 | **B2B** company plans (14,545 plans) | Not detected by ASCA / ASCI today |
+| 30000001–30013186 | **B2B2C** department plans | One plan has Coaching Intensive 10025 but no App 10022 (`planModel.php:333-340`) |
+
+**Current behaviour:** CAP / CIP detection gates on plan_id 1016–1032, so a B2B student on a company plan with Coaching + App is **not allocated** (App stays ¥0, Coaching keeps the full amount). Found in the B2C/E UAT mapping (2026-11). **Accounting decision: B2B CAP/CIP is not sold until the B2B allocation is released.**
+
+**Planned B2B CAP/CIP extension (agreed with Kuroda-san; G1 pending):**
+- Detection: `plan_id ≥ 20000000` + product combination, **no `contract_type` filter**; App-present check in SQL (about 4,000 B2B coaching-only charges a year).
+- Safety-net guards kept (per Sales: B2B App always ¥0, same dates, no CAP + CIP coaching together, discount already in `paid_price`).
+- **Scope A:** no B2B refund split, a warning log only (no B2B refunds in prod; after a B2B refund the allocated App revenue is not reversed — manual fix).
+- B2B is BANK-paid and not renewed.
+- **Business context (Kuroda-san, Slack 2026-11-17 / 11-19):** B2B starts selling CAP/CIP from the **April 2027 plan revision** (at most one early case before that). Same list prices as B2C, plus long-term discounts (6 months 5% off, 12 months 10% off) typed by hand into `paid_price` — no separate discount logic. Rounding follows the existing logic (CIP: App = FLOOR, Coaching = total − App); a test for a multi-month charge with a long-term discount is requested. Student replacement (LMS 受講生の入れ替え) may happen; staging test pending.
+- **Release conditions (Kuroda-san, 2026-11-24):** B2B on its own branch, not merged into the shared branch before the 12/14–12/17 release; on DEV04 the UAT data must show zero difference on all B2C/B2E rows between the release code and the B2B code; the November production data must show no change on non-CAP/CIP rows (esp. B2B coaching-only charges); B2B checks skip only the B2B bundle, never fail the whole month; confirm 0 production charges with plan_id ≥ 20000000 and product 10022; if released after the 202701 batch, also compare with its production output.
+- ⚠️ **DEV04 data note:** Kuroda-san's example B2B student 515 (CIP) is on plan **30000067** (30000000 + department_id) on DEV04, while 3000xxxx is the B2B2C range in production. DEV04 test data may differ from production — check before the B2B rule is finalized (the ≥ 20000000 rule covers both ranges).
+- Open: `≥ 20000000` also covers the B2B2C range; whether CIP needs the App-present rule; whether the new guards apply to B2B only or all plans.
+- Release planned the **week of 2027-01-11** (tentative, approved by the business side 2026-11-24; separate from the ASCA / ASCI 12/14–12/17 release). Live status: `docs/asc-projects-task-tracker.md`.

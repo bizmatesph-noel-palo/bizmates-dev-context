@@ -92,6 +92,6 @@ This derivation is already part of ASCH's calculation logic — it doesn't need 
 | 10 | "Never taken Coaching" | CDB seed verifies ✅ |
 | 11 | Month-6 cascade timing | Separate dates per product ✅ |
 | 12 | Month-1 mechanism | Not CDB scope ✅ |
-| 13 | App lifecycle | All records ineligible when coaching cancelled ✅ |
+| 13 | App lifecycle | All records ineligible when coaching canceled ✅ |
 | 14 | Lesson plan allowlist | Use plan page product_ids ✅ |
 | 15 | Discount priority | Higher discount wins, max 50% ✅ |

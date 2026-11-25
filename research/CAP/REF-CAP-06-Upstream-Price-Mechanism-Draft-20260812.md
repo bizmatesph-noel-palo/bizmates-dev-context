@@ -124,8 +124,8 @@ CAP plans ARE campaign-eligible. At tier 2:
 The document asks whether CAP 30-minute plans (1022–1025, 1027, 1017) should be eligible for the Honki campaign. This is relevant because:
 
 - If YES: A student could be in BOTH Honki Set AND CAP simultaneously
-- The ASCH project (cancelled) would have handled Honki allocation
-- With ASCH cancelled, this combination might need special handling in ASC-CAP
+- The ASCH project (canceled) would have handled Honki allocation
+- With ASCH canceled, this combination might need special handling in ASC-CAP
 
 **Current state:** `CoachingPage::HONKI_ELIGIBLE_PLAN_IDS` does NOT include CAP plans. So currently no overlap. If PO decides to add them, we need to flag this as a future consideration.
 

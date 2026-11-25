@@ -1,6 +1,7 @@
 # ASCI-24 — DEV04 - 20261113 merge feature/CAP/CAP-base (CAP-382) into bizmates.jp deployment/dev04
 
 > **Created in JIRA 2026-11-13 as [ASCI-24](https://bizmates.atlassian.net/browse/ASCI-24); shortened and changed to `feature/CAP/CAP-base` the same day (per Keith-san).** Task under ASCI-15, Priority Medium. Assignee changed to Cristoff-san on 2026-11-13 (11:43). This file is the source of record; the JIRA ticket carries the same content.
+> **Status: Done** (Cristoff-san, 2026-11-16). Merged via `release/CAP/CAP-base` (Jefferson-san merged `deployment/dev04` into it, `3855a7e18d`), then into `deployment/dev04` (PR #21244, `4ac3b17a4b`, 2026-11-13 16:02). The `fuel/app/tasks/charge.php` conflict (CIP-46 vs CAP-392) was resolved there. **Correction:** by the time of the merge `CAP-base` **did include CAP-392**; the "does not include CAP-392" line below is out of date. ASCA retest passed on DEV04 (Glenn-san, 2026-11-20).
 
 **Type:** Task
 **Parent / Epic:** ASCI-15 ([Ops] — DEV04, Investigations, Debugging & Deployment)

@@ -1,6 +1,6 @@
 # ASCH — Development Estimation
 
-> ⚠️ **CANCELLED:** ASCH project was cancelled on 2026-08-07. This document is historical reference only. The team has pivoted to the ASC Allocation Framework (CAP + CIP). See `docs/asc-projects-master-timeline.md` for current plan.
+> ⚠️ **CANCELED:** ASCH project was canceled on 2026-08-07. This document is historical reference only. The team has pivoted to the ASC Allocation Framework (CAP + CIP). See `docs/asc-projects-master-timeline.md` for current plan.
 
 ## Document Info
 

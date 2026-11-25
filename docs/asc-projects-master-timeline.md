@@ -24,7 +24,7 @@
 | Code | Project | Board | Backlog |
 |---|---|---|---|
 | ASC | ASCM (Accounting System Changes — Monthly) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) |
-| ASCH | ASC Honki Set (cancelled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
+| ASCH | ASC Honki Set (canceled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
 | **ASCA** | **ASC for CAP** (active — builds foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) |
 | **ASCI** | **ASC for CIP** (active — CIP uses residual-value pricing, not the allocation engine, per REF-CIP-05) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
@@ -34,9 +34,29 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-10)
+## ⚠️ Status / Actuals (as of 2026-11-25)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-25 (phased plan agreed; release 12/14–12/17 tentative; one QA regression 11/25–12/11; B2B week of 1/11)
+
+- **Phase 1 — ASCA / ASCI release (without B2B): tentative 12/14–12/17** (Kuroda-san's summary in #prj_asch 11-25, confirmed by the Lead; Patrick-san had first proposed the week of 12/7). Steps: QA sign-off → release plan → LDRM ticket (Patrick-san). CIP retest running under ASCI-26.
+- **Phase 2 — ASCH: no separate release.** One QA regression for ASCM / ASCA / ASCI / ASCH **11/25–12/11** (QA committed 10 days, Katie Medina). If the ASCH patterns pass, the ASCA / ASCI release covers ASCH. ASCH issues do not block that release. A logic change, if QA finds one, is estimated and scheduled; per the Lead it is released in January 2027.
+- **Code freeze from 12/18** (no release; development continues).
+- **Phase 3 — B2B CAP/CIP: release week of 1/11/2027** (tentative, approved by the business side 11-24). Kuroda-san's conditions: own branch, not merged into the shared branch before the release; zero difference on B2C/B2E rows on DEV04; no change on non-CAP/CIP rows with November production data; skip only the B2B bundle; 0 production charges with plan_id ≥ 20000000 + 10022. Code placement (Lead 11-24): shared logic in ASCA then pulled into ASCI. Spec approach still to decide. B2B sells CAP/CIP from the April 2027 plan revision.
+- **First production batch with CAP/CIP data: the 202701 batch in early February 2027** (CAP/CIP sales start in January; the 1/1 batch has no CAP/CIP data — Kuroda-san 11-24).
+- **Other dates:** CDB code to DEV04 11/25–11/27; CAP beta 12/1, CIP beta 12/2, beta takedown about 12/9–12/10 (unconfirmed); holidays 11/30, 12/3–4 (team building), 12/8, 12/24–25, 12/30–31, 1/1.
+
+### Snapshot — 2026-11-24 (Lead back; CAP retest passed; CIP-218 on dev04; B2C/E UAT done; B2B CAP/CIP extension added; ASCH test sheet received)
+
+- **ASCA (CAP):** CAP-382 (immediate REST also ends the App) merged into `deployment/dev04` via ASCI-24 (Cristoff-san, 11-13); **Glenn-san's ASCA retest passed on DEV04 (11-20), CAP-382 → QA (Passed)**. JIRA Done: ASCA-18, 86, 87, 90, 91, 93 (master/main synced into dev04 on 11-13). Still open: ASCA-81 (In Progress, admin). dev04 not re-synced since 11-13 (production releases merged into master / main on 11-18).
+- **ASCI (CIP):** JIRA Done: ASCI-12, 17, 19, 20, 21, 22, 23 (11-11 rerun, CSVs match the ASCI-19 values), 24, **25** (CIP-base merged into `deployment/dev04`, PR #21310, Cristoff-san, 11-23; CIP-218 `489f4b0` in dev04 per git; CIP-220 not confirmed). CIP-218 / CIP-220 STG (QA PASSED). **Next: CIP retest** (Throy-san reruns, Glenn-san retests). Still open: ASCI-13 (unassigned), ASCI-14 (Glenn-san).
+- **B2C/E UAT:** done by the business side (~11-19/20) on Cristoff-san's 11-17 all-months DEV04 rerun; Glenn-san created the missing 1-1 / 1-3 / 3-2 cases. Five students with App ¥0 raised by Kuroda-san (2886, 303174, 471, 7185, 8208) — Kiro's read: test-data pairing, not the formula; not confirmed on DEV04; reply not sent.
+- **NEW — B2B CAP/CIP allocation extension.** B2B CAP/CIP is not detected (detection gates on `plan_id` 1016–1032). Accounting: B2B CAP/CIP not sold until released. Agreed with Kuroda-san: `plan_id ≥ 20000000` + product combination, App-present check in SQL, Scope A (no B2B refund split, warning log). Estimate **20 pd** (Cristoff-san, Confluence v6). **Schedule: G1 11/24–12/1, G2 12/2–12/4, dev 12/7–12/18, G3 + DEV04 12/21–12/23, QA 1/5–1/8, separate release week of 1/12/2027.** Owner Cristoff-san; Throy-san helps on CIP. **Code placement decided (Lead, 11-24):** logic shared by CAP and CIP goes into ASCA and is pulled into ASCI; unique logic goes into its own project; ASCA is the dependency for ASCI. **Still to decide:** delta spec vs change requests (B2B changes the plan_id requirements in Spec 01, 02a, 02b, ASCI-01). Staging student-replacement test (R15) pending. Not part of the 12/17 ASCA / ASCI deadline.
+- **ASCH (NEW 2027):** Kuroda-san's provisional calculation patterns received 11-23 (P2, P4–P7 and new P9–P12; P1 / P3 / P8 on the requirements page). His three notes checked against the code — all match, no new logic. Testing only, start **12/7**; Throy-san test design and expected values, Glenn-san DEV04 data and QA. The 11-10 estimate (finish about 12/16–12/21) covered P1–P8 only; P9–P12 not yet estimated. CIP cases P10b / P10d / P11b were waiting on ASCI-25 (now Done).
+- **Ops:** DEVOPS-7251 — SendJournal (Final) moves to 18:00 JST on the 2nd business day from 2026-12-02; deployed to production 11-13.
+- **Calendar:** PH 12/3–12/4 team building, 12/8, 12/24–25, 12/30–31 (per Patrick-san). The 12/1–12/4 DEV04 pull window overlaps 12/3–12/4.
+- **Assignments (Kuroda-san's proposal, Patrick-san 11-23):** Cristoff-san B2B; Throy-san ASCH + B2B CIP help; Lead specs / reviews; Glenn-san QA for both.
 
 ### Snapshot — 2026-11-10 (ASCI-19 QA PASS on DEV04; ASCI-22 ticketed; ASCA-90/91 assigned; ASCH start moved to 12/7; last working day before leave)
 
@@ -136,7 +156,7 @@
 - **CEIL steering note ([ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)) — ✅ merged.**
 - **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — ✅ done** (Throy, reported at 2026-10-26 DSM): redeployed + re-ran batch to **regenerate QA reports** after the 02c removal. Month wording reconciled — batch processes the previous month, so "Sept/Oct data" → "Oct/Nov report" (same run).
 - **DB-safety fix (ASCA-70 follow-on):** two sub-tickets drafted + grounded (accounting→ASCA-17, ls-db→ASCA-16) with dev-Kiro prompts; awaiting Lead review → JIRA creation.
-- **NEW ASCH (2027) requirements:** Kuroda-san/Patrick-san provided new requirements for a **2027 ASCH** project (⚠️ NOT the 2026 cancelled predecessor — name reused only). Lead to review and determine overlap with the old cancelled ASCH vs. new scope, then give feedback. Not yet reviewed.
+- **NEW ASCH (2027) requirements:** Kuroda-san/Patrick-san provided new requirements for a **2027 ASCH** project (⚠️ NOT the 2026 canceled predecessor — name reused only). Lead to review and determine overlap with the old canceled ASCH vs. new scope, then give feedback. Not yet reviewed.
 - **ASCI-01 requirements → G1 feedback RECEIVED from Kuroda-san** (shared at DSM). Now being ingested/processed; then promote requirements + create the ASCI epic/stories → design/build. (Supersedes the 2026-10-23 "awaiting sign-off" line.)
 - **Leave coverage (Nov 11–23):** **Throy-san to oversee ASCI** during the Lead's leave (confirm before leave). ASCA is dev-complete + 02c-removed → minimal leave risk.
 
@@ -246,7 +266,7 @@ New requirements landed after the baseline was set — these expand scope, so th
 ## Overview
 
 ```
-ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
+ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELED
 ASCM Refactor (DEVOPS-6415):         Aug 24–28 (W0) — prep + regression
 ZPR (DEVOPS, Cristoff):              Sep 9–18 — Zipan 20L enum add; ★ release before Oct 1 (PRE batch)
 Spec Preparation (Lead):             Aug 31–Sep 5 (W1) — steering files + spec session (parallel with QA)
@@ -303,7 +323,7 @@ First real batch:                    Jan 1, 2027
 | **ASCI** (second) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Patrick-san |
 | **CDB** (upstream) | Paolo Sandoval | — | Efren Petarte | Patrick-san |
 | **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
-| **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |
+| **ASCH** (canceled) | Noel Palo | — | — | Patrick-san |
 
 **QA Team Assignments:**
 
@@ -846,7 +866,7 @@ ASC is NOT blocked by upstream timelines:
 
 | Date | Event |
 |---|---|
-| 2026/08/07 | ASCH cancelled |
+| 2026/08/07 | ASCH canceled |
 | 2026/08/10 | DB design received from Kuroda-san |
 | 2026/08/11 | Scenario D proposed |
 | 2026/08/12 | CAP pricing + plan_ids confirmed (REF-CAP-05/06/08) |
