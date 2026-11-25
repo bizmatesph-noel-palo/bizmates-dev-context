@@ -10,7 +10,7 @@
 | **Date** | 2026-10-29 (Captured) — source last updated 2026-10-23 |
 | **Author (source)** | Hayato Kuroda (PM) |
 | **Captured by** | Noel Palo (Kiro-assisted) |
-| **Status** | Active — source draft. Kuroda-san's **[DRAFT]** requirements for the NEW 2027 ASCH. |
+| **Status** | **Superseded (2026-11-05)** by `REF-ASCH2027-02-Requirements-20261104.md` — kept as history. Was: source draft of Kuroda-san's **[DRAFT]** requirements for the NEW 2027 ASCH (page of 2026-10-23). |
 | **Source channel** | Confluence — "[DRAFT] ASCH 2027 — Revenue Booking for the 2027 Honki Campaign: Requirements" |
 | **Audience** | Dev team (Noel, Throy, Cristoff), QA (Glenn), SDM (Patrick-san), Accounting |
 
