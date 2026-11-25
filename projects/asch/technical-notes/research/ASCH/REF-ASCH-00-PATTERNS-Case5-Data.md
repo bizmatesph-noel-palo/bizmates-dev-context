@@ -2,7 +2,7 @@
 
 **Source:** Kuroda-san's specification Excel v3
 **Pattern:** 5 — Coaching rest (cancellation within 6 months)
-**Scenario:** B2C new student, Coaching cancelled mid-campaign, App also removed
+**Scenario:** B2C new student, Coaching canceled mid-campaign, App also removed
 
 ## Key Characteristics
 
@@ -10,14 +10,14 @@
 - Coaching 30-min starts on 10/15 (mid-month)
 - App starts with Coaching on 10/15
 - **Coaching rest requested on 12/5** — student cancels Coaching within 6 months
-- **App also stops** — when Coaching is cancelled, App membership is removed from the following month
+- **App also stops** — when Coaching is canceled, App membership is removed from the following month
 - Months 1-2 are identical to Pattern 2
-- **Month-6 50% discount is LOST** — cancelled mid-way, benefit forfeited permanently
+- **Month-6 50% discount is LOST** — canceled mid-way, benefit forfeited permanently
 - Proration only runs for 3 months (until Coaching/App end)
 
 ## Business Rules Confirmed
 
-1. When Coaching is cancelled, App must also be cancelled (App follows Coaching lifecycle)
+1. When Coaching is canceled, App must also be canceled (App follows Coaching lifecycle)
 2. Month-6 discount is permanently lost — even re-subscribing doesn't restore it
 3. After Coaching/App end, Lesson continues but is no longer part of the Honki Set bundle
 4. Proration stops for the bundle when Coaching ends — Lesson reverts to normal (non-bundled) accounting
@@ -83,7 +83,7 @@ Lesson continues as normal (non-bundled from next month onwards).
 ## Implications for Design (Pattern 5 specific)
 
 1. **Coaching cancellation triggers end of bundle** — when Coaching enters REST, ASCH must detect this and stop proration for all three products.
-2. **App follows Coaching lifecycle** — App removal is mandatory when Coaching is cancelled. ASCH needs to know the App's fate depends on Coaching's status.
+2. **App follows Coaching lifecycle** — App removal is mandatory when Coaching is canceled. ASCH needs to know the App's fate depends on Coaching's status.
 3. **Lesson reverts to non-bundled** — after Coaching cancellation, Lesson's P = N (adjustment = 0). ASCH stops generating proration rows for Lesson from the next month.
 4. **Month-6 discount permanently lost** — no need to track future discount eligibility after cancellation. The enrollment is effectively closed.
 5. **Partial-month final Coaching/App** — the last Coaching/App contract still gets prorated for its remaining days (12/1 – 12/14 in this case). O carries over from the previous group for this tail period.

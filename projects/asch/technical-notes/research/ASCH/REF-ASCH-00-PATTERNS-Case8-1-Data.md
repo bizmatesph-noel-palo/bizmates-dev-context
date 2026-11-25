@@ -13,7 +13,7 @@
 - Lesson (Daily 1) starts on 9/28 — BEFORE campaign period
 - Coaching 30-min starts on 10/3 — during campaign period
 - **Cooling-off exercised on 10/5** (within 8 days of Coaching start 10/3)
-- Lesson also cancelled as part of cooling-off (contract shortened to 10/5)
+- Lesson also canceled as part of cooling-off (contract shortened to 10/5)
 - **Full refund for Coaching** (negative paid_price = -¥16,200)
 - **Prorated refund for Lesson** (negative paid_price = -¥12,150 for 10/1 – 10/5 period)
 - App: ¥0 — no refund needed (was free)
@@ -63,7 +63,7 @@ The entire Honki Set bundle starts and ends in this month.
 
 | Item | Value |
 |---|---|
-| Total charges paid | ¥13,500 (Lesson Sept) + ¥0 (Lesson Oct cancelled) + ¥18,000 (Coaching) = ¥31,500 |
+| Total charges paid | ¥13,500 (Lesson Sept) + ¥0 (Lesson Oct canceled) + ¥18,000 (Coaching) = ¥31,500 |
 | Total refunds | -¥12,150 (Lesson) + -¥16,200 (Coaching) = -¥28,350 |
 | Net paid | ¥31,500 - ¥28,350 = ¥3,150 |
 | Total P (lifetime) | ¥1,350 (Sept Lesson) + ¥1,800 (Oct net Coaching) = ¥3,150 |

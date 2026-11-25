@@ -79,7 +79,7 @@
 1. ✅ **DONE — ASCI-01 G1 feedback ingested + folded + G1 APPROVED** (Kuroda-san 2026-10-28; REF-CIP-09 rounds 1+2); ASCI epic+stories created (ASCI-8..14). **Still pending:** promote `requirements.md` → code repo `.kiro/specs/` → G2 design/tasks.
 2. ✅ **DONE — DB-safety fix sub-tickets created** (ASCA-82 accounting / ASCA-83 ls-db, unassigned). **Still pending:** assign to a dev → implement.
 3. **Confirm ASCA-80** DEV04 Oct–Nov run results (Throy reported done at the 2026-10-26 DSM).
-4. **NEW ASCH (2027) requirements — review:** Kuroda-san/Patrick-san provided **new requirements for an ASCH project targeted at 2027**. ⚠️ A **NEW** ASCH — NOT the 2026 cancelled predecessor; reuses the name only. **Not yet reviewed.** Task: read the new requirements, determine overlap with the old cancelled ASCH vs. new scope, prepare feedback for Kuroda-san.
+4. **NEW ASCH (2027) requirements — review:** Kuroda-san/Patrick-san provided **new requirements for an ASCH project targeted at 2027**. ⚠️ A **NEW** ASCH — NOT the 2026 canceled predecessor; reuses the name only. **Not yet reviewed.** Task: read the new requirements, determine overlap with the old canceled ASCH vs. new scope, prepare feedback for Kuroda-san.
 5. **ASCI leave-coverage** — **Throy-san oversees ASCI during the Lead's leave (2026-11-11 → 11-23).** Confirm formally before leave.
 6. **Deferred cleanup (tech debt):** filename/namespace review per Laravel standards — see `technical-notes/ASCA-NOTE-20261016-filename-namespace-cleanup.md`.
 
@@ -232,7 +232,7 @@ All four Spec 02 epics now created, each with the standard 6-story set, currentl
 | Code | JIRA | Relationship |
 |---|---|---|
 | ASC (ASCM) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) | Base system — ASCA injects into its commands |
-| ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | Cancelled predecessor — research reused |
+| ASCH | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) | Canceled predecessor — research reused |
 | ASCI | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) | Sister project — reuses ASCA's foundation |
 | CAP (upstream) | — | Creates the charges ASCA allocates |
 

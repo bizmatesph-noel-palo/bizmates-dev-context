@@ -145,7 +145,7 @@
 | Refund month allocation | **Resolved:** Unified principle — prorated if original was prorated, direct if not. |
 | Honki Set member identification | **Resolved:** CDB table (`trn_campaign_discount_eligibility`) with ASCH snapshot fallback. |
 | Eligible plans | **Expanded:** Now includes Daily 3, Daily 4, and legacy plans (Daily 25/50/75/100 min). |
-| Cancelled Coaching → re-eligible? | **Corrected:** NO — any past Coaching experience = NOT eligible. |
+| Canceled Coaching → re-eligible? | **Corrected:** NO — any past Coaching experience = NOT eligible. |
 
 ---
 

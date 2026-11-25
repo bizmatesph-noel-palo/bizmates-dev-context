@@ -13,7 +13,7 @@
 | **Captured by** | Noel Palo, Lead · assisted by Kiro |
 | **Supersedes** | `REF-ASCH2027-01-Requirements-20261023.md` (prior page; several open items now closed — see §Diff) |
 
-> **Naming:** "ASCH" here = the **NEW 2027 ASCH**. The cancelled 2026 project is "OLD ASCH".
+> **Naming:** "ASCH" here = the **NEW 2027 ASCH**. The canceled 2026 project is "OLD ASCH".
 
 ---
 

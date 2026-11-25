@@ -15,7 +15,7 @@ This document confirms:
 1. **CIP plan_ids** — standalone coaching plans (71, 94) + coaching packages (1005–1014)
 2. **CIP does NOT include App product 10021** — these are pre-CAP plans (App added by upstream CIP project later)
 3. **Campaign tiers affect the N value** — tier 2 = half price → different N for allocation
-4. **Honki Set is 30min only** (1010, 1011) — overlap with ASCH (cancelled) but relevant if ASC-CIP allocates these
+4. **Honki Set is 30min only** (1010, 1011) — overlap with ASCH (canceled) but relevant if ASC-CIP allocates these
 
 **Note:** "CIP" = Coaching Intensive Plan (upstream project in MBTI_backend that adds App companion to existing plans). "ASC-CIP" = our accounting allocation project that splits the coaching revenue for CIP charges.
 
@@ -146,11 +146,11 @@ This is open item O-5. The formula is the same — only the constants might diff
 Honki Set applies to plans 1010 and 1011 (Coaching 30min packages). These are CIP plan_ids.
 
 If a student is simultaneously in Honki Set AND CIP (App companion added):
-- ASCH was supposed to handle the Honki allocation (cancelled)
+- ASCH was supposed to handle the Honki allocation (canceled)
 - CIP allocation would split the coaching charge
 - If both ran, the coaching charge would be split twice → error
 
-**Current resolution:** ASCH is cancelled. Honki Set allocation is NOT happening. CIP can safely allocate for 1010/1011 without conflict.
+**Current resolution:** ASCH is canceled. Honki Set allocation is NOT happening. CIP can safely allocate for 1010/1011 without conflict.
 
 **Future risk:** If Honki Set allocation is ever re-introduced (under a different project), it must coordinate with CIP for plans 1010/1011.
 
@@ -166,7 +166,7 @@ If a student is simultaneously in Honki Set AND CIP (App companion added):
 | CIP needs date filter (historical charges exist) | Logical — legacy plans have years of data |
 | CIP reference prices: App ¥3,980, Coaching TBD (O-5) | Partially confirmed |
 | Campaign tiers don't affect our logic | We just read N from log_daily_rate_calculation |
-| Honki overlap: safe (ASCH cancelled) | Confirmed |
+| Honki overlap: safe (ASCH canceled) | Confirmed |
 
 ---
 

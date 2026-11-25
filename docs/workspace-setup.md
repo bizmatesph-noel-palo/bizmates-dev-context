@@ -161,7 +161,7 @@ After this one prompt, Kiro has:
 > - ASCA: `projects/asca/project-context.md`
 > - ASCI: `projects/asci/project-context.md`
 > - ASCM: `projects/ascm/project-context.md`
-> - ASCH (cancelled): `projects/asch/project-context.md`
+> - ASCH (canceled): `projects/asch/project-context.md`
 
 ---
 

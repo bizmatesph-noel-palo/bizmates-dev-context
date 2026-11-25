@@ -288,7 +288,7 @@ Both log tables share the same structure:
 
 ---
 
-### OLD ASCH Impact: Contract Type Changes During Honki Set (cancelled 2026-08-07 — history only)
+### OLD ASCH Impact: Contract Type Changes During Honki Set (canceled 2026-08-07 — history only)
 
 > The OLD ASCH proration was never built. For the 2027 Honki campaign (NEW ASCH, testing only), a contract change shows up only through the charges themselves — e.g. pattern P11 (B2C/B2E → B2B in the half-price first month; per Kuroda-san's provisional sheet the overlap is a prorated refund, FLOOR(daily price) × overlap days, e.g. 7,425 / 31 = 239 × 21 = 5,019; the B2B charge is not allocated until the B2B CAP/CIP extension below is released).
 

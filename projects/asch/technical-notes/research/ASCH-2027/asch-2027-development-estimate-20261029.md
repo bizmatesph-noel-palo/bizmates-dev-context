@@ -103,7 +103,7 @@ The 2027 Honki Campaign gives a 50% discount in the first and 6th months to cust
 
 ## Estimate
 
-**No build, verification over ASCA/ASCI** — the cancelled 2026 ASCH's build-a-subsystem shape is dead (§4.1), and the 2026-10-29 investigation confirms **no new ASC logic** is needed (grounded in `CommonUtil`, `BundleDetectionService`, `TwoWayAllocationFormula`, `RefundLinkageResolver`, `getContractDateInfoList`). Two scenarios:
+**No build, verification over ASCA/ASCI** — the canceled 2026 ASCH's build-a-subsystem shape is dead (§4.1), and the 2026-10-29 investigation confirms **no new ASC logic** is needed (grounded in `CommonUtil`, `BundleDetectionService`, `TwoWayAllocationFormula`, `RefundLinkageResolver`, `getContractDateInfoList`). Two scenarios:
 
 - **Scenario A (expected, evidence-supported): testing-only + 1–2 week buffer → ~2–2.5 weeks.** The phase table below (4–5.5 dev-days of actual work, corrected 2026-11-06; 5–6.5 with the new CAP half-price refund cases) plus a buffer for rework after reconciling, QA and review gates, and DEV04 data issues. The buffer is a judgment range, not an itemized number. The wait for ASCI-11 is gone (ASCI-11 is merged and on DEV04); CIP refund cases still wait for ASCI-19.
 - **Scenario B (contingency only): ~4–5 weeks.** Triggers ONLY if a §7 run surfaces an ASC-logic gap (evidence says it won't) — any ASC code change must run the full spec-dev lifecycle (requirements→G1→design→G2→tasks→coding→G3→QA) with gate turnarounds, and could collide with the Nov 11–23 leave. This seriously threatens the 2026-12-17 deadline, which is why closing the upstream confirmations (below) matters.

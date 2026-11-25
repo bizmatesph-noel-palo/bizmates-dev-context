@@ -16,7 +16,7 @@
 
 ## 1. What happened
 
-Across a working session (ASCI-01 G1 fold-in, doc syncs, JIRA ticket creation, and file renames), the AI repeatedly invoked tools that **hung for a very long time** (user: "took 100 years to complete", "100M years") before either timing out, being interrupted, or being cancelled by the Lead. The two recurring culprits:
+Across a working session (ASCI-01 G1 fold-in, doc syncs, JIRA ticket creation, and file renames), the AI repeatedly invoked tools that **hung for a very long time** (user: "took 100 years to complete", "100M years") before either timing out, being interrupted, or being canceled by the Lead. The two recurring culprits:
 
 1. **`grep_search`** — hung/stalled multiple times (at least 3 separate invocations across the session), twice reported as "interrupted before it reported a result."
 2. **Shell commands piped through a pager** — `git diff` / `git`-family commands invoked via the `wsl` shell triggered an interactive `less` pager that **wedged the terminal**, capturing subsequent commands as keystrokes and mangling output (seen as doubled/garbled characters), so the next several commands failed or appeared to hang.
@@ -31,8 +31,8 @@ The critical failure is not that the tools misbehaved — it is that **the AI ke
 | 2 | Retried pager variants (`cat`, `\| head`, `core.pager=cat`) | Still fighting the wedged `less`; more garbled output |
 | 3 | Eventually used a temp-file + file-read workaround | ✅ worked — but only after several wasted rounds |
 | 4 | Later used `grep_search` to find references | Hung; "interrupted before it reported a result" |
-| 5 | Re-ran `grep_search` again (same tool) | Hung again; Lead cancelled ("took 100yrs") |
-| 6 | Re-ran `grep_search` a THIRD time for the final sweep | Hung again; Lead cancelled and escalated |
+| 5 | Re-ran `grep_search` again (same tool) | Hung again; Lead canceled ("took 100yrs") |
+| 6 | Re-ran `grep_search` a THIRD time for the final sweep | Hung again; Lead canceled and escalated |
 | 7 | Finally switched to `grep -rl ... > /tmp/file` + read | ✅ worked immediately, clean result |
 
 The working method (temp-file + explicit exit code) was discovered at step 3 and again at step 7 — the AI **knew the reliable path and still returned to the failing one** on the next similar task.
@@ -58,7 +58,7 @@ The working method (temp-file + explicit exit code) was discovered at step 3 and
 ## 6. Corrective actions
 
 ### For the AI's working method (effective immediately this session)
-1. **Two-strikes circuit-breaker.** If a tool hangs, is interrupted, or is cancelled **once**, do NOT re-run the same tool the same way. After the **second** failure of any kind, switch method entirely and say so.
+1. **Two-strikes circuit-breaker.** If a tool hangs, is interrupted, or is canceled **once**, do NOT re-run the same tool the same way. After the **second** failure of any kind, switch method entirely and say so.
 2. **Prefer dedicated file tools over shell for search/read in this environment.** For content search where `grep_search` has hung, fall back to `grep -rl <pat> <dir> --include=... > /tmp/out.txt; echo EXIT=$?` then read the temp file with the file tool. Never pipe long git/grep output through the interactive pager.
 3. **Disable the pager on every git read command in `wsl`.** Use `GIT_PAGER=cat git ...` (or `git --no-pager`) AND redirect to a temp file, then read the file — never rely on inline terminal rendering.
 4. **Treat a wedged terminal as a hard reset point.** Send a single reset, then change method; do not feed variants into a stuck shell.
@@ -68,7 +68,7 @@ The working method (temp-file + explicit exit code) was discovered at step 3 and
 6. Promote an anonymized rule to `agentic-toolkit/` capturing: **"environment-aware tool fallback + two-strikes circuit-breaker."** Candidate homes: a new `knowledge/stop-retrying-a-wedged-or-hanging-tool.md`, and/or a line in `.kiro/steering/` tool-hygiene rules. Per the toolkit-portability rule this must be company/project/path-agnostic (no `\\wsl.localhost`, no real names) — draft below. **Flagged; awaiting Lead go before writing to the toolkit repo (separate repo, outside the active workspace).**
 
 ### Proposed portable rule text (draft for the toolkit — anonymized)
-> **Stop retrying a wedged or hanging tool.** If a command/tool hangs, is interrupted, or is cancelled, do not re-run it the same way. After a second failure of any kind, switch method and say so. In environments where a search tool hangs or a shell pager wedges the terminal: disable the pager (`GIT_PAGER=cat` / `--no-pager`), redirect output to a temp file and read the file, and prefer dedicated file tools over shell scrollback. Verify by exit code, not by terminal text. A reset is a method-change point, not an invitation to retry the same approach.
+> **Stop retrying a wedged or hanging tool.** If a command/tool hangs, is interrupted, or is canceled, do not re-run it the same way. After a second failure of any kind, switch method and say so. In environments where a search tool hangs or a shell pager wedges the terminal: disable the pager (`GIT_PAGER=cat` / `--no-pager`), redirect output to a temp file and read the file, and prefer dedicated file tools over shell scrollback. Verify by exit code, not by terminal text. A reset is a method-change point, not an invitation to retry the same approach.
 
 ## 7. Bug report filed
 

@@ -20,7 +20,7 @@
 
 ## Background
 
-- ASCH (Honki Set proration) was cancelled on 2026-08-07
+- ASCH (Honki Set proration) was canceled on 2026-08-07
 - CAP and CIP proceed as a unified "ASC Allocation Framework"
 - **ASCH is no longer the base structure** — the shared framework must be built from scratch as part of CAP (first project)
 - Kuroda-san delivered DB design (REF-CAP-04) on 2026-08-10 with 10 tables + 1 view
@@ -46,7 +46,7 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 2. **Single operational flow** — Same cron, same commands, no new scheduling.
 3. **Single email/zip** — Accounting team receives one deliverable (not two).
 4. **N value dependency is solved** — Allocation runs AFTER daily calc in the same command, guaranteeing N exists.
-5. **Timeline savings** — ~1.5–2 weeks not spent building email/zip infrastructure that ASCH would have provided (now cancelled).
+5. **Timeline savings** — ~1.5–2 weeks not spent building email/zip infrastructure that ASCH would have provided (now canceled).
 6. **No ASCH prerequisite** — With ASCH gone, injection lets us skip building standalone infrastructure entirely. The existing commands ARE the infrastructure.
 
 ### What Changes in Existing Code
@@ -118,12 +118,12 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 | Phase | Effort | Notes |
 |---|---|---|
 | ASCM Prep (Pre-W0) | 3–5 days | Extract delivery service, baseline verification, test data seeder. No blockers — can start immediately. |
-| CAP (first — builds shared foundation + CAP-specific) | 4–5 weeks | Noel + Throy. Foundation is built here since ASCH is cancelled. |
+| CAP (first — builds shared foundation + CAP-specific) | 4–5 weeks | Noel + Throy. Foundation is built here since ASCH is canceled. |
 | CIP (second — reuses foundation, adds CIP detection + prices) | 1–1.5 weeks | Reuses everything from CAP. Only adds CIP-specific strategy + config. |
 | **Combined dev** | **5.5–6.5 weeks** | Excludes ASCM prep (runs before/parallel) |
 | **End-to-end (dev + QA)** | **7–9 weeks** | See full timeline: `docs/asc-alloc-scenario-d-injection-timeline-20260811.md` |
 
-**Execution order rationale:** With ASCH cancelled, there is no pre-existing base structure to inherit. The shared allocation framework (migrations, models, enums, run lifecycle, allocation engine, Freee sender, CSV/email delivery) must be built from scratch as part of the first project. CAP is chosen as first because its requirements are more concrete (reference prices partially known, App product_id being decided). CIP follows and only needs its own detection strategy + reference prices plugged into the already-working framework.
+**Execution order rationale:** With ASCH canceled, there is no pre-existing base structure to inherit. The shared allocation framework (migrations, models, enums, run lifecycle, allocation engine, Freee sender, CSV/email delivery) must be built from scratch as part of the first project. CAP is chosen as first because its requirements are more concrete (reference prices partially known, App product_id being decided). CIP follows and only needs its own detection strategy + reference prices plugged into the already-working framework.
 
 **What ASCH cancellation means for scope:** The shared allocation framework (migrations, models, enums, run lifecycle, allocation engine, Freee sender, CSV/email delivery) must be built from scratch as part of CAP (first project). Whichever project goes first carries the full infrastructure cost (~12.5 days). The second project (CIP) is a configuration exercise (~3–5 days). The total remains the same regardless of order — the question is which project's requirements are ready first. CAP's are more concrete today.
 
@@ -162,7 +162,7 @@ Same pattern as how MonthlyRateCalculation was added to the existing pipeline.
 
 ## Advantages vs Previous Approach (Standalone Commands)
 
-> **Context:** The "previous approach" refers to Scenario C — standalone commands + a separate unified email orchestrator (REF-07). That design assumed ASCH would be built first as the foundation, with CAP/CIP inheriting its infrastructure. Since ASCH is cancelled, the standalone approach would require building that infrastructure from scratch — making it significantly more expensive than originally estimated. This proposal (Scenario D) is an alternative integration strategy within the same combined framework.
+> **Context:** The "previous approach" refers to Scenario C — standalone commands + a separate unified email orchestrator (REF-07). That design assumed ASCH would be built first as the foundation, with CAP/CIP inheriting its infrastructure. Since ASCH is canceled, the standalone approach would require building that infrastructure from scratch — making it significantly more expensive than originally estimated. This proposal (Scenario D) is an alternative integration strategy within the same combined framework.
 
 | Dimension | Injection (our approach) | Standalone (previous ASCH plan) |
 |---|---|---|
@@ -225,7 +225,7 @@ From `REF-CAP-05-Upstream-Pricing-Discussion-20260812.md` (CAP Slack thread, con
 | App charge in trn_charge | **¥0** (companion approach — pending final Monday confirmation, "likely") |
 | ASC allocation batch | **IS needed** (confirmed — consequence of ¥0 companion approach) |
 | Coaching product_ids | **Existing 10005 (15min) / 10015 (30min)** — no new product_id needed |
-| ASCH status | **Cancelled (2026-08-07)** — "ASCH provides the foundation" assumption no longer valid |
+| ASCH status | **Canceled (2026-08-07)** — "ASCH provides the foundation" assumption no longer valid |
 | Execution order | **CAP first** (builds foundation), **CIP second** (reuses it) |
 
 **Impact on this design:** Step 4 (CAP Detection) is now unblocked — product_id 10021 confirmed. Reference prices can be seeded immediately (Step 3). The injection approach remains valid.

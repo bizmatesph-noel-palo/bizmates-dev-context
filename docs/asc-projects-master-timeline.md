@@ -24,7 +24,7 @@
 | Code | Project | Board | Backlog |
 |---|---|---|---|
 | ASC | ASCM (Accounting System Changes — Monthly) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASC/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASC/boards/1186/backlog) |
-| ASCH | ASC Honki Set (cancelled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
+| ASCH | ASC Honki Set (canceled) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCH/boards/1753/backlog) |
 | **ASCA** | **ASC for CAP** (active — builds foundation) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCA/boards/2792/backlog) |
 | **ASCI** | **ASC for CIP** (active — CIP uses residual-value pricing, not the allocation engine, per REF-CIP-05) | [Board](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/summary) | [Backlog](https://bizmates.atlassian.net/jira/software/c/projects/ASCI/boards/2793/backlog) |
 | DEVOPS | ASCM Refactor (ArchiverService/MailerService extract + DataCorrectionLogic drift fix) — billed under DEVOPS-6415, linked to ASCA-7 | [DEVOPS-6415](https://bizmates.atlassian.net/browse/DEVOPS-6415) | — |
@@ -156,7 +156,7 @@
 - **CEIL steering note ([ASCA-79](https://bizmates.atlassian.net/browse/ASCA-79)) — ✅ merged.**
 - **DEV04 re-run ([ASCA-80](https://bizmates.atlassian.net/browse/ASCA-80)) — ✅ done** (Throy, reported at 2026-10-26 DSM): redeployed + re-ran batch to **regenerate QA reports** after the 02c removal. Month wording reconciled — batch processes the previous month, so "Sept/Oct data" → "Oct/Nov report" (same run).
 - **DB-safety fix (ASCA-70 follow-on):** two sub-tickets drafted + grounded (accounting→ASCA-17, ls-db→ASCA-16) with dev-Kiro prompts; awaiting Lead review → JIRA creation.
-- **NEW ASCH (2027) requirements:** Kuroda-san/Patrick-san provided new requirements for a **2027 ASCH** project (⚠️ NOT the 2026 cancelled predecessor — name reused only). Lead to review and determine overlap with the old cancelled ASCH vs. new scope, then give feedback. Not yet reviewed.
+- **NEW ASCH (2027) requirements:** Kuroda-san/Patrick-san provided new requirements for a **2027 ASCH** project (⚠️ NOT the 2026 canceled predecessor — name reused only). Lead to review and determine overlap with the old canceled ASCH vs. new scope, then give feedback. Not yet reviewed.
 - **ASCI-01 requirements → G1 feedback RECEIVED from Kuroda-san** (shared at DSM). Now being ingested/processed; then promote requirements + create the ASCI epic/stories → design/build. (Supersedes the 2026-10-23 "awaiting sign-off" line.)
 - **Leave coverage (Nov 11–23):** **Throy-san to oversee ASCI** during the Lead's leave (confirm before leave). ASCA is dev-complete + 02c-removed → minimal leave risk.
 
@@ -266,7 +266,7 @@ New requirements landed after the baseline was set — these expand scope, so th
 ## Overview
 
 ```
-ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELLED
+ASCH (Honki Set):                    Jul 30 ═══ Aug 7 ╳ CANCELED
 ASCM Refactor (DEVOPS-6415):         Aug 24–28 (W0) — prep + regression
 ZPR (DEVOPS, Cristoff):              Sep 9–18 — Zipan 20L enum add; ★ release before Oct 1 (PRE batch)
 Spec Preparation (Lead):             Aug 31–Sep 5 (W1) — steering files + spec session (parallel with QA)
@@ -323,7 +323,7 @@ First real batch:                    Jan 1, 2027
 | **ASCI** (second) | Noel Palo | — | Throy Embudo, Cristoff Danganan | Patrick-san |
 | **CDB** (upstream) | Paolo Sandoval | — | Efren Petarte | Patrick-san |
 | **ASCM** (completed) | Noel Palo | — | Team (deployed Jun 2026) | Patrick-san |
-| **ASCH** (cancelled) | Noel Palo | — | — | Patrick-san |
+| **ASCH** (canceled) | Noel Palo | — | — | Patrick-san |
 
 **QA Team Assignments:**
 
@@ -866,7 +866,7 @@ ASC is NOT blocked by upstream timelines:
 
 | Date | Event |
 |---|---|
-| 2026/08/07 | ASCH cancelled |
+| 2026/08/07 | ASCH canceled |
 | 2026/08/10 | DB design received from Kuroda-san |
 | 2026/08/11 | Scenario D proposed |
 | 2026/08/12 | CAP pricing + plan_ids confirmed (REF-CAP-05/06/08) |
