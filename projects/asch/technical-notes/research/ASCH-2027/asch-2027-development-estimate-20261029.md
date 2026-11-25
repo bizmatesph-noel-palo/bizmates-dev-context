@@ -25,7 +25,8 @@
 
 > **Update 2026-11-25 (Lead decisions, DSM). Supersedes the dates in all earlier updates.**
 > - **Testing:** one QA regression for ASCM, ASCA, ASCI and ASCH, **2026-11-25 → 2026-12-11** (was: start 12/7, finish about 12/16–12/21). About 9 working days (12/3–4 team building, 12/8 holiday).
-> - **Release:** no separate ASCH release. If the ASCH patterns pass, the **12/17 ASCA / ASCI release covers ASCH** (ASCH adds no ASC code).
+> - **Release:** no separate ASCH release. If the ASCH patterns pass, the **ASCA / ASCI release (tentative 12/14–12/17) covers ASCH** (ASCH adds no ASC code). ASCH issues do not block that release (confirmed in Slack #prj_asch 11-25). QA committed 10 days of testing from 11-25 (Katie Medina). Kuroda-san's summary: if a logic change is needed → estimate and schedule it.
+> - **Half-price Lesson amounts (Kuroda-san, 11-24):** confirmed in the code — tier 2 price, exactly half: daily 1 = 7,425, daily 2 = 10,725, 15 lessons/month = 7,425 (tax incl.); already in his file. P9 ticket counts are samples — QA sets columns P / Q to match the test data. The requirements page was updated 11-24 (§4.1, §4.6, §4.7, §7); `REF-ASCH2027-02` is now out of date.
 > - **Logic change:** decided by the QA results. Code freeze from **12/18** (no release, development continues); any ASCH logic change is released in **January 2027**. In time for the first half-price charges: the application window opens 2027-01-04 and the February batch (2/1 PRE, 2/2 FINAL) processes January payments.
 > - **Dependencies:** CDB code on DEV04 11/25–11/27 (for the discounted test charges); CIP retest ASCI-26 (for P10b / P10d / P11b); P11's B2B charge stays unallocated until the B2B release (January 2027).
 

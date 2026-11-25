@@ -34,9 +34,18 @@
 
 ---
 
-## ⚠️ Status / Actuals (as of 2026-11-24)
+## ⚠️ Status / Actuals (as of 2026-11-25)
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
+
+### Snapshot — 2026-11-25 (phased plan agreed; release 12/14–12/17 tentative; one QA regression 11/25–12/11; B2B week of 1/11)
+
+- **Phase 1 — ASCA / ASCI release (without B2B): tentative 12/14–12/17** (Kuroda-san's summary in #prj_asch 11-25, confirmed by the Lead; Patrick-san had first proposed the week of 12/7). Steps: QA sign-off → release plan → LDRM ticket (Patrick-san). CIP retest running under ASCI-26.
+- **Phase 2 — ASCH: no separate release.** One QA regression for ASCM / ASCA / ASCI / ASCH **11/25–12/11** (QA committed 10 days, Katie Medina). If the ASCH patterns pass, the ASCA / ASCI release covers ASCH. ASCH issues do not block that release. A logic change, if QA finds one, is estimated and scheduled; per the Lead it is released in January 2027.
+- **Code freeze from 12/18** (no release; development continues).
+- **Phase 3 — B2B CAP/CIP: release week of 1/11/2027** (tentative, approved by the business side 11-24). Kuroda-san's conditions: own branch, not merged into the shared branch before the release; zero difference on B2C/B2E rows on DEV04; no change on non-CAP/CIP rows with November production data; skip only the B2B bundle; 0 production charges with plan_id ≥ 20000000 + 10022. Code placement (Lead 11-24): shared logic in ASCA then pulled into ASCI. Spec approach still to decide. B2B sells CAP/CIP from the April 2027 plan revision.
+- **First production batch with CAP/CIP data: the 202701 batch in early February 2027** (CAP/CIP sales start in January; the 1/1 batch has no CAP/CIP data — Kuroda-san 11-24).
+- **Other dates:** CDB code to DEV04 11/25–11/27; CAP beta 12/1, CIP beta 12/2, beta takedown about 12/9–12/10 (unconfirmed); holidays 11/30, 12/3–4 (team building), 12/8, 12/24–25, 12/30–31, 1/1.
 
 ### Snapshot — 2026-11-24 (Lead back; CAP retest passed; CIP-218 on dev04; B2C/E UAT done; B2B CAP/CIP extension added; ASCH test sheet received)
 

@@ -6,7 +6,9 @@
 
 ---
 
-## Current State (as of 2026-11-24 — CAP retest passed; B2C/E UAT done; B2B CAP/CIP extension added)
+## Current State (as of 2026-11-25 — release 12/14–12/17 tentative; QA regression 11/25–12/11; B2B week of 1/11)
+
+- **Release (ASCA + ASCI, without B2B): tentative 12/14–12/17** (Kuroda-san's 11-25 summary, confirmed by the Lead). Steps (Patrick-san): QA sign-off → release plan → LDRM ticket. QA regression for ASCM / ASCA / ASCI / ASCH **11/25–12/11** (QA committed 10 days, Katie Medina 11-25). ASCH issues do not block the release. Code freeze from 12/18. CAP / CIP sales start in January; the **first production batch with CAP/CIP data is the 202701 batch in early February**. Beta releases: CAP 12/1, CIP 12/2.
 
 > Live status: `docs/asc-projects-task-tracker.md`. The 2026-10-23 / 10-28 notes below are kept as history.
 
@@ -14,7 +16,7 @@
 - ✅ **DB-safety (ASCA-70 follow-on):** ASCA-82 (accounting) + ASCA-83 (ls-db) merged 2026-11-05. Follow-ups **ASCA-90** (ls-db, Throy-san) and **ASCA-91** (accounting, Cristoff-san) merged and deployed to DEV04 on 2026-11-10; both Done in JIRA.
 - ✅ **CAP positive-side gap — closed for new cases.** Kuroda-san decided 2026-11-09: no Spec 01 change, keep the V-3 skip and its logging; the CAP team fixes immediate REST (即時休会) upstream. **CAP-382** passed CAP QA (DEV02 11-12, STG 11-12), was merged into `deployment/dev04` via ASCI-24 (`release/CAP/CAP-base`, PR #21244, Cristoff-san, 11-13), and **Glenn-san's ASCA retest passed on DEV04 (11-20) → CAP-382 QA (Passed)**. Cases created by immediate REST before the fix (e.g. 471 / 7185) stay unpaired on the positive side. Report: `technical-notes/investigation/20261109-cap-positive-side-gap-decision/`.
 - ✅ **B2C/E UAT done** by the business side (~11-19/20). Five students with App ¥0 raised by Kuroda-san (2886, 303174, 471, 7185, 8208): Kiro's read is test-data pairing, not the formula; not confirmed on DEV04; reply not sent.
-- **NEW — B2B CAP/CIP allocation extension** (found in the UAT mapping; B2B uses company plan_ids, detection gates on 1016–1032). Accounting won't sell B2B CAP/CIP until released. Agreed with Kuroda-san: `plan_id ≥ 20000000` + product combination, App-present check in SQL, Scope A (no B2B refund split, warning log). Estimate 20 pd (Cristoff-san, Confluence v6). Schedule: G1 11/24–12/1, G2 12/2–12/4, dev 12/7–12/18, G3 + DEV04 12/21–12/23, QA 1/5–1/8, **separate release week of 1/12/2027**. Owner Cristoff-san (Throy-san helps on CIP). **Code placement (Lead, 11-24):** logic shared by CAP and CIP is built in ASCA (`feature/ASCA/ASCA-master`) and pulled into ASCI; logic unique to CAP or CIP goes into its own project; ASCA is the dependency for ASCI. **Still to decide:** delta spec vs change requests on Spec 01 / 02a / 02b / ASCI-01. Staging student-replacement test (R15) pending. Local report not pushed yet (`technical-notes/investigation/20261119-b2b-cap-cip-allocation-estimate/`).
+- **NEW — B2B CAP/CIP allocation extension** (found in the UAT mapping; B2B uses company plan_ids, detection gates on 1016–1032). Accounting won't sell B2B CAP/CIP until released. Agreed with Kuroda-san: `plan_id ≥ 20000000` + product combination, App-present check in SQL, Scope A (no B2B refund split, warning log). Estimate 20 pd (Cristoff-san, Confluence v6). Schedule: G1 11/24–12/1, G2 12/2–12/4, dev 12/7–12/18, G3 + DEV04 12/21–12/23, QA 1/5–1/8, **separate release week of 1/11/2027** (tentative, approved by the business side 11-24). B2B sells CAP/CIP from the April 2027 plan revision. **Kuroda-san's release conditions (11-24):** own branch, not merged into the shared branch before the 12/14–12/17 release; zero difference on B2C/B2E rows on DEV04 (release code vs B2B code); no change on non-CAP/CIP rows with November production data; skip only the B2B bundle; 0 production charges with plan_id ≥ 20000000 + 10022; compare with the 202701 output if released after it. → B2B work branches from `ASCA-master` but merges back only after the release. Owner Cristoff-san (Throy-san helps on CIP). **Code placement (Lead, 11-24):** logic shared by CAP and CIP is built in ASCA (`feature/ASCA/ASCA-master`) and pulled into ASCI; logic unique to CAP or CIP goes into its own project; ASCA is the dependency for ASCI. **Still to decide:** delta spec vs change requests on Spec 01 / 02a / 02b / ASCI-01. Staging student-replacement test (R15) pending. Local report not pushed yet (`technical-notes/investigation/20261119-b2b-cap-cip-allocation-estimate/`).
 - **To check:** reference-price `effective_from` is `2027-01-01` in Spec 01 Req 4.7 and the seeder vs `2026-12-01` in 02a Req 2.6 (ASCA-67 set 2026-12-01).
 - **DEV04:** master/main synced into dev04 on 11-13 (ASCA-93); not re-synced since (production releases merged 11-18).
 - **Ops:** SendJournal (Final) runs at 18:00 JST on the 2nd business day from 2026-12-02 (DEVOPS-7251, deployed 11-13).
@@ -118,7 +120,7 @@
 | SDM | Patrick-san |
 | PM | Kuroda-san |
 | Deadline | 2026/12/17 |
-| First batch run | 2027/01/01 |
+| First batch run | 2027/01/01 (no CAP/CIP data); **first production batch with CAP/CIP data = the 202701 batch in early February 2027** (CAP/CIP sales start in January — Kuroda-san, 2026-11-24) |
 | Approach | Scenario D (injection) + Option 1 (Overwrite) |
 
 ---

@@ -39,7 +39,7 @@ An earlier version of this file described ASCI as "a configuration exercise — 
 | SDM | Patrick-san |
 | PM | Kuroda-san |
 | Deadline | 2026/12/17 |
-| First batch run | 2027/01/01 |
+| First batch run | 2027/01/01 (no CAP/CIP data); **first production batch with CAP/CIP data = the 202701 batch in early February 2027** (CAP/CIP sales start in January — Kuroda-san, 2026-11-24) |
 | Depends on | ASCA foundation (shared) — and the ASCA CAP-refund design (02b), which the CIP refund rule parallels |
 
 ---

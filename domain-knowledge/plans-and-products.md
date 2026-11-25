@@ -281,7 +281,7 @@ Formula (CAP only): `P_app = floor(N × L_app / (L_coaching + L_app))`, `P_coach
 | Zipan monthly | `ZipanMonthlyPlanEnum::exists($productId)` | ZipanUtil (skip in daily rate) |
 | CAP bundles | `CoachingAndAppPlanEnum::exists($planId)` (plans 1016–1027) + App anchor `product_id = 10022` | RevenueAllocationService (CAP only) |
 | CIP bundles | **Not engine-detected (REF-CIP-05).** ASCI pairs the Coaching Intensive 10025 + App 10022 charges of plans 1028–1032 (`CipBundlePairing`, `start_date` only, refunds excluded) for the conversion and refund split | ASCI (`CommonUtil::createDailyRateCalculation()` path) |
-| B2B CAP / CIP | **Not detected today** — detection gates on plan_id 1016–1032; B2B uses company plan_ids (≥ 20000000). Planned rule: plan_id ≥ 20000000 + product combination + App present | B2B CAP/CIP extension (release planned week of 2027-01-12) — see `account-types.md` |
+| B2B CAP / CIP | **Not detected today** — detection gates on plan_id 1016–1032; B2B uses company plan_ids (≥ 20000000). Planned rule: plan_id ≥ 20000000 + product combination + App present | B2B CAP/CIP extension (release planned week of 2027-01-11, tentative) — see `account-types.md` |
 | Excluded from proration | `NotDailyCalculationProductType` config (product_type 8) | CommonUtil (full amount at start_date) |
 
 ---

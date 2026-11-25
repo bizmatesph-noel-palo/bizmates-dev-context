@@ -313,7 +313,7 @@ Source: `projects/asch/technical-notes/research/ASCH-2027/REF-ASCH2027-02-Requir
 - **First-month and 6th-month 50%** reach ASC as discounted `paid_price`; no campaign or month detection in ASC.
 - **Scope:** testing only (requirements §6 + the 2026-10-29 code check). Test patterns P1–P8 (requirements page) and P9–P12 (provisional sheet): 15-lesson half-price plan, immediate REST + full refund on the half-price first charge, B2C/B2E → B2B in the half-price first month, half-price refund executed the next month. Testing starts 2026-12-07.
 - **Upstream dependency:** CDB must issue charges on App 10022 (not 10021) and Coaching Intensive 10025, and read the CAP/CIP half-price tier (Soli-san).
-- **B2B note (P11):** B2B CAP/CIP charges are not allocated until the B2B CAP/CIP extension is released (planned week of 2027-01-12) — see `account-types.md`.
+- **B2B note (P11):** B2B CAP/CIP charges are not allocated until the B2B CAP/CIP extension is released (planned week of 2027-01-11, tentative) — see `account-types.md`.
 
 ### What It Is
 
