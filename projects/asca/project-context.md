@@ -6,15 +6,18 @@
 
 ---
 
-## Current State (as of 2026-11-10 — CAP refund fix verified; DB-safety merged + follow-ups assigned; CAP gap → upstream fix)
+## Current State (as of 2026-11-24 — CAP retest passed; B2C/E UAT done; B2B CAP/CIP extension added)
 
 > Live status: `docs/asc-projects-task-tracker.md`. The 2026-10-23 / 10-28 notes below are kept as history.
 
-- ✅ **ASCA-81 / ASCA-86 (CAP refund App row):** ASCA-86 merged 2026-11-04; **verified on DEV04 2026-11-06** (QA PASS) — student 471 Coaching −19,241 / App −1,934, student 7185 −38,482 / −3,868; 12 negative App rows for 12 negative Coaching refunds. JIRA closing is admin only.
-- ✅ **DB-safety (ASCA-70 follow-on):** ASCA-82 (accounting) + ASCA-83 (ls-db) merged to ASCA-master and deployed to DEV04 2026-11-05. Follow-ups created 2026-11-09, **merged and deployed to DEV04 on 2026-11-10 (with ASCI-19)**: **ASCA-91** (accounting guard accepts only in-memory SQLite or `_test`; `phpunit.xml` not touched) → Cristoff-san; **ASCA-90** (ls-db: remove the round-trip test + its guard, keep a simplified no-DDL check) → Throy-san.
-- **CAP positive-side gap (found by QA 2026-11-06):** decided by Kuroda-san 2026-11-09 — no Spec 01 change; keep the V-3 skip and its logging. Cause: immediate REST (即時休会) ends the Coaching charge but not the App (10022). The CAP team (Soli-san) fixes it upstream (CAP-382); after Kuroda-san announces the deployment, Glenn-san retests on DEV04 with a new CAP student (Throy-san reruns the batch). Retest not ticketed yet. Report: `technical-notes/investigation/20261109-cap-positive-side-gap-decision/`.
-- **Admin closes only:** ASCA-18 (G3) status, ASCA-81, ASCA-87 time logging.
-- **Leave 2026-11-11 → 11-23:** Throy-san covers ASCA-90 and the CAP retest rerun; Cristoff-san covers ASCA-91.
+- ✅ **ASCA-81 / ASCA-86 (CAP refund App row):** ASCA-86 merged 2026-11-04; **verified on DEV04 2026-11-06** (QA PASS) — student 471 Coaching −19,241 / App −1,934, student 7185 −38,482 / −3,868; 12 negative App rows for 12 negative Coaching refunds. ASCA-86 Done in JIRA; **ASCA-81 still In Progress** (Glenn-san, admin close).
+- ✅ **DB-safety (ASCA-70 follow-on):** ASCA-82 (accounting) + ASCA-83 (ls-db) merged 2026-11-05. Follow-ups **ASCA-90** (ls-db, Throy-san) and **ASCA-91** (accounting, Cristoff-san) merged and deployed to DEV04 on 2026-11-10; both Done in JIRA.
+- ✅ **CAP positive-side gap — closed for new cases.** Kuroda-san decided 2026-11-09: no Spec 01 change, keep the V-3 skip and its logging; the CAP team fixes immediate REST (即時休会) upstream. **CAP-382** passed CAP QA (DEV02 11-12, STG 11-12), was merged into `deployment/dev04` via ASCI-24 (`release/CAP/CAP-base`, PR #21244, Cristoff-san, 11-13), and **Glenn-san's ASCA retest passed on DEV04 (11-20) → CAP-382 QA (Passed)**. Cases created by immediate REST before the fix (e.g. 471 / 7185) stay unpaired on the positive side. Report: `technical-notes/investigation/20261109-cap-positive-side-gap-decision/`.
+- ✅ **B2C/E UAT done** by the business side (~11-19/20). Five students with App ¥0 raised by Kuroda-san (2886, 303174, 471, 7185, 8208): Kiro's read is test-data pairing, not the formula; not confirmed on DEV04; reply not sent.
+- **NEW — B2B CAP/CIP allocation extension** (found in the UAT mapping; B2B uses company plan_ids, detection gates on 1016–1032). Accounting won't sell B2B CAP/CIP until released. Agreed with Kuroda-san: `plan_id ≥ 20000000` + product combination, App-present check in SQL, Scope A (no B2B refund split, warning log). Estimate 20 pd (Cristoff-san, Confluence v6). Schedule: G1 11/24–12/1, G2 12/2–12/4, dev 12/7–12/18, G3 + DEV04 12/21–12/23, QA 1/5–1/8, **separate release week of 1/12/2027**. Owner Cristoff-san (Throy-san helps on CIP). **Code placement (Lead, 11-24):** logic shared by CAP and CIP is built in ASCA (`feature/ASCA/ASCA-master`) and pulled into ASCI; logic unique to CAP or CIP goes into its own project; ASCA is the dependency for ASCI. **Still to decide:** delta spec vs change requests on Spec 01 / 02a / 02b / ASCI-01. Staging student-replacement test (R15) pending. Local report not pushed yet (`technical-notes/investigation/20261119-b2b-cap-cip-allocation-estimate/`).
+- **To check:** reference-price `effective_from` is `2027-01-01` in Spec 01 Req 4.7 and the seeder vs `2026-12-01` in 02a Req 2.6 (ASCA-67 set 2026-12-01).
+- **DEV04:** master/main synced into dev04 on 11-13 (ASCA-93); not re-synced since (production releases merged 11-18).
+- **Ops:** SendJournal (Final) runs at 18:00 JST on the 2nd business day from 2026-12-02 (DEVOPS-7251, deployed 11-13).
 
 ### History — state as of 2026-10-23 (DEV04 verified; 02c removal handed off; ASCI-01 at G1)
 

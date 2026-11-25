@@ -128,7 +128,9 @@ php artisan command:MonthlyRateCalculationPreCommand 2026-03-01
 php artisan command:DailyRateCalculationPreCommand 2026-03-01
 ```
 
-### `send.sh` — Runs on approximately the 3rd business day of each month at 00:00
+### `send.sh` — Runs at 18:00 JST on the 2nd business day of each month (from 2026-12-02)
+
+> **Schedule change — [DEVOPS-7251](https://bizmates.atlassian.net/browse/DEVOPS-7251), deployed to production 2026-11-13** (requested by Accounting via Kuroda-san; Redmine #12456). The Final (確定) batch moved from ~3rd business day at 00:00 to **18:00 JST on the 2nd business day**, starting 2026-12-02. Run dates (Harvey-san, 2026-11-13): 2026-12-02, 2027-01-05, 02-02, 03-02, 04-02, 05-07, 06-02, 07-02, 08-03, 09-02, 10-04, 11-02, 12-02. Still fixed day-of-month cron lines (`0 18 <day> <month> *`), re-entered each year. **Not verified by us:** that `MonthlyRateCalculationCommand` still runs before `SendJournalsDataCommand` inside `send.sh`, and that `pre.sh` (1st at 06:00) is unchanged. The cron listing below is the **previous** schedule, kept for reference.
 
 ```bash
 # Execution order matters:
@@ -138,13 +140,13 @@ php artisan command:SendJournalsDataCommand 2026-03-01
 
 ### Cron Schedule (Production)
 
-The `send.sh` dates are manually configured per year because the 3rd business day varies by month (weekends/holidays shift it). The schedule must be updated by the end of December for the following year.
+The `send.sh` dates are manually configured per year because the business day varies by month (2nd business day from 2026-12; 3rd before) (weekends/holidays shift it). The schedule must be updated by the end of December for the following year.
 
 ```
 # pre.sh — 1st of every month at 06:00
 00 06 01 * * /home/imasuoka/work/bizmates_accounting/pre.sh
 
-# send.sh — ~3rd business day per month at 00:00
+# send.sh — PREVIOUS schedule (~3rd business day at 00:00), replaced by DEVOPS-7251 from 2026-12-02
 00 00 06 01 * /home/imasuoka/work/bizmates_accounting/send.sh   # Jan → 6th
 00 00 03 02 * /home/imasuoka/work/bizmates_accounting/send.sh   # Feb → 3rd
 00 00 03 03 * /home/imasuoka/work/bizmates_accounting/send.sh   # Mar → 3rd

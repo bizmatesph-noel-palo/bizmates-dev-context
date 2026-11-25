@@ -118,7 +118,7 @@ All processing is triggered via Laravel artisan commands, scheduled by cron.
 ### Pre vs Final
 
 - **Pre (速報):** Draft/preliminary. Results go to `_pre` tables. Runs on the **1st day of the month**. Used for internal review before month-end close.
-- **Final (確定):** Authoritative. Results go to production tables. Runs on the **3rd business day** of the month (skips weekends/holidays — e.g., if the 3rd falls on a Sunday, it runs on Monday the 4th). Triggers Freee journal submission.
+- **Final (確定):** Authoritative. Results go to production tables. Runs at **18:00 JST on the 2nd business day** of the month from 2026-12-02 ([DEVOPS-7251](https://bizmates.atlassian.net/browse/DEVOPS-7251); previously the 3rd business day at 00:00). Weekends/holidays shift the date; the dates are fixed per year in cron (see `04-operations-guide.md`). Triggers Freee journal submission.
 
 Both use identical calculation logic — only the destination table and whether Freee submission occurs differ.
 
@@ -321,7 +321,7 @@ The "all-in-one" Pre command. Runs on the **1st of the month**.
 
 ### Send Journals Command (`command:SendJournalsDataCommand`)
 
-The "all-in-one" Final command. Runs on the **3rd business day** of the month.
+The "all-in-one" Final command. Runs at **18:00 JST on the 2nd business day** of the month from 2026-12-02 (DEVOPS-7251; previously the 3rd business day).
 
 ```
 1. Daily rate calculation (pro-rata)

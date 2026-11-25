@@ -1,12 +1,13 @@
 # ASCI-25 — DEV04 - 20261113 merge feature/CIP/CIP-base (CIP-218) into bizmates.jp deployment/dev04
 
 > **Created in JIRA 2026-11-13 20:12 as [ASCI-25](https://bizmates.atlassian.net/browse/ASCI-25)** — Task under ASCI-15, Priority Medium, assigned to Throy-san, status To Do. Same short format as ASCI-24 (the CAP-382 merge). This file is the source of record.
-> **Branch (checked in git 2026-11-13 evening):** CIP-218 (`489f4b0`) is now in `feature/CIP/CIP-base`, the CIP equivalent of the `CAP-base` used for ASCI-24. It is **not** in `deployment/dev04` yet. Confirm with Jefferson-san that `CIP-base` is the branch to merge (the CAP side went through a `release/CAP/CAP-base` branch, PR #21244).
+> **Status 2026-11-24: Done in JIRA** (assignee Cristoff-san, updated 2026-11-23 17:57). **Merged:** `origin/deployment/dev04` tip `071738dcfb` "Merge pull request #21310 from bizmatesinc/feature/dev04/ASCI-25" (Cristoff-san, 2026-11-23 16:14); CIP-218 `489f4b0` is in dev04 (git, 11-24). CIP-220 not confirmed by commit message. CIP-218 / CIP-220 are STG (QA PASSED). Not verified: the DEV04 server pull. Next: the CIP retest (Throy-san reruns the batch, Glenn-san retests).
+> **Branch (checked in git 2026-11-13 evening — history):** CIP-218 (`489f4b0`) is now in `feature/CIP/CIP-base`, the CIP equivalent of the `CAP-base` used for ASCI-24. It is **not** in `deployment/dev04` yet. Confirm with Jefferson-san that `CIP-base` is the branch to merge (the CAP side went through a `release/CAP/CAP-base` branch, PR #21244).
 
 **Type:** Task
 **Parent / Epic:** ASCI-15 ([Ops] — DEV04, Investigations, Debugging & Deployment)
 **Priority:** Medium
-**Assignee:** Throy-san (or as decided)
+**Assignee:** Cristoff-san (in JIRA; created for Throy-san)
 **Related:** CIP-218, ASCI-24 (CAP-382 merge)
 
 ---
