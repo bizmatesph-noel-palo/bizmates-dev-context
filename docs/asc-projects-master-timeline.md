@@ -38,6 +38,22 @@
 
 > The baseline plan below is **preserved** (planned dates unchanged). This section tracks **actual** progress against it. Variance is intentional — it signals the schedule and scope situation for a re-baseline conversation with Kuroda-san / Patrick-san.
 
+### Non-working days — PH dev team, 2026-11-26 → 2027-01-15 (added 2026-11-26)
+
+> Source: Patrick-san's lists (Slack 2026-11-13 and #prj_asch 2026-11-24) + the baseline PH holiday table below. Weekends are always off. The baseline table further down (Aug 31, Nov 2, Nov 30, Dec 8) is preserved as planned; this table is the current list.
+
+| Date | Day | Reason |
+|---|---|---|
+| 2026-11-30 | Mon | PH holiday (Bonifacio Day) |
+| 2026-12-03 – 12-04 | Thu – Fri | IT team building |
+| 2026-12-08 | Tue | PH holiday (Immaculate Conception) |
+| 2026-12-24 – 12-25 | Thu – Fri | PH holiday (Christmas Eve / Christmas Day) |
+| 2026-12-30 – 12-31 | Wed – Thu | PH holiday (Rizal Day / last day of the year) |
+| 2027-01-01 | Fri | New Year's Day |
+
+**Working days left in key windows (PH team):** 11/26 → 12/1 (B2B G1): 3 (11/26, 11/27, 12/1). 11/25 → 12/11 (QA regression): 9 by this table, including 11/25 (Patrick-san counted "9 days, 10 if we include today"; QA committed 10 days). 12/14 → 12/17 (release): 4. 12/18 → 1/8 (code freeze, B2B dev / G3 / QA): 11.
+**JP side:** JP holidays and the JP year-end break for this period are **not recorded** (Kuroda-san / Accounting availability) — to confirm before the 12/14–12/17 release and the January B2B schedule. JP and PH calendars are independent (see the work-schedule note above).
+
 ### Snapshot — 2026-11-25 (phased plan agreed; release 12/14–12/17 tentative; one QA regression 11/25–12/11; B2B week of 1/11)
 
 - **Phase 1 — ASCA / ASCI release (without B2B): tentative 12/14–12/17** (Kuroda-san's summary in #prj_asch 11-25, confirmed by the Lead; Patrick-san had first proposed the week of 12/7). Steps: QA sign-off → release plan → LDRM ticket (Patrick-san). CIP retest running under ASCI-26.
