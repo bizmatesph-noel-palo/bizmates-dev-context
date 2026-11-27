@@ -303,7 +303,7 @@ Contract type transitions affected the planned OLD ASCH revenue proration:
 
 ## B2B / B2B2C Plans and the CAP / CIP Allocation (added 2026-11-24)
 
-**Plan ranges (Bizmates prod, per Cristoff-san's B2B investigation, Confluence v6, 2026-11-20):**
+**Plan ranges (Bizmates prod, per Cristoff-san's B2B investigation, Confluence AFH page 4872699994 — v6 2026-11-20, re-read at v7 2026-11-26):**
 
 | Range | Who | Notes |
 |---|---|---|
@@ -322,5 +322,6 @@ Contract type transitions affected the planned OLD ASCH revenue proration:
 - **Business context (Kuroda-san, Slack 2026-11-17 / 11-19):** B2B starts selling CAP/CIP from the **April 2027 plan revision** (at most one early case before that). Same list prices as B2C, plus long-term discounts (6 months 5% off, 12 months 10% off) typed by hand into `paid_price` — no separate discount logic. Rounding follows the existing logic (CIP: App = FLOOR, Coaching = total − App); a test for a multi-month charge with a long-term discount is requested. Student replacement (LMS 受講生の入れ替え) may happen; staging test pending.
 - **Release conditions (Kuroda-san, 2026-11-24):** B2B on its own branch, not merged into the shared branch before the 12/14–12/17 release; on DEV04 the UAT data must show zero difference on all B2C/B2E rows between the release code and the B2B code; the November production data must show no change on non-CAP/CIP rows (esp. B2B coaching-only charges); B2B checks skip only the B2B bundle, never fail the whole month; confirm 0 production charges with plan_id ≥ 20000000 and product 10022; if released after the 202701 batch, also compare with its production output.
 - ⚠️ **DEV04 data note:** Kuroda-san's example B2B student 515 (CIP) is on plan **30000067** (30000000 + department_id) on DEV04, while 3000xxxx is the B2B2C range in production. DEV04 test data may differ from production — check before the B2B rule is finalized (the ≥ 20000000 rule covers both ranges).
-- Open: `≥ 20000000` also covers the B2B2C range; whether CIP needs the App-present rule; whether the new guards apply to B2B only or all plans.
+- **Settled (Confluence v7, read 2026-11-26):** CIP also gets the App-present rule (a B2B 10025 charge without an App would otherwise log a `[CIP_CONVERSION]` skip line every run; CIP skips write no table). Production check (Q1-e, 2026-11-20): **0 charges with product 10022 / 10025 on plan_id ≥ 20000000** — B2B CAP/CIP not sold yet, nothing to fix. No migration needed (plan_id columns hold B2B values). B2B charges are also created by `post_regStudent()` and the B2C → B2B switch (`prorated/refund.php addContract()`, one charge per month per product with per-product end dates) — DEV04 case planned.
+- Open: `≥ 20000000` also covers the B2B2C range (30000001–30013186, 3,204 plans) — the product combination is relied on to exclude them, not stated on the page; whether the new guards apply to B2B only or all plans.
 - Release planned the **week of 2027-01-11** (tentative, approved by the business side 2026-11-24; separate from the ASCA / ASCI 12/14–12/17 release). Live status: `docs/asc-projects-task-tracker.md`.

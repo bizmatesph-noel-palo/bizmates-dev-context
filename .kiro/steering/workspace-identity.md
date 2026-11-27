@@ -153,16 +153,16 @@ Disambiguation rules:
 - **Do not change** code identifiers, DB columns / values, file paths, or quoted / verbatim text from stakeholders (keep the original spelling there, e.g. `cancelled_at`).
 - `archive/` holds historical copies — leave their spelling as it is.
 
-## JIRA (Atlassian MCP)
+## JIRA + Confluence (Atlassian MCP)
 
-This workspace connects to JIRA via the `mcp-atlassian` MCP server (Jira + Confluence share this one server).
+This workspace connects to JIRA and Confluence via one `mcp-atlassian` MCP server (`atlassian`).
 
-- **Config:** `.kiro/settings/mcp.json` (gitignored). Launches via `wsl.exe -d Ubuntu-20.04 -- /home/bizdev/.local/bin/uvx mcp-atlassian --env-file .../mcp-jira.env` (Windows Kiro → WSL binary).
-- **Secrets:** `.kiro/settings/mcp-jira.env` (gitignored — `*.env`). Holds `JIRA_*` creds, commented `CONFLUENCE_*` placeholders, and `READ_ONLY_MODE`.
-- **Safety default:** keep `READ_ONLY_MODE=true`; flip to `false` only when creating/updating tickets, then reconnect the server. `autoApprove` only skips prompts — it does not enforce read-only.
+- **Config:** `.kiro/settings/mcp.json` (gitignored). Launches via `wsl.exe -d Ubuntu-20.04 -- /home/bizdev/.local/bin/uvx mcp-atlassian --env-file .../mcp-atlassian.env` (Windows Kiro → WSL binary).
+- **Secrets:** `.kiro/settings/mcp-atlassian.env` (gitignored — `*.env`; renamed from `mcp-jira.env` on 2026-11-26). Holds `JIRA_*` and `CONFLUENCE_*` creds (same Atlassian API token), `CONFLUENCE_SPACES_FILTER`, and `READ_ONLY_MODE`.
+- **Safety default:** keep `READ_ONLY_MODE=true`; flip to `false` only when creating/updating tickets or publishing pages, then set it back and reconnect. The switch is shared — `false` opens both Jira and Confluence writes. `autoApprove` lists read tools only (Jira get/search, `confluence_search`, `confluence_get_page`); every write asks first.
 - **Setup/troubleshooting:** see `agentic-toolkit/knowledge/tooling-setup.md` → MCP Server Setup (Windows+WSL launch, `--env-file`, read-only, reconnect gotchas).
 
-Verified working 2026-09-07 (created ASCA-9 as the first MCP-created ticket).
+Verified working 2026-09-07 (created ASCA-9 as the first MCP-created ticket). Confluence read verified 2026-11-26 (search found the AFH page "B2B CAP/CIP Allocation Support — Investigation & Estimate").
 
 ## Dependencies
 
